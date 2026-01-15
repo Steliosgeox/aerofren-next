@@ -1,0 +1,614 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* ========================================
+   AEROFREN Design System v3.0
+   Apple Hardware UI × Industrial B2B
+   Premium depth, technical precision
+   ======================================== */
+
+@theme inline {
+  /* Colors - HSL format for Tailwind */
+  --color-background: 210 40% 98%;
+  --color-foreground: 222.2 47.4% 11.2%;
+  --color-primary: 210 100% 40%;
+  --color-primary-foreground: 0 0% 100%;
+  --color-secondary: 210 40% 96.1%;
+  --color-secondary-foreground: 222.2 47.4% 11.2%;
+  --color-muted: 210 40% 96.1%;
+  --color-muted-foreground: 215.4 16.3% 46.9%;
+  --color-accent: 25 95% 53%;
+  --color-accent-foreground: 0 0% 100%;
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 0 0% 100%;
+  --color-border: 214.3 31.8% 91.4%;
+  --color-input: 214.3 31.8% 91.4%;
+  --color-ring: 210 100% 40%;
+  --radius: 0.625rem;
+}
+
+:root {
+  /* --------------------------------
+     BRAND COLORS
+     -------------------------------- */
+  --brand: #0066cc;
+  --brand-dark: #004999;
+  --brand-light: #3399ff;
+  --accent-orange: #ff6b00;
+
+  /* --------------------------------
+     RADIUS SCALE (Technical, not bubbly)
+     -------------------------------- */
+  --radius-sm: 6px;
+  /* Tags, chips, small pills */
+  --radius-md: 10px;
+  /* Buttons, inputs */
+  --radius-lg: 14px;
+  /* Cards, modals */
+  --radius-xl: 20px;
+  /* Hero panels, large containers */
+  --radius-full: 9999px;
+  /* Avatars ONLY */
+
+  /* --------------------------------
+     TYPOGRAPHY SCALE
+     -------------------------------- */
+  /* Display - Hero headlines */
+  --font-display: 3.5rem;
+  /* 56px */
+  --font-display-weight: 800;
+  --font-display-leading: 1.05;
+  --font-display-tracking: -0.03em;
+
+  /* H1 - Page titles */
+  --font-h1: 2.5rem;
+  /* 40px */
+  --font-h1-weight: 700;
+  --font-h1-leading: 1.15;
+  --font-h1-tracking: -0.025em;
+
+  /* H2 - Section headers */
+  --font-h2: 2rem;
+  /* 32px */
+  --font-h2-weight: 700;
+  --font-h2-leading: 1.2;
+  --font-h2-tracking: -0.02em;
+
+  /* H3 - Card titles */
+  --font-h3: 1.5rem;
+  /* 24px */
+  --font-h3-weight: 600;
+  --font-h3-leading: 1.3;
+  --font-h3-tracking: -0.015em;
+
+  /* H4 - Subsections */
+  --font-h4: 1.25rem;
+  /* 20px */
+  --font-h4-weight: 600;
+  --font-h4-leading: 1.35;
+  --font-h4-tracking: -0.01em;
+
+  /* Body */
+  --font-body: 1rem;
+  /* 16px */
+  --font-body-weight: 400;
+  --font-body-leading: 1.6;
+
+  /* Body Small */
+  --font-body-sm: 0.875rem;
+  /* 14px */
+  --font-body-sm-weight: 400;
+  --font-body-sm-leading: 1.5;
+
+  /* Caption */
+  --font-caption: 0.75rem;
+  /* 12px */
+  --font-caption-weight: 500;
+  --font-caption-leading: 1.4;
+  --font-caption-tracking: 0.02em;
+
+  /* --------------------------------
+     SHADOWS (Blue-tinted for brand cohesion)
+     -------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 40, 100, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 40, 100, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 40, 100, 0.12);
+  --shadow-xl: 0 20px 48px rgba(0, 40, 100, 0.16);
+
+  /* Glass shadow for cards */
+  --shadow-glass:
+    0 4px 16px rgba(0, 40, 100, 0.08),
+    0 8px 32px rgba(0, 40, 100, 0.06);
+
+  /* --------------------------------
+     GLASS EFFECTS
+     -------------------------------- */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-blur: 12px;
+
+  /* Dark glass (for dark backgrounds) */
+  --glass-dark-bg: rgba(15, 23, 42, 0.6);
+  --glass-dark-border: rgba(255, 255, 255, 0.08);
+
+  /* --------------------------------
+     TRANSITIONS
+     -------------------------------- */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --------------------------------
+     THEME COLORS (Dark = Default)
+     -------------------------------- */
+  --theme-bg: rgba(6, 16, 31, 0.25);
+  --theme-bg-solid: #06101f;
+  --theme-text: #e5e5e5;
+  --theme-text-muted: #9ca3af;
+  --theme-text-inverse: #1a1a2e;
+  --theme-accent: #00bae2;
+  --theme-accent-hover: #0099cc;
+  --theme-mega-bg: rgba(14, 16, 15, 0.92);
+  --theme-tooltip-bg: #ffffff;
+  --theme-tooltip-text: #000000;
+  --theme-transition: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Liquid Glass System (iOS 26 style) */
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+  --glass-reflex-dark: 2;
+  --glass-reflex-light: 0.3;
+  --saturation: 150%;
+}
+
+/* ========================================
+   LIGHT THEME
+   ======================================== */
+[data-theme="light"] {
+  --theme-bg: rgba(255, 255, 255, 0.6);
+  --theme-bg-solid: #f0f4f8;
+  --theme-text: #1a365d;
+  --theme-text-muted: #4a5568;
+  --theme-text-inverse: #ffffff;
+  --theme-accent: #0066cc;
+  --theme-accent-hover: #0052a3;
+  --theme-mega-bg: rgba(255, 255, 255, 0.95);
+  --theme-tooltip-bg: #1a1a2e;
+  --theme-tooltip-text: #ffffff;
+
+  /* Liquid Glass - Light Mode */
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+  --glass-reflex-dark: 1;
+  --glass-reflex-light: 1;
+  --saturation: 150%;
+}
+
+/* ========================================
+   DIM THEME (Blue-tinted dark)
+   ======================================== */
+[data-theme="dim"] {
+  --theme-bg: rgba(21, 36, 51, 0.4);
+  --theme-bg-solid: #152433;
+  --theme-text: #d5dbe2;
+  --theme-text-muted: #94a3b8;
+  --theme-text-inverse: #152433;
+  --theme-accent: #ff48a9;
+  --theme-accent-hover: #ff6bb8;
+  --theme-mega-bg: rgba(21, 36, 51, 0.95);
+  --theme-tooltip-bg: #ffffff;
+  --theme-tooltip-text: #152433;
+
+  /* Liquid Glass - Dim Mode */
+  --c-glass: hsl(335 250% 74% / 1);
+  --c-light: #99deff;
+  --c-dark: #20001b;
+  --glass-reflex-dark: 2;
+  --glass-reflex-light: 0.7;
+  --saturation: 200%;
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
+html {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  @apply bg-[#06101f] text-slate-50;
+  font-size: var(--font-body);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-leading);
+}
+
+/* ========================================
+   TYPOGRAPHY CLASSES
+   ======================================== */
+
+.text-display {
+  font-size: var(--font-display);
+  font-weight: var(--font-display-weight);
+  line-height: var(--font-display-leading);
+  letter-spacing: var(--font-display-tracking);
+}
+
+h1,
+.text-h1 {
+  font-size: var(--font-h1);
+  font-weight: var(--font-h1-weight);
+  line-height: var(--font-h1-leading);
+  letter-spacing: var(--font-h1-tracking);
+}
+
+h2,
+.text-h2 {
+  font-size: var(--font-h2);
+  font-weight: var(--font-h2-weight);
+  line-height: var(--font-h2-leading);
+  letter-spacing: var(--font-h2-tracking);
+}
+
+h3,
+.text-h3 {
+  font-size: var(--font-h3);
+  font-weight: var(--font-h3-weight);
+  line-height: var(--font-h3-leading);
+  letter-spacing: var(--font-h3-tracking);
+}
+
+h4,
+.text-h4 {
+  font-size: var(--font-h4);
+  font-weight: var(--font-h4-weight);
+  line-height: var(--font-h4-leading);
+  letter-spacing: var(--font-h4-tracking);
+}
+
+.text-body-sm {
+  font-size: var(--font-body-sm);
+  font-weight: var(--font-body-sm-weight);
+  line-height: var(--font-body-sm-leading);
+}
+
+.text-caption {
+  font-size: var(--font-caption);
+  font-weight: var(--font-caption-weight);
+  line-height: var(--font-caption-leading);
+  letter-spacing: var(--font-caption-tracking);
+}
+
+/* Greek typography refinement */
+:lang(el) h1,
+:lang(el) h2,
+:lang(el) h3,
+:lang(el) h4,
+:lang(el) .text-display {
+  font-weight: 600;
+  /* Slightly lighter for Greek characters */
+}
+
+/* ========================================
+   BUTTON CLASSES
+   ======================================== */
+
+.btn {
+  @apply inline-flex items-center justify-center h-12 px-6 text-sm font-semibold cursor-pointer border-none;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background: var(--brand-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  @apply bg-white text-slate-900;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-ghost {
+  @apply bg-transparent text-slate-700;
+}
+
+.btn-ghost:hover {
+  @apply bg-slate-100;
+}
+
+/* ========================================
+   CARD CLASSES
+   ======================================== */
+
+.card {
+  @apply bg-white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-slow);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* Glass Card */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Dark Glass Card */
+.glass-card-dark {
+  background: var(--glass-dark-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-dark-border);
+  border-radius: var(--radius-lg);
+}
+
+/* Product Card - Premium treatment */
+.product-card {
+  @apply relative overflow-hidden;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(0, 40, 100, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-slow);
+}
+
+.product-card:hover {
+  border-color: rgba(0, 102, 204, 0.2);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-6px);
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%,
+      rgba(0, 102, 204, 0.04) 0%,
+      transparent 60%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+}
+
+.product-card:hover::before {
+  opacity: 1;
+}
+
+/* ========================================
+   TAG / CHIP CLASSES
+   ======================================== */
+
+.tag {
+  @apply inline-flex items-center h-7 px-3 text-xs font-semibold uppercase;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 102, 204, 0.08);
+  color: var(--brand);
+  letter-spacing: 0.04em;
+}
+
+.tag-pill {
+  border-radius: var(--radius-full);
+}
+
+/* ========================================
+   INPUT CLASSES
+   ======================================== */
+
+.input {
+  @apply h-12 px-4 bg-white text-slate-900 text-sm w-full;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.input:focus {
+  @apply outline-none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+}
+
+.input::placeholder {
+  @apply text-slate-400;
+}
+
+/* ========================================
+   SECTION SPACING
+   ======================================== */
+
+.section {
+  @apply py-24;
+}
+
+@media (max-width: 768px) {
+  .section {
+    @apply py-16;
+  }
+
+  .text-display {
+    font-size: 2.5rem;
+  }
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-6;
+}
+
+/* ========================================
+   WATER/AIR AMBIENT EFFECTS
+   ======================================== */
+
+.ambient-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.ambient-glow::before,
+.ambient-glow::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.4;
+  will-change: transform;
+}
+
+.ambient-glow::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 102, 204, 0.15) 0%, transparent 70%);
+  top: -200px;
+  left: -100px;
+  animation: ambient-drift-1 40s ease-in-out infinite;
+}
+
+.ambient-glow::after {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(51, 153, 255, 0.12) 0%, transparent 70%);
+  bottom: -150px;
+  right: -100px;
+  animation: ambient-drift-2 35s ease-in-out infinite;
+}
+
+@keyframes ambient-drift-1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(50px, 30px) scale(1.1);
+  }
+}
+
+@keyframes ambient-drift-2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(-40px, -25px) scale(1.05);
+  }
+}
+
+/* Disable ambient effects for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .ambient-glow::before,
+  .ambient-glow::after {
+    animation: none;
+  }
+}
+
+/* ========================================
+   GLOBAL WAVES BACKGROUND
+   Fixed background that covers page (except footer)
+   ======================================== */
+
+.waves-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -10;
+  pointer-events: none;
+  background-image: url('/bg/waves.svg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  /* Full opacity - no darkening */
+  opacity: 1;
+  transition: filter 400ms ease;
+}
+
+/* Theme-responsive waves coloring */
+[data-theme="light"] .waves-background {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95);
+}
+
+[data-theme="dim"] .waves-background {
+  filter: hue-rotate(15deg) saturate(1.3) brightness(1.1);
+}
+
+/* Ensure main content has transparent backgrounds to show waves */
+.main-content-transparent {
+  background: transparent !important;
+}
+
+/* Sections that should show the waves background */
+.section-with-waves {
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sections with light overlay on waves */
+.section-waves-light {
+  background: rgba(6, 16, 31, 0.7);
+  backdrop-filter: blur(1px);
+}
+
+/* Sections with heavy overlay (almost opaque) */
+.section-waves-heavy {
+  background: rgba(6, 16, 31, 0.92);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.border-gradient {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, rgba(0, 102, 204, 0.3), rgba(0, 102, 204, 0.1)) border-box;
+}

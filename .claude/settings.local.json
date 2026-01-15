@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(node scripts/download-landefeld-images.js:*)",
+      "Bash(dir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\images\\\\categories\")",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(dir \"C:\\\\Users\\\\Stelios\\\\Downloads\\\\AEROFRENSCROLLIMAGES\")",
+      "Bash(dir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\bg\")",
+      "Bash(if not exist \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\" mkdir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\")",
+      "Bash(xcopy:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(dir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\")"
+    ]
+  }
+}
