@@ -32,24 +32,41 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Create ScrollSmoother instance
+    // CRITICAL: normalizeScroll: false prevents GSAP from hijacking all scroll events
+    // which was causing severe performance issues and conflicts with Next.js navigation
     smootherRef.current = ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
-      smooth: prefersReducedMotion ? 0 : 1.5, // 1.5s smooth lag (0 if reduced motion)
+      smooth: prefersReducedMotion ? 0 : 1.2, // Reduced from 1.5 for snappier feel
       effects: !prefersReducedMotion, // Enable data-speed/data-lag attributes
       smoothTouch: 0.1, // Light touch smoothing for mobile
-      normalizeScroll: true, // Normalize wheel/touch behavior across browsers
+      normalizeScroll: false, // CRITICAL: false prevents scroll hijacking
+      ignoreMobileResize: true, // Prevents layout thrashing on mobile
     });
 
     // Refresh ScrollTrigger after smoother is created
     ScrollTrigger.refresh();
 
-    // Cleanup
+    // Cleanup - CRITICAL: Kill ScrollSmoother first, then all ScrollTriggers
+    // This order is important to prevent orphaned triggers causing hydration errors
     return () => {
+      // First, disable scrolling updates
       if (smootherRef.current) {
-        smootherRef.current.kill();
-        smootherRef.current = null;
+        smootherRef.current.paused(true);
       }
+
+      // Give GSAP a frame to settle before killing
+      requestAnimationFrame(() => {
+        if (smootherRef.current) {
+          smootherRef.current.kill();
+          smootherRef.current = null;
+        }
+        // Kill all remaining ScrollTriggers to prevent DOM conflicts
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+        ScrollTrigger.clearMatchMedia();
+        // Clear any cached values
+        ScrollTrigger.clearScrollMemory();
+      });
     };
   }, []);
 

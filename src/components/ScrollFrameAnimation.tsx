@@ -5,13 +5,14 @@ import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 
 /**
  * ScrollFrameAnimation Component
- * 
+ *
  * Premium canvas-based scroll-controlled frame animation with:
  * - High-quality static background (shows initially)
  * - Canvas crossfade when water splash arrives
  * - Theme-responsive overlay for light theme visibility
  * - 118 frames for smooth scroll-linked playback
  * - Covers Hero section (100vh), then fades out to reveal waves
+ * - GLOBAL IMAGE CACHE to prevent reloading on navigation
  */
 
 // Frame configuration
@@ -27,53 +28,91 @@ const getFramePath = (index: number): string => {
     return `/frames/frame_${paddedIndex}_delay-${delay}.webp`;
 };
 
+// ============================================
+// GLOBAL IMAGE CACHE - Persists across navigations
+// This prevents reloading 118 images on every route change
+// ============================================
+interface FrameCache {
+    images: HTMLImageElement[];
+    loaded: boolean;
+    loadedCount: number;
+}
+
+const globalFrameCache: FrameCache = {
+    images: [],
+    loaded: false,
+    loadedCount: 0,
+};
+
+// Preload frames once globally
+function preloadFramesGlobally(onProgress: (progress: number) => void, onComplete: () => void) {
+    // If already loaded, call complete immediately
+    if (globalFrameCache.loaded) {
+        onProgress(100);
+        onComplete();
+        return;
+    }
+
+    // If already loading, just update callbacks
+    if (globalFrameCache.images.length > 0) {
+        onProgress((globalFrameCache.loadedCount / FRAME_COUNT) * 100);
+        if (globalFrameCache.loadedCount === FRAME_COUNT) {
+            globalFrameCache.loaded = true;
+            onComplete();
+        }
+        return;
+    }
+
+    // Start fresh load
+    for (let i = 0; i < FRAME_COUNT; i++) {
+        const img = new Image();
+        img.src = getFramePath(i);
+
+        img.onload = () => {
+            globalFrameCache.loadedCount++;
+            onProgress((globalFrameCache.loadedCount / FRAME_COUNT) * 100);
+            if (globalFrameCache.loadedCount === FRAME_COUNT) {
+                globalFrameCache.loaded = true;
+                onComplete();
+            }
+        };
+
+        img.onerror = () => {
+            console.warn(`Failed to load frame ${i}`);
+            globalFrameCache.loadedCount++;
+            onProgress((globalFrameCache.loadedCount / FRAME_COUNT) * 100);
+            if (globalFrameCache.loadedCount === FRAME_COUNT) {
+                globalFrameCache.loaded = true;
+                onComplete();
+            }
+        };
+
+        globalFrameCache.images.push(img);
+    }
+}
+
 export default function ScrollFrameAnimation() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const staticBgRef = useRef<HTMLDivElement>(null);
     const canvasWrapperRef = useRef<HTMLDivElement>(null);
-    const imagesRef = useRef<HTMLImageElement[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [loadProgress, setLoadProgress] = useState(0);
+    const [isLoaded, setIsLoaded] = useState(globalFrameCache.loaded);
+    const [loadProgress, setLoadProgress] = useState(globalFrameCache.loaded ? 100 : 0);
     const currentFrameRef = useRef(0);
 
-    // Preload all frames
+    // Use global cache for frames - only loads once across all navigations
     useEffect(() => {
-        let loadedCount = 0;
-        const images: HTMLImageElement[] = [];
-
-        for (let i = 0; i < FRAME_COUNT; i++) {
-            const img = new Image();
-            img.src = getFramePath(i);
-
-            img.onload = () => {
-                loadedCount++;
-                setLoadProgress((loadedCount / FRAME_COUNT) * 100);
-                if (loadedCount === FRAME_COUNT) {
-                    setIsLoaded(true);
-                }
-            };
-
-            img.onerror = () => {
-                console.warn(`Failed to load frame ${i}`);
-                loadedCount++;
-                setLoadProgress((loadedCount / FRAME_COUNT) * 100);
-                if (loadedCount === FRAME_COUNT) {
-                    setIsLoaded(true);
-                }
-            };
-
-            images.push(img);
-        }
-
-        imagesRef.current = images;
+        preloadFramesGlobally(
+            (progress) => setLoadProgress(progress),
+            () => setIsLoaded(true)
+        );
     }, []);
 
-    // Draw frame to canvas with cover-fit
+    // Draw frame to canvas with cover-fit (uses global cache)
     const drawFrame = useCallback((frameIndex: number) => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext("2d");
-        const img = imagesRef.current[frameIndex];
+        const img = globalFrameCache.images[frameIndex];
 
         if (!canvas || !ctx || !img || !img.complete) return;
 
@@ -195,10 +234,21 @@ export default function ScrollFrameAnimation() {
         );
 
         return () => {
+            // Kill tweens first
             staticFadeout.kill();
             canvasFadein.kill();
             frameTween.kill();
             containerFadeout.kill();
+
+            // Get the ScrollTrigger instances from the tweens and kill them
+            const triggers = [
+                staticFadeout.scrollTrigger,
+                canvasFadein.scrollTrigger,
+                frameTween.scrollTrigger,
+                containerFadeout.scrollTrigger,
+            ].filter(Boolean);
+
+            triggers.forEach(trigger => trigger?.kill());
         };
     }, [isLoaded, drawFrame]);
 

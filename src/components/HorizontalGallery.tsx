@@ -296,6 +296,7 @@ export default function HorizontalGallery() {
       ScrollTrigger.refresh();
 
       return () => {
+        // Kill main triggers and timelines
         scrollTrigger.kill();
         entranceTl.kill();
         if (draggableInstance) {
@@ -307,8 +308,21 @@ export default function HorizontalGallery() {
       };
     }, 100);
 
+    // Store cleanup reference
+    let innerCleanup: (() => void) | null = null;
+
+    // Get the inner cleanup when timer resolves
+    const originalTimer = timer;
+
     return () => {
-      clearTimeout(timer);
+      clearTimeout(originalTimer);
+      // Kill any ScrollTriggers created by this component
+      ScrollTrigger.getAll().forEach(trigger => {
+        if (trigger.vars.trigger === section ||
+            cards.some(card => trigger.vars.trigger === card)) {
+          trigger.kill();
+        }
+      });
     };
   }, []);
 
@@ -379,7 +393,7 @@ export default function HorizontalGallery() {
           display: inline-block;
           padding: 8px 18px;
           background: rgba(0, 102, 204, 0.15);
-          color: #5cb8ff;
+          color: var(--brand-accent, #5cb8ff);
           font-size: 11px;
           font-weight: 700;
           letter-spacing: 0.15em;
@@ -563,7 +577,7 @@ export default function HorizontalGallery() {
           font-weight: 700;
           letter-spacing: 0.12em;
           text-transform: uppercase;
-          color: #5cb8ff;
+          color: var(--brand-accent, #5cb8ff);
           margin-bottom: 4px;
           opacity: 0.9;
         }
@@ -642,7 +656,7 @@ export default function HorizontalGallery() {
         .cta-number {
           font-size: 48px;
           font-weight: 800;
-          color: #5cb8ff;
+          color: var(--brand-accent, #5cb8ff);
           line-height: 1;
           margin-bottom: 4px;
           text-shadow: 0 4px 20px rgba(92, 184, 255, 0.4);
@@ -660,7 +674,7 @@ export default function HorizontalGallery() {
           gap: 6px;
           font-size: 13px;
           font-weight: 600;
-          color: #5cb8ff;
+          color: var(--brand-accent, #5cb8ff);
           padding: 10px 20px;
           background: rgba(0, 102, 204, 0.2);
           border: 1px solid rgba(92, 184, 255, 0.3);

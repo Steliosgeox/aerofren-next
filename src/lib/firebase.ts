@@ -13,7 +13,7 @@ import {
     onAuthStateChanged,
     User
 } from 'firebase/auth';
-import { getFirestore, Firestore, collection, addDoc, query, where, orderBy, getDocs, Timestamp, DocumentData } from 'firebase/firestore';
+import { getFirestore, Firestore, collection, addDoc, query, where, orderBy, getDocs, Timestamp, DocumentData, doc, updateDoc, setDoc, getCountFromServer } from 'firebase/firestore';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -252,6 +252,278 @@ export async function getAllChatSessions(): Promise<ChatSessionInfo[]> {
         );
     } catch (error) {
         console.error('Error fetching chat sessions:', error);
+        return [];
+    }
+}
+
+// =====================================
+// ESCALATION SYSTEM
+// =====================================
+
+const ESCALATED_COLLECTION = 'escalatedChats';
+
+// Escalated chat interface
+export interface EscalatedChat {
+    id?: string;
+    sessionId: string;
+    userId: string;
+    userEmail: string;
+    userName: string;
+    escalatedAt: Timestamp;
+    status: 'pending' | 'in_progress' | 'resolved';
+    resolvedAt?: Timestamp;
+    resolvedBy?: string;
+}
+
+/**
+ * Escalate a chat session to human support
+ * Creates a record in the escalatedChats collection
+ */
+export async function escalateChat(sessionId: string, user: User): Promise<boolean> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            console.warn('Firebase not configured - cannot escalate chat');
+            return false;
+        }
+
+        // Create escalation record
+        const escalation: Omit<EscalatedChat, 'id'> = {
+            sessionId,
+            userId: user.uid,
+            userEmail: user.email || 'Unknown',
+            userName: user.displayName || 'Unknown User',
+            escalatedAt: Timestamp.now(),
+            status: 'pending',
+        };
+
+        await setDoc(doc(firestore, ESCALATED_COLLECTION, sessionId), escalation);
+
+        // Also mark the chat session's messages as escalated
+        // This updates the most recent message to flag the session
+        const messagesQuery = query(
+            collection(firestore, CHATS_COLLECTION),
+            where('sessionId', '==', sessionId),
+            orderBy('timestamp', 'desc')
+        );
+        const snapshot = await getDocs(messagesQuery);
+        if (!snapshot.empty) {
+            const latestDoc = snapshot.docs[0];
+            await updateDoc(doc(firestore, CHATS_COLLECTION, latestDoc.id), {
+                isEscalated: true,
+                escalatedAt: Timestamp.now(),
+            });
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error escalating chat:', error);
+        return false;
+    }
+}
+
+/**
+ * Get all escalated chats for admin
+ */
+export async function getEscalatedChats(): Promise<EscalatedChat[]> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            return [];
+        }
+
+        const q = query(
+            collection(firestore, ESCALATED_COLLECTION),
+            orderBy('escalatedAt', 'desc')
+        );
+
+        const querySnapshot = await getDocs(q);
+        const escalations: EscalatedChat[] = [];
+
+        querySnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data() as DocumentData;
+            escalations.push({
+                id: docSnapshot.id,
+                sessionId: data.sessionId,
+                userId: data.userId,
+                userEmail: data.userEmail,
+                userName: data.userName,
+                escalatedAt: data.escalatedAt,
+                status: data.status,
+                resolvedAt: data.resolvedAt,
+                resolvedBy: data.resolvedBy,
+            });
+        });
+
+        return escalations;
+    } catch (error) {
+        console.error('Error fetching escalated chats:', error);
+        return [];
+    }
+}
+
+/**
+ * Mark an escalated chat as resolved
+ */
+export async function resolveEscalatedChat(sessionId: string, adminEmail: string): Promise<boolean> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            return false;
+        }
+
+        await updateDoc(doc(firestore, ESCALATED_COLLECTION, sessionId), {
+            status: 'resolved',
+            resolvedAt: Timestamp.now(),
+            resolvedBy: adminEmail,
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error resolving escalated chat:', error);
+        return false;
+    }
+}
+
+/**
+ * Update escalated chat status
+ */
+export async function updateEscalationStatus(
+    sessionId: string,
+    status: 'pending' | 'in_progress' | 'resolved'
+): Promise<boolean> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            return false;
+        }
+
+        await updateDoc(doc(firestore, ESCALATED_COLLECTION, sessionId), { status });
+        return true;
+    } catch (error) {
+        console.error('Error updating escalation status:', error);
+        return false;
+    }
+}
+
+// =====================================
+// ADMIN STATS
+// =====================================
+
+export interface AdminStats {
+    totalChats: number;
+    escalatedChats: number;
+    pendingEscalations: number;
+    uniqueUsers: number;
+    todayChats: number;
+}
+
+/**
+ * Get admin dashboard statistics from Firebase
+ */
+export async function getAdminStats(): Promise<AdminStats> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            return {
+                totalChats: 0,
+                escalatedChats: 0,
+                pendingEscalations: 0,
+                uniqueUsers: 0,
+                todayChats: 0,
+            };
+        }
+
+        // Get all chat messages
+        const chatsQuery = query(collection(firestore, CHATS_COLLECTION));
+        const chatSnapshot = await getDocs(chatsQuery);
+
+        // Get all escalations
+        const escalationsQuery = query(collection(firestore, ESCALATED_COLLECTION));
+        const escalationSnapshot = await getDocs(escalationsQuery);
+
+        // Calculate stats
+        const sessionIds = new Set<string>();
+        const userIds = new Set<string>();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let todayChats = 0;
+
+        chatSnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data();
+            sessionIds.add(data.sessionId);
+            if (data.userId) {
+                userIds.add(data.userId);
+            }
+            // Count today's messages
+            const msgDate = data.timestamp?.toDate();
+            if (msgDate && msgDate >= today) {
+                todayChats++;
+            }
+        });
+
+        // Count pending escalations
+        let pendingEscalations = 0;
+        escalationSnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data();
+            if (data.status === 'pending') {
+                pendingEscalations++;
+            }
+        });
+
+        return {
+            totalChats: sessionIds.size,
+            escalatedChats: escalationSnapshot.size,
+            pendingEscalations,
+            uniqueUsers: userIds.size,
+            todayChats,
+        };
+    } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        return {
+            totalChats: 0,
+            escalatedChats: 0,
+            pendingEscalations: 0,
+            uniqueUsers: 0,
+            todayChats: 0,
+        };
+    }
+}
+
+// Extended ChatSessionInfo with escalation status
+export interface ChatSessionInfoExtended extends ChatSessionInfo {
+    isEscalated?: boolean;
+    escalationStatus?: 'pending' | 'in_progress' | 'resolved';
+}
+
+/**
+ * Get all chat sessions with escalation status (for admin use)
+ */
+export async function getAllChatSessionsWithEscalation(): Promise<ChatSessionInfoExtended[]> {
+    try {
+        const [sessions, escalations] = await Promise.all([
+            getAllChatSessions(),
+            getEscalatedChats(),
+        ]);
+
+        const escalationMap = new Map<string, EscalatedChat>();
+        escalations.forEach((e) => escalationMap.set(e.sessionId, e));
+
+        return sessions.map((session) => {
+            const escalation = escalationMap.get(session.sessionId);
+            return {
+                ...session,
+                isEscalated: !!escalation,
+                escalationStatus: escalation?.status,
+            };
+        });
+    } catch (error) {
+        console.error('Error fetching sessions with escalation:', error);
         return [];
     }
 }

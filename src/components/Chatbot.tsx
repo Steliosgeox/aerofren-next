@@ -18,13 +18,17 @@ import {
   Phone,
   Mail,
   Sparkles,
-  User
+  User,
+  LogIn,
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { v4 as uuidv4 } from 'uuid';
 import { gsap } from '@/lib/gsap/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveChatMessage } from '@/lib/firebase';
+import { saveChatMessage, escalateChat } from '@/lib/firebase';
+import Link from 'next/link';
 import './Chatbot.scss';
 
 // Types
@@ -69,6 +73,9 @@ export function Chatbot() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string>('');
   const [scrollbarWidth, setScrollbarWidth] = useState<number>(0);
+  const [showLoginPrompt, setShowLoginPrompt] = useState<boolean>(false);
+  const [isEscalated, setIsEscalated] = useState<boolean>(false);
+  const [escalationStatus, setEscalationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   // Dynamic padding for scrollbar
   const messagesStyle: React.CSSProperties = {
@@ -179,6 +186,45 @@ export function Chatbot() {
     }
   }, [handleSubmit]);
 
+  // Handle escalation to human support
+  const handleEscalation = useCallback(async () => {
+    // If user is not logged in, show login prompt
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    // Already escalated
+    if (isEscalated) {
+      return;
+    }
+
+    setEscalationStatus('loading');
+
+    try {
+      const success = await escalateChat(sessionId, user);
+
+      if (success) {
+        setIsEscalated(true);
+        setEscalationStatus('success');
+
+        // Add confirmation message to chat
+        const confirmationMessage: Message = {
+          id: randomID(),
+          type: 'ai',
+          content: `✅ **Το αίτημά σας καταχωρήθηκε!**\n\nΈνας εκπρόσωπός μας θα επικοινωνήσει μαζί σας σύντομα στο email **${user.email}**.\n\nΜπορείτε επίσης να μας καλέσετε απευθείας στο **210 3461645**.`,
+        };
+        setMessages((prev) => [...prev, confirmationMessage]);
+        saveChatMessage(sessionId, 'assistant', confirmationMessage.content, user).catch(console.error);
+      } else {
+        setEscalationStatus('error');
+      }
+    } catch (error) {
+      console.error('Escalation error:', error);
+      setEscalationStatus('error');
+    }
+  }, [user, sessionId, isEscalated, randomID]);
+
   // Scroll to bottom when messages change (using GSAP for smoothness)
   useEffect(() => {
     if (chatScrollerRef.current) {
@@ -209,56 +255,23 @@ export function Chatbot() {
     return () => cancelAnimationFrame(frameId);
   }, [messages]);
 
-  // CRITICAL: Stop wheel events from propagating to GSAP ScrollSmoother
-  // This prevents normalizeScroll from hijacking chatbot scroll
-  // Uses GSAP for smooth, buttery scrolling
+  // Simple scroll handling - normalizeScroll is now disabled in SmoothScrollProvider
+  // so we only need to stop propagation, not intercept all events
   useEffect(() => {
     const scroller = chatScrollerRef.current;
     if (!scroller) return;
 
-    let targetScrollTop = scroller.scrollTop;
-    let scrollTween: gsap.core.Tween | null = null;
-
     const handleWheel = (e: WheelEvent) => {
-      // Always stop propagation to prevent GSAP from intercepting
+      // Stop propagation to prevent ScrollSmoother from interfering
       e.stopPropagation();
-      e.preventDefault();
-
-      const { scrollHeight, clientHeight } = scroller;
-      const maxScroll = scrollHeight - clientHeight;
-
-      // Accumulate scroll delta for smooth feel
-      targetScrollTop += e.deltaY;
-      targetScrollTop = Math.max(0, Math.min(targetScrollTop, maxScroll));
-
-      // Kill any existing tween and create new one
-      if (scrollTween) scrollTween.kill();
-
-      scrollTween = gsap.to(scroller, {
-        scrollTop: targetScrollTop,
-        duration: 0.6,
-        ease: 'power2.out',
-        overwrite: true,
-      });
     };
 
-    // Sync target when scroll position changes externally
-    const handleScroll = () => {
-      if (!scrollTween || !scrollTween.isActive()) {
-        targetScrollTop = scroller.scrollTop;
-      }
-    };
-
-    // Use capture phase to intercept BEFORE GSAP's handlers
-    scroller.addEventListener('wheel', handleWheel, { passive: false, capture: true });
-    scroller.addEventListener('scroll', handleScroll, { passive: true });
+    scroller.addEventListener('wheel', handleWheel, { passive: true });
 
     return () => {
-      if (scrollTween) scrollTween.kill();
-      scroller.removeEventListener('wheel', handleWheel, { capture: true });
-      scroller.removeEventListener('scroll', handleScroll);
+      scroller.removeEventListener('wheel', handleWheel);
     };
-  }, [isOpen, messages.length]);
+  }, [isOpen]);
 
   // Determine if in conversation mode
   const isConversationMode = messages.length > 0;
@@ -311,11 +324,64 @@ export function Chatbot() {
               <Mail className="chatbot__quick-action-icon" />
               <span>Email</span>
             </button>
-            <button className="chatbot__quick-action" onClick={() => window.location.href = 'tel:+302103461645'}>
-              <User className="chatbot__quick-action-icon" />
-              <span>Μιλήστε με εκπρόσωπο</span>
+            <button
+              className={`chatbot__quick-action ${isEscalated ? 'chatbot__quick-action--success' : ''} ${escalationStatus === 'loading' ? 'chatbot__quick-action--loading' : ''}`}
+              onClick={handleEscalation}
+              disabled={isEscalated || escalationStatus === 'loading'}
+            >
+              {isEscalated ? (
+                <CheckCircle className="chatbot__quick-action-icon chatbot__quick-action-icon--success" />
+              ) : escalationStatus === 'loading' ? (
+                <div className="chatbot__quick-action-spinner" />
+              ) : (
+                <User className="chatbot__quick-action-icon" />
+              )}
+              <span>{isEscalated ? 'Καταχωρήθηκε' : 'Μιλήστε με εκπρόσωπο'}</span>
             </button>
           </div>
+
+          {/* Login Prompt Modal */}
+          {showLoginPrompt && (
+            <div className="chatbot__login-modal">
+              <div className="chatbot__login-modal-backdrop" onClick={() => setShowLoginPrompt(false)} />
+              <div className="chatbot__login-modal-content">
+                <button
+                  className="chatbot__login-modal-close"
+                  onClick={() => setShowLoginPrompt(false)}
+                  aria-label="Κλείσιμο"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="chatbot__login-modal-icon">
+                  <LogIn className="w-8 h-8" />
+                </div>
+                <h3 className="chatbot__login-modal-title">Απαιτείται Σύνδεση</h3>
+                <p className="chatbot__login-modal-text">
+                  Για να μιλήσετε με εκπρόσωπο, παρακαλώ συνδεθείτε πρώτα στον λογαριασμό σας.
+                </p>
+                <div className="chatbot__login-modal-actions">
+                  <Link
+                    href="/login"
+                    className="chatbot__login-modal-btn chatbot__login-modal-btn--primary"
+                    onClick={() => setShowLoginPrompt(false)}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Σύνδεση
+                  </Link>
+                  <button
+                    className="chatbot__login-modal-btn chatbot__login-modal-btn--secondary"
+                    onClick={() => {
+                      setShowLoginPrompt(false);
+                      window.location.href = 'tel:+302103461645';
+                    }}
+                  >
+                    <Phone className="w-4 h-4" />
+                    Κλήση (210 3461645)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="chatbot__container">
             {/* ========== WELCOME STATE ========== */}

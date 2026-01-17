@@ -34,6 +34,7 @@
   --brand: #0066cc;
   --brand-dark: #004999;
   --brand-light: #3399ff;
+  --brand-accent: #5cb8ff;
   --accent-orange: #ff6b00;
 
   /* --------------------------------
@@ -130,6 +131,12 @@
   /* Dark glass (for dark backgrounds) */
   --glass-dark-bg: rgba(15, 23, 42, 0.6);
   --glass-dark-border: rgba(255, 255, 255, 0.08);
+
+  /* Admin glass variables */
+  --admin-glass-bg: rgba(15, 23, 42, 0.7);
+  --admin-glass-border: rgba(255, 255, 255, 0.08);
+  --admin-glass-sidebar: rgba(15, 23, 42, 0.8);
+  --admin-bg: #06101f;
 
   /* --------------------------------
      TRANSITIONS

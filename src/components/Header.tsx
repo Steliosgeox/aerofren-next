@@ -3,14 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, memo } from "react";
 import { categories } from "@/data/categories";
 import { GlassNavigation } from "./GlassNavigation";
 import { SocialTooltips } from "./SocialTooltips";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+// Import from centralized GSAP config - plugins are pre-registered there
+import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import {
   Phone,
   Menu,
@@ -32,11 +32,6 @@ import {
   LogOut,
   Shield,
 } from "lucide-react";
-
-// Register GSAP plugins
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 const iconMap: Record<string, React.ReactNode> = {
   plug: <Plug className="w-5 h-5" />,
@@ -82,7 +77,7 @@ const glassHeaderStyles = {
   `,
 };
 
-export function Header() {
+function HeaderComponent() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading: authLoading, isAdmin, signOut } = useAuth();
@@ -141,12 +136,19 @@ export function Header() {
     };
   }, []);
 
-  // Scroll state for height transition
+  // Scroll state for height transition - THROTTLED with requestAnimationFrame
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -517,3 +519,6 @@ export function Header() {
     </>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const Header = memo(HeaderComponent);

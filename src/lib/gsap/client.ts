@@ -66,8 +66,17 @@ if (typeof window !== "undefined") {
         duration: 0.8,
     });
 
-    // Suppress null target warnings
-    gsap.config({ nullTargetWarn: false });
+    // Suppress null target warnings and configure for Next.js
+    gsap.config({
+        nullTargetWarn: false,
+        autoSleep: 60, // Auto-sleep after 60 seconds of inactivity
+    });
+
+    // Configure ScrollTrigger for better cleanup with Next.js navigation
+    ScrollTrigger.config({
+        ignoreMobileResize: true, // Prevents layout thrashing on mobile
+        autoRefreshEvents: "visibilitychange,DOMContentLoaded,load", // Reduced refresh triggers
+    });
 
     // Respect reduced motion preference
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
