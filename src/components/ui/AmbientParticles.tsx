@@ -169,22 +169,46 @@ export default function AmbientParticles() {
           pointer-events: none;
         }
 
-        /* Individual particle styling */
+        /* Individual particle styling - Theme-aware */
         .particle {
+          --particle-primary: rgba(92, 184, 255, 0.9);
+          --particle-secondary: rgba(0, 102, 204, 0.6);
+          --particle-tertiary: rgba(0, 60, 120, 0.3);
+          --particle-glow: rgba(92, 184, 255, 0.4);
+          --particle-glow-outer: rgba(0, 102, 204, 0.2);
+
           position: absolute;
           border-radius: 50%;
           background: radial-gradient(
             circle at 30% 30%,
-            rgba(92, 184, 255, 0.9) 0%,
-            rgba(0, 102, 204, 0.6) 40%,
-            rgba(0, 60, 120, 0.3) 70%,
+            var(--particle-primary) 0%,
+            var(--particle-secondary) 40%,
+            var(--particle-tertiary) 70%,
             transparent 100%
           );
           filter: blur(1px);
           will-change: transform;
-          box-shadow: 
-            0 0 8px rgba(92, 184, 255, 0.4),
-            0 0 16px rgba(0, 102, 204, 0.2);
+          box-shadow:
+            0 0 8px var(--particle-glow),
+            0 0 16px var(--particle-glow-outer);
+        }
+
+        /* Dim theme particles - Pink accent */
+        :global([data-theme="dim"]) .particle {
+          --particle-primary: rgba(255, 72, 169, 0.9);
+          --particle-secondary: rgba(200, 50, 130, 0.6);
+          --particle-tertiary: rgba(150, 30, 100, 0.3);
+          --particle-glow: rgba(255, 72, 169, 0.4);
+          --particle-glow-outer: rgba(200, 50, 130, 0.2);
+        }
+
+        /* Light theme - Softer blue particles */
+        :global([data-theme="light"]) .particle {
+          --particle-primary: rgba(0, 102, 204, 0.7);
+          --particle-secondary: rgba(0, 80, 160, 0.4);
+          --particle-tertiary: rgba(0, 60, 120, 0.2);
+          --particle-glow: rgba(0, 102, 204, 0.3);
+          --particle-glow-outer: rgba(0, 102, 204, 0.15);
         }
 
         /* Reduced motion - particles are static */

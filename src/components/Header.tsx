@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { categories } from "@/data/categories";
 import { GlassNavigation } from "./GlassNavigation";
 import { SocialTooltips } from "./SocialTooltips";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
+import { useAuth } from "@/contexts/AuthContext";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -27,6 +28,9 @@ import {
   Package,
   Droplet,
   Hammer,
+  User,
+  LogOut,
+  Shield,
 } from "lucide-react";
 
 // Register GSAP plugins
@@ -80,12 +84,33 @@ const glassHeaderStyles = {
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const megaMenuRef = useRef<HTMLDivElement>(null);
   const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUserMenuOpen(false);
+    router.push('/');
+  };
 
   // GSAP scroll animation
   useEffect(() => {
@@ -326,10 +351,88 @@ export function Header() {
               )}
             </nav>
 
-            {/* Desktop CTA - Theme Switcher + Social Icons */}
+            {/* Desktop CTA - Theme Switcher + Social Icons + User */}
             <div className="hidden lg:flex items-center gap-5">
               <LiquidGlassSwitcher />
               <SocialTooltips />
+
+              {/* User Avatar / Login Button - Always render container for stable DOM */}
+              <div className="relative" ref={userMenuRef}>
+                {user && !authLoading ? (
+                  <>
+                    <button
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      className="flex items-center gap-2 p-1 rounded-full transition-all hover:ring-2 hover:ring-white/20"
+                    >
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt=""
+                          className="w-9 h-9 rounded-full ring-2 ring-white/20"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-white/20">
+                          {user.displayName?.[0] || user.email?.[0] || 'U'}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* User Dropdown */}
+                    {userMenuOpen && (
+                      <div
+                        className="absolute right-0 top-full mt-2 w-56 rounded-xl overflow-hidden z-50"
+                        style={{
+                          background: "rgba(15, 23, 42, 0.95)",
+                          backdropFilter: "blur(20px)",
+                          border: "1px solid rgba(255, 255, 255, 0.1)",
+                          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
+                        }}
+                      >
+                        <div className="p-3 border-b border-white/10">
+                          <p className="text-sm font-medium text-white truncate">
+                            {user.displayName || 'Χρήστης'}
+                          </p>
+                          <p className="text-xs text-gray-400 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                        <div className="p-2">
+                          {isAdmin && (
+                            <Link
+                              href="/admin"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                              <Shield className="w-4 h-4" />
+                              Admin Dashboard
+                            </Link>
+                          )}
+                          <button
+                            onClick={handleSignOut}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Αποσύνδεση
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.1)",
+                      color: "var(--theme-text)",
+                      border: "1px solid rgba(255, 255, 255, 0.15)",
+                    }}
+                  >
+                    <User className="w-4 h-4" />
+                    Σύνδεση
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* Mobile Menu Button */}

@@ -123,7 +123,7 @@ export function GlassNavigation({
   const itemWidth = 100 / items.length;
 
   return (
-    <StyledWrapper>
+    <StyledWrapper suppressHydrationWarning>
       <div className="glass-nav-group">
         {items.map((item, index) => (
           <React.Fragment key={item.path}>

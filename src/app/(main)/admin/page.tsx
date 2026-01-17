@@ -1,9 +1,13 @@
-"use client"
+/**
+ * Admin Dashboard Page
+ * Protected by Firebase Auth (admin only)
+ */
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     MessageCircle,
     Users,
@@ -13,26 +17,37 @@ import {
     LogOut,
     Menu,
     X,
-} from "lucide-react"
-
-// Simple auth simulation - replace with real auth in production
-const ADMIN_PASSWORD = "aerofren2024"
+    Bot,
+    Shield,
+    Loader2,
+    UserCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminPage() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [password, setPassword] = useState("")
-    const [sidebarOpen, setSidebarOpen] = useState(true)
-    const [error, setError] = useState("")
+    const router = useRouter();
+    const { user, loading: authLoading, isAdmin, signOut } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault()
-        if (password === ADMIN_PASSWORD) {
-            setIsAuthenticated(true)
-            setError("")
-        } else {
-            setError("Λάθος κωδικός")
+    // Redirect if not admin
+    useEffect(() => {
+        if (!authLoading && (!user || !isAdmin)) {
+            const timer = setTimeout(() => {
+                if (!user) {
+                    router.push('/login');
+                }
+            }, 1000);
+            return () => clearTimeout(timer);
         }
-    }
+    }, [user, authLoading, isAdmin, router]);
+
+    // Handle sign out
+    const handleSignOut = async () => {
+        await signOut();
+        router.push('/');
+    };
 
     // Mock data
     const stats = [
@@ -40,44 +55,63 @@ export default function AdminPage() {
         { label: "Νέοι Πελάτες", value: "23", icon: <Users />, change: "+8%" },
         { label: "Προϊόντα σε Στοκ", value: "1,234", icon: <Package />, change: "+2%" },
         { label: "Μηνιαία Έσοδα", value: "€45K", icon: <TrendingUp />, change: "+15%" },
-    ]
+    ];
 
     const recentQuotes = [
         { id: 1, name: "Γιώργος Π.", company: "HydraTech", date: "10/01/2026", status: "Pending" },
         { id: 2, name: "Μαρία Κ.", company: "AquaPlus", date: "09/01/2026", status: "Contacted" },
         { id: 3, name: "Νίκος Α.", company: "PneuSystems", date: "08/01/2026", status: "Completed" },
         { id: 4, name: "Ελένη Β.", company: "CleanWater", date: "07/01/2026", status: "Pending" },
-    ]
+    ];
 
-    if (!isAuthenticated) {
+    // Show access denied for non-admins (also covers loading state)
+    if (authLoading || !user || !isAdmin) {
         return (
             <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
-                        <div className="w-16 h-16 bg-[#0066cc] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <span className="text-white font-bold text-2xl">A</span>
+                        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            {authLoading ? (
+                                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                            ) : (
+                                <Shield className="w-8 h-8 text-red-600" />
+                            )}
                         </div>
-                        <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
+                        <CardTitle className="text-2xl">
+                            {authLoading ? "Φόρτωση..." : "Πρόσβαση Απαγορεύεται"}
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleLogin} className="space-y-4">
-                            <div>
-                                <Input
-                                    type="password"
-                                    placeholder="Κωδικός πρόσβασης"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                            </div>
-                            <Button type="submit" className="w-full">
-                                Σύνδεση
-                            </Button>
-                        </form>
+                    <CardContent className="text-center space-y-4">
+                        {!authLoading && (
+                            <>
+                                <p className="text-slate-600">
+                                    {!user
+                                        ? "Πρέπει να συνδεθείτε για να δείτε αυτή τη σελίδα."
+                                        : "Δεν έχετε δικαιώματα διαχειριστή."}
+                                </p>
+                                {!user ? (
+                                    <Button onClick={() => router.push('/login')} className="w-full">
+                                        Σύνδεση
+                                    </Button>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-slate-500">
+                                            Συνδεδεμένος ως: {user.email}
+                                        </p>
+                                        <Button variant="outline" onClick={handleSignOut} className="w-full">
+                                            Αποσύνδεση
+                                        </Button>
+                                    </div>
+                                )}
+                                <Link href="/" className="text-blue-600 text-sm hover:underline block">
+                                    Επιστροφή στην αρχική
+                                </Link>
+                            </>
+                        )}
                     </CardContent>
                 </Card>
             </div>
-        )
+        );
     }
 
     return (
@@ -98,16 +132,33 @@ export default function AdminPage() {
                         </div>
                     </div>
 
+                    {/* User Info */}
+                    <div className="mb-6 p-3 bg-slate-800 rounded-lg">
+                        <div className="flex items-center gap-2">
+                            {user.photoURL ? (
+                                <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full" />
+                            ) : (
+                                <UserCircle className="w-8 h-8 text-slate-400" />
+                            )}
+                            <div className="min-w-0">
+                                <p className="text-sm text-white truncate">{user.displayName || 'Admin'}</p>
+                                <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <nav className="space-y-2">
                         {[
-                            { label: "Dashboard", icon: <TrendingUp className="w-5 h-5" />, active: true },
-                            { label: "Αιτήματα", icon: <MessageCircle className="w-5 h-5" /> },
-                            { label: "Πελάτες", icon: <Users className="w-5 h-5" /> },
-                            { label: "Προϊόντα", icon: <Package className="w-5 h-5" /> },
-                            { label: "Ρυθμίσεις", icon: <Settings className="w-5 h-5" /> },
+                            { label: "Dashboard", icon: <TrendingUp className="w-5 h-5" />, active: true, href: "/admin" },
+                            { label: "Chat Logs", icon: <Bot className="w-5 h-5" />, href: "/admin/chats" },
+                            { label: "Αιτήματα", icon: <MessageCircle className="w-5 h-5" />, href: "#" },
+                            { label: "Πελάτες", icon: <Users className="w-5 h-5" />, href: "#" },
+                            { label: "Προϊόντα", icon: <Package className="w-5 h-5" />, href: "#" },
+                            { label: "Ρυθμίσεις", icon: <Settings className="w-5 h-5" />, href: "#" },
                         ].map((item, i) => (
-                            <button
+                            <Link
                                 key={i}
+                                href={item.href}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${item.active
                                     ? "bg-[#0066cc] text-white"
                                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
@@ -115,14 +166,14 @@ export default function AdminPage() {
                             >
                                 {item.icon}
                                 {item.label}
-                            </button>
+                            </Link>
                         ))}
                     </nav>
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                     <button
-                        onClick={() => setIsAuthenticated(false)}
+                        onClick={handleSignOut}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
                     >
                         <LogOut className="w-5 h-5" />
@@ -204,5 +255,5 @@ export default function AdminPage() {
                 </Card>
             </main>
         </div>
-    )
+    );
 }

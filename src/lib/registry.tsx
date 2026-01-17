@@ -28,10 +28,8 @@ export default function StyledComponentsRegistry({
         return <>{styles}</>;
     });
 
-    // If on client side, just render children
-    if (typeof window !== "undefined") return <>{children}</>;
-
-    // On server side, wrap with StyleSheetManager
+    // Always wrap with StyleSheetManager to ensure consistent rendering
+    // between server and client (prevents hydration mismatch)
     return (
         <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
             {children}

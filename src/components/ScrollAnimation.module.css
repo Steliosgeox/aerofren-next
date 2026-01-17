@@ -1,0 +1,346 @@
+/* ScrollAnimation.module.css - Premium Scroll-Driven Grid Animation */
+
+/* CSS Variables - scoped to component */
+.contentWrap {
+    --gutter: 2rem;
+    --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    /* Use theme background solid color as base */
+    background-color: var(--theme-bg-solid, #0a0a0f);
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+/* Generated 'Nano Banana' Premium Background */
+.contentWrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/images/scroll-bg-nano.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.6;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Light Theme: Subtle silver texture */
+:global([data-theme="light"]) .contentWrap::before {
+    opacity: 0.15;
+    filter: grayscale(1);
+    mix-blend-mode: multiply;
+}
+
+/* Dim Theme: Deep glassy look */
+:global([data-theme="dim"]) .contentWrap::before {
+    opacity: 0.4;
+    mix-blend-mode: soft-light;
+}
+
+@media (max-width: 600px) {
+    .contentWrap {
+        --gutter: 1rem;
+    }
+}
+
+/* Header Section - Full viewport intro */
+.header {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: clamp(24px, 5vw, 64px);
+    padding-right: var(--gutter);
+    max-width: calc(100% - (2 * var(--gutter)));
+}
+
+.title {
+    font-size: clamp(3.5rem, 10vw, 10rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--theme-text, #ffffff);
+    /* Theme aware color */
+    margin: 0;
+    text-transform: uppercase;
+    /* Optional: subtle gradient text for title */
+    background: linear-gradient(180deg, var(--theme-text, #fff) 0%, var(--theme-text-muted, #999) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    z-index: 1;
+}
+
+.subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--theme-text-muted, #94a3b8);
+    /* Theme aware color */
+    margin-top: 2rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+/* Main Section - Scroll container */
+.scrollSection {
+    min-height: 200vh;
+    /* Reduced from 300vh to minimize post-animation gap */
+    position: relative;
+    z-index: 1;
+}
+
+/* Content - container for the grid (GSAP handles pinning) */
+.content {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--gutter);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+}
+
+/* Grid Layout - 5 columns x 3 rows */
+.grid {
+    --offset: 0;
+    --container-width: 1400px;
+    --gap: clamp(8px, 2vw, 24px);
+
+    width: 100%;
+    max-width: var(--container-width);
+    height: 75vh;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: var(--gap);
+    position: relative;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+        --offset: -1;
+    }
+}
+
+@media (max-width: 600px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+        --offset: -1;
+        --gap: 8px;
+    }
+}
+
+/* Layers using subgrid - VISIBLE BY DEFAULT for fallback */
+.layer {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    /* Start visible - animation will control visibility */
+    opacity: 1;
+    transform: scale(1);
+    will-change: opacity, transform;
+}
+
+/* When animations initialize, layers will be controlled by JS */
+.layer[data-animated="true"] {
+    opacity: 0;
+    transform: scale(0);
+}
+
+/* Layer 1: Outer edges - odd on left column, even on right column */
+.layer:nth-of-type(1)>div:nth-of-type(odd) {
+    grid-column: 1;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(even) {
+    grid-column: -2;
+}
+
+/* Layer 1: Specific row assignments */
+.layer:nth-of-type(1)>div:nth-of-type(1) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(2) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(3) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(4) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(5) {
+    grid-row: 3;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(6) {
+    grid-row: 3;
+}
+
+/* Hide outer layer on mobile */
+@media (max-width: 600px) {
+    .layer:nth-of-type(1) {
+        display: none;
+    }
+}
+
+/* Layer 2: Inner columns */
+.layer:nth-of-type(2)>div:nth-of-type(odd) {
+    grid-column: calc(2 + var(--offset));
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(even) {
+    grid-column: calc(-3 - var(--offset));
+}
+
+/* Layer 2: Specific row assignments */
+.layer:nth-of-type(2)>div:nth-of-type(1) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(2) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(3) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(4) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(5) {
+    grid-row: 3;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(6) {
+    grid-row: 3;
+}
+
+/* Layer 3: Center column top and bottom */
+.layer:nth-of-type(3)>div:first-of-type {
+    grid-column: calc(3 + var(--offset));
+    grid-row: 1;
+}
+
+.layer:nth-of-type(3)>div:last-of-type {
+    grid-column: calc(3 + var(--offset));
+    grid-row: 3;
+}
+
+/* Image styling */
+.grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: clamp(8px, 2vw, 16px);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(59, 130, 246, 0.05);
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.grid img:hover {
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(139, 92, 246, 0.15);
+    transform: scale(1.02);
+}
+
+/* Scaler - Center hero image */
+.scaler {
+    grid-column: calc(3 + var(--offset));
+    grid-row: 2;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scalerImage {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: clamp(8px, 2vw, 16px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 80px rgba(59, 130, 246, 0.1);
+    /* For animation - starts full viewport, shrinks to natural */
+    transform-origin: center center;
+}
+
+/* Final Sections - Text overlays after animation */
+.finSection {
+    padding: clamp(40px, 8vw, 80px) var(--gutter, 2rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.finTitle {
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--theme-text, #ffffff);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+}
+
+.finText {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--theme-text-muted, #94a3b8);
+    max-width: 600px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Legacy .fin class for backwards compatibility */
+.fin {
+    font-size: clamp(2.5rem, 8vw, 8rem);
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg,
+            #ffffff 0%,
+            #a5b4fc 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+    .layer {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+    }
+
+    .scalerImage {
+        width: 100% !important;
+        height: 100% !important;
+    }
+}

@@ -176,13 +176,6 @@ export function LiquidGlassSwitcher() {
           transition: scale 200ms cubic-bezier(0.5, 0, 0, 1);
         }
 
-        .switcher__filter {
-          position: absolute;
-          width: 0;
-          height: 0;
-          z-index: -1;
-        }
-
         .switcher__option {
           --c: var(--c-content);
           display: flex;
@@ -442,57 +435,7 @@ export function LiquidGlassSwitcher() {
           </svg>
         </label>
 
-        <div className="switcher__filter">
-          <svg>
-            <filter id="switcher" primitiveUnits="objectBoundingBox">
-              <feImage
-                result="map"
-                width="100%"
-                height="100%"
-                x="0"
-                y="0"
-                href="[BASE64_PLACEHOLDER_SWITCHER]"
-              />
-              <feGaussianBlur
-                in="SourceGraphic"
-                stdDeviation="0.04"
-                result="blur"
-              />
-              <feDisplacementMap
-                id="disp"
-                in="blur"
-                in2="map"
-                scale="0.5"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-            </filter>
-
-            <filter id="toggler" primitiveUnits="objectBoundingBox">
-              <feImage
-                result="map"
-                width="100%"
-                height="100%"
-                x="0"
-                y="0"
-                href="[BASE64_PLACEHOLDER_TOGGLER]"
-              />
-              <feGaussianBlur
-                in="SourceGraphic"
-                stdDeviation="0.01"
-                result="blur"
-              />
-              <feDisplacementMap
-                id="disp"
-                in="blur"
-                in2="map"
-                scale="0.5"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-            </filter>
-          </svg>
-        </div>
+{/* SVG filters removed - placeholders were causing 404 errors */}
       </fieldset>
     </>
   );

@@ -1,302 +1,493 @@
+/**
+ * AEROFREN AI Chatbot Component
+ * TWO-STATE LAYOUT:
+ * 1. Welcome = Compact floating widget
+ * 2. Conversation = EXPANDED with large textarea (matching original design)
+ */
+
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { categories } from "@/data/categories";
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import {
+  ArrowRight,
+  Headset,
+  Globe,
   MessageCircle,
   X,
-  Send,
+  Package,
   Phone,
   Mail,
-  Package,
-  ChevronRight,
-  Bot,
-  User,
-} from "lucide-react";
+  Sparkles,
+  User
+} from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { v4 as uuidv4 } from 'uuid';
+import { gsap } from '@/lib/gsap/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { saveChatMessage } from '@/lib/firebase';
+import './Chatbot.scss';
 
+// Types
 interface Message {
   id: string;
-  text: string;
-  sender: "bot" | "user";
-  timestamp: Date;
-  actions?: { label: string; action: string }[];
+  type: 'user' | 'ai';
+  content: string;
 }
 
-// Quick action buttons
-const quickActions = [
-  { label: "Προϊόντα", action: "products", icon: <Package className="w-3 h-3" /> },
-  { label: "Τιμή", action: "quote", icon: <Send className="w-3 h-3" /> },
-  { label: "Κλήση", action: "call", icon: <Phone className="w-3 h-3" /> },
-  { label: "Email", action: "email", icon: <Mail className="w-3 h-3" /> },
-];
+interface ChatResponse {
+  response: string;
+  sessionId: string;
+  error?: string;
+}
 
-// Category keywords for product matching
-const categoryKeywords: Record<string, string[]> = {
-  "push-in-fittings": ["ρακόρ", "ρακορ", "fitting", "σύνδεσμος", "συνδεσμος", "quick", "ταχυσύνδεση"],
-  "thread-fittings": ["σπείρωμα", "σπειρωμα", "thread", "προσαρμογέας", "προσαρμογεας"],
-  "couplings": ["ταχυσύνδεσμος", "ταχυσυνδεσμος", "ζεύκτης", "ζευκτης", "coupling"],
-  "hoses-pipes": ["σωλήνας", "σωληνας", "σπιράλ", "σπιραλ", "hose", "pipe", "σωλήνες"],
-  "ball-valves": ["βαλβίδα", "βαλβιδα", "valve", "σφαιρική", "σφαιρικη", "αντεπίστροφη"],
-  "pressure-regulators": ["μανόμετρο", "μανομετρο", "πίεση", "πιεση", "ρυθμιστής", "ρυθμιστης", "pressure"],
-  "pneumatic-valves": ["πνευματική", "πνευματικη", "ηλεκτροβαλβίδα", "ηλεκτροβαλβιδα", "solenoid"],
-  "cylinders-sensors": ["κύλινδρος", "κυλινδρος", "αισθητήρας", "αισθητηρας", "cylinder", "sensor"],
-  "air-tools": ["αεροεργαλείο", "αεροεργαλειο", "φύσημα", "φυσημα", "blow gun", "air tool"],
-  "water-filtration": ["φίλτρο", "φιλτρο", "νερό", "νερο", "water", "RO", "αντίστροφη"],
+// Storage key
+const STORAGE_KEY = 'aerofren_chat_session';
+
+// Custom Markdown components
+const AIChatText = {
+  p: ({ children }: { children?: React.ReactNode }) => (
+    <p className="chatbot__message-text">{children}</p>
+  ),
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <ul className="chatbot__message-text">{children}</ul>
+  ),
 };
 
-// Response templates
-const responses: Record<string, string> = {
-  greeting: "Γεια σας! Είμαι ο βοηθός της AEROFREN. Πώς μπορώ να σας βοηθήσω;",
-  products: "Διαθέτουμε μεγάλη ποικιλία εξαρτημάτων για συστήματα νερού και αέρα. Τι ψάχνετε;",
-  prices: "Για τιμές επικοινωνήστε στο 210 3461645 ή info@aerofren.gr. Είμαστε B2B με ειδικές τιμές για επαγγελματίες.",
-  order: "Δεν διαθέτουμε e-shop. Για παραγγελίες επικοινωνήστε μαζί μας τηλεφωνικά ή μέσω φόρμας.",
-  address: "📍 Χρυσοστόμου Σμύρνης 26, Μοσχάτο 18344, Αθήνα",
-  hours: "⏰ Δευτέρα-Παρασκευή: 08:00-16:00\n🔴 Σάββατο-Κυριακή: Κλειστά",
-  contact: "📞 210 3461645\n📧 info@aerofren.gr\n📍 Μοσχάτο, Αθήνα",
-  shipping: "Αποστολές σε όλη την Ελλάδα! Παραγγελίες έως 14:00 αποστέλλονται την ίδια μέρα.",
-  unknown: "Δεν κατάλαβα. Ρωτήστε για προϊόντα, τιμές, ωράριο ή καλέστε 210 3461645!",
-};
-
+/**
+ * AEROFREN Chatbot - Two-state layout matching original design
+ */
 export function Chatbot() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      text: responses.greeting,
-      sender: "bot",
-      timestamp: new Date(),
-      actions: [
-        { label: "Προϊόντα", action: "products" },
-        { label: "Επικοινωνία", action: "contact" },
-      ],
-    },
-  ]);
-  const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollerRef = useRef<HTMLDivElement>(null);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Auth context for user info
+  const { user } = useAuth();
+
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [sessionId, setSessionId] = useState<string>('');
+  const [scrollbarWidth, setScrollbarWidth] = useState<number>(0);
+
+  // Dynamic padding for scrollbar
+  const messagesStyle: React.CSSProperties = {
+    paddingInlineEnd: `calc(1.5em - ${scrollbarWidth}px)`,
   };
 
+  // Placeholder and suggestions
+  const placeholder = 'Ρωτήστε οτιδήποτε...';
+  const welcomeSuggestions: string[] = [
+    'Τι προϊόντα έχετε;',
+    'Πληροφορίες επικοινωνίας',
+    'Κάνετε αποστολές;',
+  ];
+  const conversationSuggestions: string[] = [
+    'Ρακόρ πνευματικά',
+    'Φίλτρα νερού',
+    'Τιμές',
+  ];
+
+  // Initialize session
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const findMatchingCategory = (text: string): string | null => {
-    const lowerText = text.toLowerCase();
-    for (const [categorySlug, keywords] of Object.entries(categoryKeywords)) {
-      if (keywords.some((keyword) => lowerText.includes(keyword))) {
-        return categorySlug;
-      }
+    let storedSession = localStorage.getItem(STORAGE_KEY);
+    if (!storedSession) {
+      storedSession = uuidv4();
+      localStorage.setItem(STORAGE_KEY, storedSession);
     }
-    return null;
-  };
+    setSessionId(storedSession);
+  }, []);
 
-  const generateResponse = (userMessage: string): { text: string; actions?: { label: string; action: string }[] } => {
-    const lowerMessage = userMessage.toLowerCase();
+  // Generate random ID
+  const randomID = useCallback(() => {
+    const random = crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
+    return Math.floor(random * 2 ** 32).toString(16).padStart(8, '0');
+  }, []);
 
-    // Greetings
-    if (lowerMessage.includes("γεια") || lowerMessage.includes("καλημέρα") || lowerMessage.includes("hello")) {
-      return { text: responses.greeting };
-    }
+  // Handle suggestion click
+  const handleSuggestionClick = useCallback((suggestion: string) => {
+    handleSubmit(suggestion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    // Products
-    if (lowerMessage.includes("προϊόν") || lowerMessage.includes("προιον") || lowerMessage.includes("κατάλογος")) {
-      const matchedCategory = findMatchingCategory(lowerMessage);
-      if (matchedCategory) {
-        const category = categories.find((c) => c.slug === matchedCategory);
-        if (category) {
-          return {
-            text: `"${category.nameEl}" - ${category.productCount.toLocaleString("el-GR")} προϊόντα`,
-            actions: [{ label: `Δες`, action: `category:${category.slug}` }],
-          };
-        }
-      }
-      return { text: responses.products, actions: [{ label: "Κατάλογος", action: "products" }] };
-    }
-
-    // Category match
-    const matchedCategory = findMatchingCategory(lowerMessage);
-    if (matchedCategory) {
-      const category = categories.find((c) => c.slug === matchedCategory);
-      if (category) {
-        return {
-          text: `"${category.nameEl}" - ${category.productCount.toLocaleString("el-GR")} προϊόντα`,
-          actions: [{ label: `Δες`, action: `category:${category.slug}` }],
-        };
-      }
-    }
-
-    // Prices
-    if (lowerMessage.includes("τιμ") || lowerMessage.includes("πόσο") || lowerMessage.includes("προσφορά")) {
-      return { text: responses.prices, actions: [{ label: "Προσφορά", action: "quote" }] };
-    }
-
-    // Order
-    if (lowerMessage.includes("παραγγελ") || lowerMessage.includes("αγορ")) {
-      return { text: responses.order, actions: [{ label: "Επικοινωνία", action: "contact" }] };
-    }
-
-    // Address
-    if (lowerMessage.includes("διεύθυνση") || lowerMessage.includes("πού είστε")) {
-      return { text: responses.address };
-    }
-
-    // Hours
-    if (lowerMessage.includes("ωράριο") || lowerMessage.includes("ώρες")) {
-      return { text: responses.hours };
-    }
-
-    // Contact
-    if (lowerMessage.includes("επικοινωνία") || lowerMessage.includes("τηλέφωνο")) {
-      return { text: responses.contact, actions: [{ label: "Κλήση", action: "call" }] };
-    }
-
-    // Shipping
-    if (lowerMessage.includes("αποστολ") || lowerMessage.includes("μεταφορ")) {
-      return { text: responses.shipping };
-    }
-
-    return { text: responses.unknown, actions: [{ label: "Κλήση", action: "call" }] };
-  };
-
-  const handleAction = (action: string) => {
-    if (action === "products") window.location.href = "/products";
-    else if (action === "quote" || action === "contact") window.location.href = "/contact";
-    else if (action === "call") window.location.href = "tel:2103461645";
-    else if (action === "email") window.location.href = "mailto:info@aerofren.gr";
-    else if (action.startsWith("category:")) {
-      window.location.href = `/products/${action.replace("category:", "")}`;
-    }
-  };
-
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  // Submit message
+  const handleSubmit = useCallback(async (text?: string) => {
+    const messageText = text || input;
+    if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputValue,
-      sender: "user",
-      timestamp: new Date(),
+      id: randomID(),
+      type: 'user',
+      content: messageText,
     };
-    setMessages((prev) => [...prev, userMessage]);
-    setInputValue("");
-    setIsTyping(true);
 
-    setTimeout(() => {
-      const response = generateResponse(inputValue);
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: response.text,
-        sender: "bot",
-        timestamp: new Date(),
-        actions: response.actions,
+    setIsLoading(true);
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+
+    // Save user message to Firestore
+    saveChatMessage(sessionId, 'user', messageText, user).catch(console.error);
+
+    try {
+      const history = messages.slice(-10).map((msg) => ({
+        role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+        content: msg.content,
+      }));
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: messageText, sessionId, history }),
+      });
+
+      const data: ChatResponse = await response.json();
+
+      const aiContent = data.response || 'Λυπάμαι, δεν μπόρεσα να απαντήσω. Παρακαλώ δοκιμάστε ξανά.';
+
+      const aiMessage: Message = {
+        id: randomID(),
+        type: 'ai',
+        content: aiContent,
       };
-      setMessages((prev) => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 600);
-  };
+
+      setMessages((prev) => [...prev, aiMessage]);
+
+      // Save AI response to Firestore
+      saveChatMessage(sessionId, 'assistant', aiContent, user).catch(console.error);
+    } catch (error) {
+      console.error('Chat error:', error);
+      const errorContent = 'Αντιμετώπισα ένα πρόβλημα. Παρακαλώ δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.';
+      const errorMessage: Message = {
+        id: randomID(),
+        type: 'ai',
+        content: errorContent,
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+
+      // Save error message to Firestore too
+      saveChatMessage(sessionId, 'assistant', errorContent, user).catch(console.error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, isLoading, messages, randomID, sessionId, user]);
+
+  // Handle Enter key
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
+  // Scroll to bottom when messages change (using GSAP for smoothness)
+  useEffect(() => {
+    if (chatScrollerRef.current) {
+      const scroller = chatScrollerRef.current;
+      // Small delay to ensure DOM has updated
+      setTimeout(() => {
+        if (scroller) {
+          gsap.to(scroller, {
+            scrollTop: scroller.scrollHeight,
+            duration: 0.8,
+            ease: 'power2.out',
+          });
+        }
+      }, 100);
+    }
+  }, [messages]);
+
+  // Calculate scrollbar width
+  useLayoutEffect(() => {
+    const calculateWidth = () => {
+      const scrollerWidth = chatScrollerRef.current?.offsetWidth || 0;
+      const messagesWidth = chatMessagesRef.current?.offsetWidth || 0;
+      const width = scrollerWidth - messagesWidth;
+      setScrollbarWidth(width);
+    };
+
+    const frameId = requestAnimationFrame(calculateWidth);
+    return () => cancelAnimationFrame(frameId);
+  }, [messages]);
+
+  // CRITICAL: Stop wheel events from propagating to GSAP ScrollSmoother
+  // This prevents normalizeScroll from hijacking chatbot scroll
+  // Uses GSAP for smooth, buttery scrolling
+  useEffect(() => {
+    const scroller = chatScrollerRef.current;
+    if (!scroller) return;
+
+    let targetScrollTop = scroller.scrollTop;
+    let scrollTween: gsap.core.Tween | null = null;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Always stop propagation to prevent GSAP from intercepting
+      e.stopPropagation();
+      e.preventDefault();
+
+      const { scrollHeight, clientHeight } = scroller;
+      const maxScroll = scrollHeight - clientHeight;
+
+      // Accumulate scroll delta for smooth feel
+      targetScrollTop += e.deltaY;
+      targetScrollTop = Math.max(0, Math.min(targetScrollTop, maxScroll));
+
+      // Kill any existing tween and create new one
+      if (scrollTween) scrollTween.kill();
+
+      scrollTween = gsap.to(scroller, {
+        scrollTop: targetScrollTop,
+        duration: 0.6,
+        ease: 'power2.out',
+        overwrite: true,
+      });
+    };
+
+    // Sync target when scroll position changes externally
+    const handleScroll = () => {
+      if (!scrollTween || !scrollTween.isActive()) {
+        targetScrollTop = scroller.scrollTop;
+      }
+    };
+
+    // Use capture phase to intercept BEFORE GSAP's handlers
+    scroller.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+    scroller.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      if (scrollTween) scrollTween.kill();
+      scroller.removeEventListener('wheel', handleWheel, { capture: true });
+      scroller.removeEventListener('scroll', handleScroll);
+    };
+  }, [isOpen, messages.length]);
+
+  // Determine if in conversation mode
+  const isConversationMode = messages.length > 0;
 
   return (
     <>
-      {/* Chat Button */}
+      {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 ${isOpen ? "bg-slate-800" : "bg-[#0066cc] hover:scale-110"
-          }`}
+        className={`chatbot-toggle ${isOpen ? 'chatbot-toggle--open' : ''}`}
+        aria-label={isOpen ? 'Κλείσιμο chat' : 'Άνοιγμα chat'}
       >
-        {isOpen ? <X className="w-6 h-6 text-white" /> : <MessageCircle className="w-6 h-6 text-white" />}
+        {isOpen ? <X /> : <MessageCircle />}
       </button>
 
-      {/* Chat Window */}
+      {/* Chat Widget */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[500px]">
+        <main className={`chatbot ${isConversationMode ? 'chatbot--conversation' : 'chatbot--welcome'}`}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#0066cc] to-blue-600 p-3 text-white flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <Bot className="w-5 h-5" />
+          <div className="chatbot__header">
+            <div className="chatbot__header-info">
+              <div className="chatbot__header-icon">
+                <Sparkles className="chatbot__header-icon-svg" />
+              </div>
+              <div className="chatbot__header-text">
+                <h3 className="chatbot__header-title">Βοηθός AEROFREN</h3>
+                <span className="chatbot__header-status">Online • AI Powered</span>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-sm">Βοηθός AEROFREN</h3>
-              <p className="text-[10px] text-white/80">Online</p>
-            </div>
+            <button
+              className="chatbot__header-close"
+              onClick={() => setIsOpen(false)}
+              aria-label="Κλείσιμο"
+            >
+              <X />
+            </button>
           </div>
 
           {/* Quick Actions */}
-          <div className="p-2 bg-slate-50 border-b flex gap-1 overflow-x-auto">
-            {quickActions.map((action) => (
-              <button
-                key={action.action}
-                onClick={() => handleAction(action.action)}
-                className="flex items-center gap-1 px-2 py-1 bg-white rounded-full border text-[10px] font-medium text-slate-700 hover:border-[#0066cc] whitespace-nowrap"
-              >
-                {action.icon}
-                {action.label}
-              </button>
-            ))}
+          <div className="chatbot__quick-actions">
+            <button className="chatbot__quick-action" onClick={() => window.open('/products', '_blank')}>
+              <Package className="chatbot__quick-action-icon" />
+              <span>Προϊόντα</span>
+            </button>
+            <button className="chatbot__quick-action" onClick={() => window.location.href = 'tel:+302103461645'}>
+              <Phone className="chatbot__quick-action-icon" />
+              <span>Κλήση</span>
+            </button>
+            <button className="chatbot__quick-action" onClick={() => window.location.href = 'mailto:info@aerofren.gr'}>
+              <Mail className="chatbot__quick-action-icon" />
+              <span>Email</span>
+            </button>
+            <button className="chatbot__quick-action" onClick={() => window.location.href = 'tel:+302103461645'}>
+              <User className="chatbot__quick-action-icon" />
+              <span>Μιλήστε με εκπρόσωπο</span>
+            </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[250px] bg-slate-50">
-            {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] px-3 py-2 text-xs ${message.sender === "user"
-                      ? "bg-[#0066cc] text-white rounded-2xl rounded-br-sm"
-                      : "bg-white border rounded-2xl rounded-bl-sm"
-                    }`}
-                >
-                  <p className="whitespace-pre-line">{message.text}</p>
-                  {message.actions && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {message.actions.map((action, i) => (
-                        <button
-                          key={i}
-                          onClick={() => handleAction(action.action)}
-                          className="flex items-center gap-0.5 px-2 py-1 bg-[#0066cc]/10 text-[#0066cc] rounded-full text-[10px] font-semibold"
-                        >
-                          {action.label}
-                          <ChevronRight className="w-3 h-3" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
+          <div className="chatbot__container">
+            {/* ========== WELCOME STATE ========== */}
+            {!isConversationMode ? (
+              <div className="chatbot__welcome-content">
+                <div className="chatbot__icon-wrapper">
+                  <div className="chatbot__icon chatbot__icon--gradient">
+                    <Sparkles className="chatbot__icon-svg" strokeWidth={1.5} />
+                  </div>
+                </div>
+                <h1 className="chatbot__title">Πώς μπορώ να βοηθήσω;</h1>
+                <div className="chatbot__suggestions-box">
+                  {welcomeSuggestions.map((suggestion, i) => (
+                    <button
+                      key={`suggestion${i + 1}`}
+                      className="chatbot__suggestion"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                  <div className="chatbot__input-wrapper">
+                    <label className="chatbot__label" htmlFor="chat-input">
+                      Ερώτηση
+                    </label>
+                    <input
+                      id="chat-input"
+                      className="chatbot__input"
+                      type="text"
+                      placeholder={placeholder}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                    />
+                    <button
+                      className="chatbot__submit"
+                      onClick={() => handleSubmit()}
+                      disabled={!input.trim()}
+                      aria-label="Αποστολή"
+                    >
+                      <ArrowRight className="chatbot__submit-icon" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-white border rounded-2xl rounded-bl-sm px-3 py-2">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+            ) : (
+              /* ========== CONVERSATION STATE - EXPANDED ========== */
+              <div className="chatbot__conversation-content">
+                {/* Scrollable Message Area */}
+                <div className="chatbot__message-scroller" ref={chatScrollerRef}>
+                  <div
+                    className="chatbot__messages"
+                    ref={chatMessagesRef}
+                    style={messagesStyle}
+                  >
+                    {messages.map((message) => {
+                      const messageClass = `chatbot__message chatbot__message--${message.type}`;
+
+                      return (
+                        <div key={`message${message.id}`} className={messageClass}>
+                          {message.type === 'ai' && (
+                            <div className="chatbot__message-icon">
+                              <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
+                                <Headset className="chatbot__icon-svg" />
+                              </div>
+                            </div>
+                          )}
+                          <div className="chatbot__message-content">
+                            <ReactMarkdown components={AIChatText}>
+                              {message.content}
+                            </ReactMarkdown>
+                            {/* Purple bubbles for user messages */}
+                            {message.type === 'user' && (
+                              <>
+                                <div className="chatbot__message-bubble" />
+                                <div className="chatbot__message-bubble chatbot__message-bubble--end" />
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {isLoading && (
+                      <div className="chatbot__message chatbot__message--ai chatbot__message--ai-loading">
+                        <div className="chatbot__message-icon">
+                          <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
+                            <Headset className="chatbot__icon-svg" />
+                          </div>
+                        </div>
+                        <Loader />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Input Box with LARGE TEXTAREA - matching original */}
+                <div className="chatbot__input-box">
+                  <div className="chatbot__suggestion-tags">
+                    {conversationSuggestions.map((suggestion, i) => (
+                      <button
+                        key={`suggestion-tag${i + 1}`}
+                        className="chatbot__suggestion-tag"
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="chatbot__textarea-wrapper">
+                    <label className="chatbot__label" htmlFor="chat-textarea">
+                      Μήνυμα
+                    </label>
+                    <textarea
+                      id="chat-textarea"
+                      className="chatbot__textarea"
+                      placeholder={placeholder}
+                      value={input}
+                      disabled={isLoading}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      rows={1}
+                    />
+                    <button className="chatbot__globe-button" aria-label="Globe">
+                      <Globe className="chatbot__globe-icon" />
+                    </button>
+                    <button
+                      className="chatbot__submit chatbot__submit--textarea"
+                      onClick={() => handleSubmit()}
+                      disabled={!input.trim() || isLoading}
+                      aria-label="Αποστολή"
+                    >
+                      <ArrowRight className="chatbot__submit-icon" />
+                    </button>
                   </div>
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
-
-          {/* Input */}
-          <div className="p-3 border-t bg-white">
-            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Μήνυμα..."
-                className="flex-1 h-9 text-sm"
-              />
-              <Button type="submit" size="icon" className="h-9 w-9" disabled={!inputValue.trim()}>
-                <Send className="w-4 h-4" />
-              </Button>
-            </form>
-          </div>
-        </div>
+        </main>
       )}
     </>
   );
 }
+
+/**
+ * Loading Spinner
+ */
+function Loader() {
+  return (
+    <svg
+      className="chatbot__loader"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path className="chatbot__loader-line" d="m4.9 4.9 2.9 2.9" />
+      <path className="chatbot__loader-line" d="M2 12h4" />
+      <path className="chatbot__loader-line" d="m4.9 19.1 2.9-2.9" />
+      <path className="chatbot__loader-line" d="M12 18v4" />
+      <path className="chatbot__loader-line" d="m16.2 16.2 2.9 2.9" />
+      <path className="chatbot__loader-line" d="M18 12h4" />
+      <path className="chatbot__loader-line" d="m16.2 7.8 2.9-2.9" />
+      <path className="chatbot__loader-line" d="M12 2v4" />
+    </svg>
+  );
+}
+
+export default Chatbot;

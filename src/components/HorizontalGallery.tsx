@@ -3,32 +3,112 @@
 import { useRef, useLayoutEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { gsap, ScrollTrigger, Draggable, InertiaPlugin, Observer } from "@/lib/gsap/client";
+import { gsap, ScrollTrigger, Draggable, Observer } from "@/lib/gsap/client";
 
 /**
- * HorizontalGallery Component
+ * HorizontalGallery Component - Premium Product Showcase
  * 
- * EXACT implementation from the user's example code.
- * Uses ScrollSmoother + ScrollTrigger for smooth horizontal scrolling.
- * Cards are 33vw with 2rem padding, images are 1:1 aspect ratio.
+ * COMPLETE OVERHAUL:
+ * - Proper card sizing: 22vw width (4+ cards visible on desktop)
+ * - 4:3 aspect ratio for optimal product display
+ * - Dark glassmorphism matching site theme
+ * - Enhanced GSAP animations with premium hover effects
+ * - Responsive: Desktop scroll, mobile grid
  */
 
-// Gallery items - using /gallery/*.svg images
-const galleryImages = [
-  { src: "/gallery/1.svg", alt: "Category 1", label: "Κατηγορία 1", labelEn: "Category 1" },
-  { src: "/gallery/2.svg", alt: "Category 2", label: "Κατηγορία 2", labelEn: "Category 2" },
-  { src: "/gallery/3.svg", alt: "Category 3", label: "Κατηγορία 3", labelEn: "Category 3" },
-  { src: "/gallery/4.svg", alt: "Category 4", label: "Κατηγορία 4", labelEn: "Category 4" },
-  { src: "/gallery/5.svg", alt: "Category 5", label: "Κατηγορία 5", labelEn: "Category 5" },
-  { src: "/gallery/6.svg", alt: "Category 6", label: "Κατηγορία 6", labelEn: "Category 6" },
-  { src: "/gallery/7.svg", alt: "Category 7", label: "Κατηγορία 7", labelEn: "Category 7" },
-  { src: "/gallery/8.svg", alt: "Category 8", label: "Κατηγορία 8", labelEn: "Category 8" },
+// Real AEROFREN product categories with actual images
+const galleryCategories = [
+  {
+    src: "/images/categories/pneumatic-valves.jpg",
+    alt: "Πνευματικές Βαλβίδες",
+    label: "Πνευματικές Βαλβίδες",
+    labelEn: "Pneumatic Valves",
+    href: "/products?category=pneumatic-valves"
+  },
+  {
+    src: "/images/categories/push-in-fittings.jpg",
+    alt: "Ρακόρ Ταχυσυνδέσεις",
+    label: "Ρακόρ Ταχυσυνδέσεις",
+    labelEn: "Push-In Fittings",
+    href: "/products?category=push-in-fittings"
+  },
+  {
+    src: "/images/categories/thread-fittings.jpg",
+    alt: "Σπειρωτά Εξαρτήματα",
+    label: "Σπειρωτά Εξαρτήματα",
+    labelEn: "Thread Fittings",
+    href: "/products?category=thread-fittings"
+  },
+  {
+    src: "/images/categories/cylinders-sensors.jpg",
+    alt: "Κύλινδροι & Αισθητήρες",
+    label: "Κύλινδροι & Αισθητήρες",
+    labelEn: "Cylinders & Sensors",
+    href: "/products?category=cylinders-sensors"
+  },
+  {
+    src: "/images/categories/hoses-pipes.jpg",
+    alt: "Σωλήνες & Σπιράλ",
+    label: "Σωλήνες & Σπιράλ",
+    labelEn: "Hoses & Pipes",
+    href: "/products?category=hoses-pipes"
+  },
+  {
+    src: "/images/categories/ball-valves.jpg",
+    alt: "Βάνες Σφαιρικές",
+    label: "Βάνες Σφαιρικές",
+    labelEn: "Ball Valves",
+    href: "/products?category=ball-valves"
+  },
+  {
+    src: "/images/categories/pressure-regulators.jpg",
+    alt: "Ρυθμιστές Πίεσης",
+    label: "Ρυθμιστές Πίεσης",
+    labelEn: "Pressure Regulators",
+    href: "/products?category=pressure-regulators"
+  },
+  {
+    src: "/images/categories/air-tools.jpg",
+    alt: "Αεροεργαλεία",
+    label: "Αεροεργαλεία",
+    labelEn: "Air Tools",
+    href: "/products?category=air-tools"
+  },
+  {
+    src: "/images/categories/couplings.jpg",
+    alt: "Ζεύκτες Αέρος",
+    label: "Ζεύκτες Αέρος",
+    labelEn: "Couplings",
+    href: "/products?category=couplings"
+  },
+  {
+    src: "/images/categories/water-filtration.jpg",
+    alt: "Φίλτρα & Λιπαντήρες",
+    label: "Φίλτρα & Λιπαντήρες",
+    labelEn: "Water Filtration",
+    href: "/products?category=water-filtration"
+  },
+  {
+    src: "/images/categories/industrial-supplies.jpg",
+    alt: "Βιομηχανικά Αναλώσιμα",
+    label: "Βιομηχανικά Αναλώσιμα",
+    labelEn: "Industrial Supplies",
+    href: "/products?category=industrial-supplies"
+  },
+  {
+    src: "/images/categories/installation-accessories.jpg",
+    alt: "Βοηθητικά Εξαρτήματα",
+    label: "Βοηθητικά Εξαρτήματα",
+    labelEn: "Accessories",
+    href: "/products?category=installation-accessories"
+  },
 ];
 
 export default function HorizontalGallery() {
   const sectionRef = useRef<HTMLElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement[]>([]);
 
   useLayoutEffect(() => {
     // SSR guard
@@ -37,14 +117,17 @@ export default function HorizontalGallery() {
     const section = sectionRef.current;
     const wrapper = wrapperRef.current;
     const strip = stripRef.current;
+    const cards = cardsRef.current.filter(Boolean);
 
     if (!section || !wrapper || !strip) return;
 
-    // Capture references for use in closure
-    const wrapperEl = wrapper;
     const stripEl = strip;
 
-    // Give browser time to render and calculate widths
+    // Check if mobile
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) return; // Skip horizontal scroll on mobile
+
+    // Give browser time to render
     const timer = setTimeout(() => {
       let pinWrapWidth = 0;
       let horizontalScrollLength = 0;
@@ -59,19 +142,48 @@ export default function HorizontalGallery() {
       refresh();
 
       // ============================================
-      // SCROLL-LINKED ANIMATION (Original behavior)
-      // Pin section and translate strip on scroll
+      // CARD ENTRANCE ANIMATION
+      // Staggered reveal with premium easing
+      // ============================================
+      const entranceTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        }
+      });
+
+      entranceTl.fromTo(cards,
+        {
+          y: 80,
+          opacity: 0,
+          scale: 0.92,
+          rotateX: 15,
+        },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          rotateX: 0,
+          duration: 0.8,
+          stagger: 0.08,
+          ease: "power3.out",
+        }
+      );
+
+      // ============================================
+      // HORIZONTAL SCROLL with SCRUB
+      // Smooth pinned scrolling
       // ============================================
       const scrollTrigger = ScrollTrigger.create({
         trigger: section,
         pin: section,
         pinSpacing: true,
         start: "top top",
-        end: () => `+=${pinWrapWidth}`,
+        end: () => `+=${horizontalScrollLength * 1.2}`, // Slightly longer for smooth feel
         invalidateOnRefresh: true,
-        scrub: true,
+        scrub: 1.5, // Smooth scrubbing
         onUpdate: (self) => {
-          // Sync strip position with scroll progress
           gsap.set(stripEl, {
             x: -horizontalScrollLength * self.progress,
           });
@@ -79,45 +191,59 @@ export default function HorizontalGallery() {
       });
 
       // ============================================
-      // DRAGGABLE + INERTIA (Desktop: Click & Drag)
-      // Physics-based momentum for satisfying deceleration
+      // IMAGE PARALLAX within cards
+      // Subtle depth as cards scroll past
       // ============================================
-      const isMobile = window.innerWidth < 768;
+      cards.forEach((card) => {
+        const img = card.querySelector('.product-card-image');
+        if (img) {
+          gsap.to(img, {
+            y: -30,
+            ease: "none",
+            scrollTrigger: {
+              trigger: card,
+              start: "left 120%",
+              end: "right -20%",
+              scrub: true,
+              containerAnimation: scrollTrigger.animation,
+            }
+          });
+        }
+      });
 
-      if (!isMobile) {
+      // ============================================
+      // DRAGGABLE (Desktop)
+      // ============================================
+      if (window.innerWidth >= 768) {
         draggableInstance = Draggable.create(stripEl, {
           type: "x",
           bounds: {
             minX: -horizontalScrollLength,
             maxX: 0,
           },
-          inertia: true, // Physics-based momentum on release
-          edgeResistance: 0.85, // Resistance at edges
-          throwResistance: 2000, // How quickly it slows down
+          inertia: true,
+          edgeResistance: 0.85,
+          throwResistance: 2000,
           cursor: "grab",
           activeCursor: "grabbing",
           onDrag: function () {
-            // Sync ScrollTrigger progress with drag position
             const progress = -this.x / horizontalScrollLength;
             scrollTrigger.scroll(scrollTrigger.start + (scrollTrigger.end - scrollTrigger.start) * progress);
           },
           onThrowUpdate: function () {
-            // Sync during inertia throw
             const progress = -this.x / horizontalScrollLength;
             scrollTrigger.scroll(scrollTrigger.start + (scrollTrigger.end - scrollTrigger.start) * progress);
           },
         });
 
-        // Add visual feedback class
         stripEl.style.cursor = "grab";
         stripEl.classList.add("draggable-strip");
       }
 
       // ============================================
-      // OBSERVER (Mobile: Natural Swipe Gestures)
-      // Smooth touch-driven horizontal scrolling
+      // TOUCH OBSERVER (Tablet ~768-1024px)
       // ============================================
-      if (isMobile) {
+      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
         let velocityX = 0;
         let targetX = 0;
         let currentX = 0;
@@ -127,7 +253,6 @@ export default function HorizontalGallery() {
           type: "touch,pointer",
           dragMinimum: 5,
           onChangeX: (self) => {
-            // Accumulate velocity for momentum
             velocityX = self.velocityX || 0;
             targetX = gsap.utils.clamp(
               -horizontalScrollLength,
@@ -139,13 +264,12 @@ export default function HorizontalGallery() {
             currentX = targetX;
             gsap.to(stripEl, {
               x: currentX,
-              duration: 0.4,
+              duration: 0.3,
               ease: "power2.out",
               overwrite: "auto",
             });
           },
           onDragEnd: () => {
-            // Apply momentum on release
             const momentumX = velocityX * 0.3;
             targetX = gsap.utils.clamp(
               -horizontalScrollLength,
@@ -156,11 +280,10 @@ export default function HorizontalGallery() {
 
             gsap.to(stripEl, {
               x: currentX,
-              duration: 1.2,
+              duration: 1,
               ease: "power3.out",
               overwrite: "auto",
               onUpdate: () => {
-                // Sync scroll position
                 const progress = -gsap.getProperty(stripEl, "x") / horizontalScrollLength;
                 scrollTrigger.scroll(scrollTrigger.start + (scrollTrigger.end - scrollTrigger.start) * progress);
               },
@@ -170,13 +293,11 @@ export default function HorizontalGallery() {
       }
 
       ScrollTrigger.addEventListener("refreshInit", refresh);
-
-      // Force a refresh after setup
       ScrollTrigger.refresh();
 
-      // Return cleanup that captures all instances
       return () => {
         scrollTrigger.kill();
+        entranceTl.kill();
         if (draggableInstance) {
           draggableInstance.forEach(d => d.kill());
         }
@@ -186,49 +307,127 @@ export default function HorizontalGallery() {
       };
     }, 100);
 
-    // Cleanup
     return () => {
       clearTimeout(timer);
-      ScrollTrigger.getAll().forEach(st => st.kill());
     };
   }, []);
 
+  // 3D Tilt hover effect handler
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>, index: number) => {
+    const card = cardsRef.current[index];
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const mouseX = e.clientX - centerX;
+    const mouseY = e.clientY - centerY;
+
+    const rotateX = (mouseY / rect.height) * -8; // Subtle tilt
+    const rotateY = (mouseX / rect.width) * 8;
+
+    gsap.to(card, {
+      rotateX: rotateX,
+      rotateY: rotateY,
+      transformPerspective: 800,
+      duration: 0.4,
+      ease: "power2.out",
+    });
+  };
+
+  const handleMouseLeave = (index: number) => {
+    const card = cardsRef.current[index];
+    if (!card) return;
+
+    gsap.to(card, {
+      rotateX: 0,
+      rotateY: 0,
+      duration: 0.6,
+      ease: "elastic.out(1, 0.5)",
+    });
+  };
+
   return (
     <>
-      {/* CSS - Exact match to user's example */}
+      {/* Premium Dark Theme Styles */}
       <style jsx global>{`
-        /* Base reset for horizontal gallery section */
+        /* ============================================
+           HORIZONTAL GALLERY - PREMIUM OVERHAUL
+           ============================================ */
+        
         #portfolio {
           position: relative;
           overflow: hidden;
-          text-align: center;
-          z-index: 10; /* Prevent other sections from overlapping */
+          z-index: 10;
+          background: transparent;
         }
 
-        .container-fluid {
+        .gallery-container {
           width: 100%;
-          padding-right: 0;
-          padding-left: 0;
-          margin-right: auto;
-          margin-left: auto;
+          padding: 0;
+          margin: 0 auto;
         }
 
-        /* Horizontal gallery structure - EXACT from user's example */
-        .horiz-gallery-strip,
+        /* GALLERY HEADER - Dark Theme */
+        .gallery-header {
+          padding: 80px 48px 40px;
+          text-align: left;
+          background: transparent;
+        }
+
+        .gallery-label {
+          display: inline-block;
+          padding: 8px 18px;
+          background: rgba(0, 102, 204, 0.15);
+          color: #5cb8ff;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          border-radius: 6px;
+          border: 1px solid rgba(92, 184, 255, 0.2);
+          margin-bottom: 16px;
+        }
+
+        .gallery-heading {
+          font-size: clamp(28px, 4vw, 42px);
+          font-weight: 800;
+          color: #fff;
+          letter-spacing: -0.03em;
+          margin: 0 0 10px;
+          text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-subheading {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.5);
+          margin: 0;
+        }
+
+        /* HORIZONTAL SCROLL STRUCTURE */
         .horiz-gallery-wrapper {
           display: flex;
           flex-wrap: nowrap;
           will-change: transform;
           position: relative;
           background: transparent;
-        }
-
-        .horiz-gallery-wrapper {
-          min-height: 100vh;
+          min-height: 50vh; /* Reduced from 100vh */
           align-items: center;
+          padding: 20px 0 60px;
         }
 
-        /* Draggable gallery - cursor feedback */
+        .horiz-gallery-strip {
+          display: flex;
+          flex-wrap: nowrap;
+          will-change: transform;
+          position: relative;
+          background: transparent;
+          gap: 1.25rem;
+          padding: 0 48px;
+          transform: translateX(0);
+          backface-visibility: hidden;
+        }
+
         .horiz-gallery-strip.draggable-strip {
           cursor: grab;
           user-select: none;
@@ -239,197 +438,327 @@ export default function HorizontalGallery() {
           cursor: grabbing;
         }
 
-        /* Smooth transform performance */
-        .horiz-gallery-strip {
-          transform: translateX(0);
-          backface-visibility: hidden;
+        /* ============================================
+           PRODUCT CARDS - PREMIUM DARK GLASS
+           Width: 22vw (4+ visible on desktop)
+           Aspect: 4:3 (shorter, more elegant)
+           ============================================ */
+        
+        .product-card-wrap {
+          width: 22vw;
+          min-width: 260px;
+          max-width: 340px;
+          flex-shrink: 0;
           perspective: 1000px;
         }
 
-        /* Cards - 33vw with 2rem padding, EXACT from user's example */
-        .project-wrap {
-          width: 33vw;
-          padding: 2rem;
-          box-sizing: content-box;
-          flex-shrink: 0;
-        }
-
-        .project-wrap img,
-        .project-wrap .project-image-container {
+        .product-card {
+          position: relative;
+          display: block;
           width: 100%;
-          aspect-ratio: 1/1;
-          object-fit: cover;
+          aspect-ratio: 4 / 3;
           border-radius: 16px;
+          overflow: hidden;
+          text-decoration: none;
+          transform-style: preserve-3d;
+          will-change: transform;
+          
+          /* Dark Glassmorphism */
           background: linear-gradient(
             145deg,
-            rgba(255,255,255,0.1) 0%,
-            rgba(255,255,255,0.03) 50%,
-            rgba(0,0,0,0.05) 100%
+            rgba(15, 25, 45, 0.85) 0%,
+            rgba(10, 18, 35, 0.95) 100%
           );
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.1);
-          transition: transform 0.4s ease, box-shadow 0.4s ease;
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 
+            0 8px 32px rgba(0, 30, 80, 0.25),
+            0 2px 8px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          
+          transition: 
+            box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+            border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .project-wrap:hover img,
-        .project-wrap:hover .project-image-container {
-          transform: scale(1.02);
-          box-shadow: 0 20px 60px rgba(0,102,204,0.3);
-        }
-
-        /* Label overlay */
-        .project-label {
+        .product-card::before {
+          content: '';
           position: absolute;
-          bottom: 3rem;
-          left: 2rem;
-          right: 2rem;
-          padding: 1.5rem;
-          background: rgba(0,0,0,0.6);
-          backdrop-filter: blur(10px);
-          border-radius: 12px;
-          border: 1px solid rgba(255,255,255,0.1);
+          inset: 0;
+          border-radius: 16px;
+          background: radial-gradient(
+            ellipse 80% 50% at 50% 0%,
+            rgba(92, 184, 255, 0.06) 0%,
+            transparent 60%
+          );
+          opacity: 0;
+          transition: opacity 0.4s ease;
+          pointer-events: none;
         }
 
-        .project-label-en {
+        .product-card:hover {
+          border-color: rgba(0, 102, 204, 0.4);
+          box-shadow: 
+            0 20px 48px rgba(0, 80, 160, 0.35),
+            0 8px 24px rgba(0, 102, 204, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .product-card:hover::before {
+          opacity: 1;
+        }
+
+        /* IMAGE CONTAINER */
+        .product-card-image-wrap {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          border-radius: 15px;
+        }
+
+        .product-card-image {
+          position: absolute;
+          inset: -10px; /* Slightly larger for parallax room */
+          width: calc(100% + 20px);
+          height: calc(100% + 20px);
+          object-fit: cover;
+          opacity: 0.85;
+          transition: transform 0.5s ease, opacity 0.4s ease;
+          will-change: transform;
+        }
+
+        .product-card:hover .product-card-image {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+
+        /* GRADIENT OVERLAY */
+        .product-card-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            0deg,
+            rgba(0, 10, 25, 0.95) 0%,
+            rgba(0, 10, 25, 0.6) 35%,
+            rgba(0, 10, 25, 0.2) 60%,
+            transparent 100%
+          );
+          pointer-events: none;
+        }
+
+        /* CONTENT */
+        .product-card-content {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 1.25rem;
+          z-index: 2;
+        }
+
+        .product-card-label-en {
           display: block;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 700;
-          letter-spacing: 0.15em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           color: #5cb8ff;
           margin-bottom: 4px;
+          opacity: 0.9;
         }
 
-        .project-label-el {
+        .product-card-label-el {
           display: block;
-          font-size: 20px;
+          font-size: 16px;
           font-weight: 600;
           color: #fff;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
-        /* Project card container */
-        .project-card {
-          position: relative;
-          width: 100%;
+        /* SHINE EFFECT - Animated shimmer on hover */
+        .product-card-shine {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            105deg,
+            transparent 20%,
+            rgba(255, 255, 255, 0.03) 35%,
+            rgba(92, 184, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 65%,
+            transparent 80%
+          );
+          pointer-events: none;
+          opacity: 0;
+          transform: translateX(-100%);
+          transition: opacity 0.3s ease;
         }
 
-        /* Gallery header */
-        .gallery-header {
-          padding: 120px 48px 60px;
-          text-align: left;
-          background: transparent;
+        .product-card:hover .product-card-shine {
+          opacity: 1;
+          animation: card-shimmer 1.5s ease-in-out;
         }
 
-        .gallery-label {
-          display: inline-block;
-          padding: 8px 16px;
-          background: rgba(0,102,204,0.15);
-          color: #5cb8ff;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.15em;
-          border-radius: 6px;
-          margin-bottom: 16px;
+        @keyframes card-shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
 
-        .gallery-heading {
-          font-size: clamp(32px, 5vw, 48px);
-          font-weight: 800;
-          color: #fff;
-          letter-spacing: -0.03em;
-          margin: 0 0 12px;
+        /* ============================================
+           CTA CARD (View All)
+           ============================================ */
+        
+        .product-card-wrap.cta-wrap .product-card {
+          background: linear-gradient(
+            145deg,
+            rgba(0, 102, 204, 0.2) 0%,
+            rgba(0, 60, 140, 0.3) 100%
+          );
+          border-color: rgba(0, 102, 204, 0.3);
         }
 
-        .gallery-subheading {
-          font-size: 15px;
-          color: rgba(255,255,255,0.5);
-          margin: 0;
+        .product-card-wrap.cta-wrap .product-card:hover {
+          background: linear-gradient(
+            145deg,
+            rgba(0, 102, 204, 0.3) 0%,
+            rgba(0, 60, 140, 0.4) 100%
+          );
+          border-color: rgba(92, 184, 255, 0.5);
         }
 
-        /* CTA Card */
-        .project-cta .cta-card {
-          width: 100%;
-          aspect-ratio: 1/1;
+        .cta-content {
+          position: absolute;
+          inset: 0;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(
-            145deg,
-            rgba(0,102,204,0.2) 0%,
-            rgba(0,102,204,0.05) 100%
-          );
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(0,102,204,0.3);
-          border-radius: 16px;
-          transition: all 0.4s ease;
-        }
-
-        .project-cta:hover .cta-card {
-          border-color: rgba(0,102,204,0.6);
-          background: linear-gradient(
-            145deg,
-            rgba(0,102,204,0.3) 0%,
-            rgba(0,102,204,0.1) 100%
-          );
-          transform: scale(1.02);
+          text-align: center;
+          padding: 1.5rem;
         }
 
         .cta-number {
-          font-size: 64px;
+          font-size: 48px;
           font-weight: 800;
           color: #5cb8ff;
           line-height: 1;
+          margin-bottom: 4px;
+          text-shadow: 0 4px 20px rgba(92, 184, 255, 0.4);
         }
 
         .cta-text {
-          font-size: 18px;
-          color: rgba(255,255,255,0.6);
-          margin-top: 8px;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.7);
+          margin-bottom: 16px;
         }
 
         .cta-action {
-          font-size: 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
           font-weight: 600;
           color: #5cb8ff;
-          margin-top: 24px;
-          padding: 12px 24px;
-          background: rgba(0,102,204,0.2);
+          padding: 10px 20px;
+          background: rgba(0, 102, 204, 0.2);
+          border: 1px solid rgba(92, 184, 255, 0.3);
           border-radius: 8px;
-          transition: background 0.3s ease;
+          transition: all 0.3s ease;
         }
 
-        .project-cta:hover .cta-action {
-          background: rgba(0,102,204,0.4);
+        .product-card:hover .cta-action {
+          background: rgba(0, 102, 204, 0.4);
+          border-color: rgba(92, 184, 255, 0.5);
+          transform: translateX(4px);
         }
 
-        /* Mobile fallback */
-        @media (max-width: 768px) {
-          .horiz-gallery-wrapper {
-            flex-direction: column;
-            align-items: stretch;
-          }
-          
-          .horiz-gallery-strip {
-            flex-wrap: wrap;
-            transform: none !important;
-          }
-
-          .project-wrap {
-            width: calc(50% - 1rem);
-            padding: 0.5rem;
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 1199px) {
+          .product-card-wrap {
+            width: 35vw;
+            min-width: 280px;
+            max-width: 400px;
           }
 
           .gallery-header {
-            padding: 60px 24px 40px;
+            padding: 60px 32px 32px;
+          }
+
+          .horiz-gallery-strip {
+            padding: 0 32px;
+          }
+        }
+
+        /* Mobile - Vertical Grid */
+        @media (max-width: 767px) {
+          #portfolio {
+            padding-bottom: 40px;
+          }
+
+          .gallery-header {
+            padding: 40px 20px 24px;
+            text-align: center;
+          }
+
+          .horiz-gallery-wrapper {
+            min-height: auto;
+            padding: 0 20px 20px;
+          }
+
+          .horiz-gallery-strip {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0;
+            transform: none !important;
+          }
+
+          .product-card-wrap {
+            width: 100%;
+            min-width: 0;
+            max-width: none;
+          }
+
+          .product-card {
+            aspect-ratio: 1 / 1; /* Square on mobile */
+          }
+
+          .product-card-label-el {
+            font-size: 14px;
+          }
+
+          .product-card-label-en {
+            font-size: 9px;
+          }
+
+          .product-card-content {
+            padding: 1rem;
+          }
+
+          .cta-number {
+            font-size: 36px;
+          }
+
+          .cta-text {
+            font-size: 12px;
+          }
+
+          .cta-action {
+            font-size: 12px;
+            padding: 8px 14px;
           }
         }
       `}</style>
 
-      {/* HTML structure - EXACT match to user's example */}
+      {/* HTML Structure */}
       <section id="portfolio" ref={sectionRef}>
-        <div className="container-fluid">
+        <div className="gallery-container">
           {/* Header */}
           <div className="gallery-header">
             <span className="gallery-label">ΚΑΤΗΓΟΡΙΕΣ ΠΡΟΪΟΝΤΩΝ</span>
@@ -437,37 +766,69 @@ export default function HorizontalGallery() {
             <p className="gallery-subheading">Σύρετε για να εξερευνήσετε τις κατηγορίες</p>
           </div>
 
-          {/* Horizontal Gallery - wrapper gets pinned, strip moves horizontally */}
+          {/* Horizontal Gallery */}
           <div ref={wrapperRef} className="horiz-gallery-wrapper">
             <div ref={stripRef} className="horiz-gallery-strip">
-              {galleryImages.map((item, i) => (
-                <div key={i} className="project-wrap">
-                  <Link href="/products" className="project-card">
-                    <div className="project-image-container">
+              {galleryCategories.map((item, i) => (
+                <div
+                  key={i}
+                  className="product-card-wrap"
+                  ref={(el) => { if (el) cardsRef.current[i] = el; }}
+                >
+                  <Link
+                    href={item.href}
+                    className="product-card"
+                    onMouseMove={(e) => handleMouseMove(e, i)}
+                    onMouseLeave={() => handleMouseLeave(i)}
+                  >
+                    {/* Image */}
+                    <div className="product-card-image-wrap">
                       <Image
                         src={item.src}
                         alt={item.alt}
-                        width={400}
-                        height={400}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        fill
+                        className="product-card-image"
+                        sizes="(max-width: 767px) 50vw, (max-width: 1199px) 35vw, 22vw"
                       />
                     </div>
-                    <div className="project-label">
-                      <span className="project-label-en">{item.labelEn}</span>
-                      <span className="project-label-el">{item.label}</span>
+
+                    {/* Gradient overlay */}
+                    <div className="product-card-overlay" />
+
+                    {/* Shine effect */}
+                    <div className="product-card-shine" />
+
+                    {/* Content */}
+                    <div className="product-card-content">
+                      <span className="product-card-label-en">{item.labelEn}</span>
+                      <span className="product-card-label-el">{item.label}</span>
                     </div>
                   </Link>
                 </div>
               ))}
 
-              {/* CTA Card at the end */}
-              <div className="project-wrap project-cta">
-                <Link href="/products" className="project-card">
-                  <div className="cta-card">
+              {/* CTA Card */}
+              <div
+                className="product-card-wrap cta-wrap"
+                ref={(el) => { if (el) cardsRef.current[galleryCategories.length] = el; }}
+              >
+                <Link
+                  href="/products"
+                  className="product-card"
+                  onMouseMove={(e) => handleMouseMove(e, galleryCategories.length)}
+                  onMouseLeave={() => handleMouseLeave(galleryCategories.length)}
+                >
+                  <div className="cta-content">
                     <span className="cta-number">12</span>
                     <span className="cta-text">Κατηγορίες</span>
-                    <span className="cta-action">Δες Όλες →</span>
+                    <span className="cta-action">
+                      Δες Όλες
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </span>
                   </div>
+                  <div className="product-card-shine" />
                 </Link>
               </div>
             </div>

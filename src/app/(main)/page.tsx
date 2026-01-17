@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { gsap, useGSAP, EASE, SplitText, SCRAMBLE_CHARS, ScrollTrigger } from "@/lib/gsap";
 import HorizontalGallery from "@/components/HorizontalGallery";
+import ScrollAnimation from "@/components/ScrollAnimation";
 import { Button } from "@/components/ui/button";
 import LiquidButton from "@/components/LiquidButton";
+import { Target, Wrench, Building2 } from "lucide-react";
 
 /**
  * AEROFREN Homepage - Premium Cinematic Scroll
@@ -247,9 +249,9 @@ export default function HomePage() {
   ];
 
   const whyFeatures = [
-    { icon: "🎯", title: "Άμεση Διαθεσιμότητα", desc: "Τεράστια απόθεμα στο Μοσχάτο" },
-    { icon: "🔧", title: "Τεχνική Υποστήριξη", desc: "Σας καθοδηγούμε στην σωστή επιλογή" },
-    { icon: "🏢", title: "Τιμές B2B", desc: "Ειδικές τιμοκαταλόγους για επαγγελματίες" },
+    { icon: Target, title: "Άμεση Διαθεσιμότητα", desc: "Τεράστια απόθεμα στο Μοσχάτο" },
+    { icon: Wrench, title: "Τεχνική Υποστήριξη", desc: "Σας καθοδηγούμε στην σωστή επιλογή" },
+    { icon: Building2, title: "Τιμές B2B", desc: "Ειδικές τιμοκαταλόγους για επαγγελματίες" },
   ];
 
   return (
@@ -325,6 +327,11 @@ export default function HomePage() {
       < HorizontalGallery />
 
       {/* ============================================
+          SCROLL ANIMATION - Premium grid reveal
+          ============================================ */}
+      <ScrollAnimation />
+
+      {/* ============================================
           WHY SECTION - Pinned feature reveal
           ============================================ */}
       < section ref={whyRef} className="why" >
@@ -344,15 +351,20 @@ export default function HomePage() {
               Γιατί AEROFREN
             </h2>
             <div className="why__features">
-              {whyFeatures.map((f, i) => (
-                <div key={i} data-why-feature className="why__feature">
-                  <span className="why__feature-icon">{f.icon}</span>
-                  <div>
-                    <h4 className="why__feature-title">{f.title}</h4>
-                    <p className="why__feature-desc">{f.desc}</p>
+              {whyFeatures.map((f, i) => {
+                const IconComponent = f.icon;
+                return (
+                  <div key={i} data-why-feature className="why__feature">
+                    <div className="why__feature-icon">
+                      <IconComponent className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="why__feature-title">{f.title}</h4>
+                      <p className="why__feature-desc">{f.desc}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -460,15 +472,37 @@ export default function HomePage() {
           text-transform: uppercase;
           text-shadow: 0 0 20px rgba(92, 184, 255, 0.5);
           perspective: 500px;
+          position: relative;
+          padding-bottom: 12px;
+        }
+
+        .hero__eyebrow::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60px;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #5cb8ff, transparent);
+          animation: eyebrow-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes eyebrow-glow {
+          0%, 100% { opacity: 0.5; width: 60px; }
+          50% { opacity: 1; width: 80px; }
         }
 
         .hero__headline {
           font-size: clamp(2.5rem, 6vw, 4.5rem);
           font-weight: 800;
-          color: white;
+          background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 50%, #5cb8ff 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           line-height: 1.1;
           letter-spacing: -0.02em;
-          text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+          filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.3));
         }
 
         .hero__subtext {
@@ -636,7 +670,10 @@ export default function HomePage() {
         .stats__heading {
           font-size: 32px;
           font-weight: 700;
-          color: white;
+          background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 50%, #94a3b8 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           margin-bottom: 48px;
           letter-spacing: -0.02em;
         }
@@ -650,26 +687,63 @@ export default function HomePage() {
         .stats__item {
           text-align: center;
           padding: 32px;
-          background: rgba(255,255,255,0.03);
-          backdrop-filter: blur(10px);
-          border-radius: 14px;
+          background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+          backdrop-filter: blur(12px);
+          border-radius: 16px;
           border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+          box-shadow:
+            0 4px 16px rgba(0,0,0,0.15),
+            inset 0 1px 0 rgba(255,255,255,0.05);
           will-change: transform, opacity;
+          position: relative;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stats__item::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100px;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, rgba(0, 102, 204, 0.5), transparent);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .stats__item:hover {
+          border-color: rgba(0, 102, 204, 0.3);
+          box-shadow:
+            0 8px 32px rgba(0, 102, 204, 0.15),
+            0 4px 16px rgba(0,0,0,0.2),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+          transform: translateY(-4px);
+        }
+
+        .stats__item:hover::before {
+          opacity: 1;
         }
 
         .stats__value {
           display: block;
-          font-size: 40px;
+          font-size: 44px;
           font-weight: 800;
-          color: #0066cc;
+          background: linear-gradient(135deg, #5cb8ff 0%, #0066cc 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           letter-spacing: -0.02em;
           margin-bottom: 8px;
+          filter: drop-shadow(0 2px 8px rgba(0, 102, 204, 0.3));
         }
 
         .stats__label {
           font-size: 14px;
-          color: #94a3b8;
+          color: rgba(255,255,255,0.7);
+          font-weight: 500;
+          letter-spacing: 0.01em;
         }
 
         .btn-outline {
@@ -718,7 +792,10 @@ export default function HomePage() {
         .why__heading {
           font-size: 32px;
           font-weight: 700;
-          color: white;
+          background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 50%, #5cb8ff 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           margin-bottom: 40px;
           letter-spacing: -0.02em;
         }
@@ -733,17 +810,52 @@ export default function HomePage() {
           display: flex;
           gap: 20px;
           padding: 24px;
-          background: rgba(255,255,255,0.03);
-          backdrop-filter: blur(10px);
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+          background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+          backdrop-filter: blur(12px);
+          border-radius: 16px;
+          border: 1px solid rgba(255,255,255,0.08);
+          box-shadow:
+            0 4px 16px rgba(0,0,0,0.12),
+            inset 0 1px 0 rgba(255,255,255,0.04);
           will-change: transform, opacity;
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: default;
+        }
+
+        .why__feature:hover {
+          background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+          border-color: rgba(0, 102, 204, 0.25);
+          box-shadow:
+            0 12px 32px rgba(0, 102, 204, 0.12),
+            0 4px 16px rgba(0,0,0,0.15),
+            inset 0 1px 0 rgba(255,255,255,0.06);
+          transform: translateX(8px);
         }
 
         .why__feature-icon {
-          font-size: 28px;
           flex-shrink: 0;
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, rgba(0, 102, 204, 0.2), rgba(92, 184, 255, 0.1));
+          border-radius: 12px;
+          border: 1px solid rgba(92, 184, 255, 0.2);
+          color: #5cb8ff;
+          box-shadow:
+            0 4px 12px rgba(0, 102, 204, 0.15),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+          transition: all 0.3s ease;
+        }
+
+        .why__feature:hover .why__feature-icon {
+          background: linear-gradient(135deg, rgba(0, 102, 204, 0.3), rgba(92, 184, 255, 0.2));
+          border-color: rgba(92, 184, 255, 0.4);
+          box-shadow:
+            0 8px 20px rgba(0, 102, 204, 0.25),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+          transform: scale(1.05);
         }
 
         .why__feature-title {
@@ -776,14 +888,58 @@ export default function HomePage() {
           background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
           backdrop-filter: blur(20px);
           border-radius: 24px;
-          border: 1px solid rgba(255,255,255,0.08);
+          border: 1px solid transparent;
           will-change: transform, opacity;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .contact__card::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 24px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          animation: border-rotate 4s linear infinite;
+        }
+
+        .contact__card::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 200px;
+          height: 3px;
+          background: linear-gradient(90deg, transparent, rgba(92, 184, 255, 0.6), transparent);
+          animation: contact-shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes border-rotate {
+          0% { background: linear-gradient(0deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
+          25% { background: linear-gradient(90deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
+          50% { background: linear-gradient(180deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
+          75% { background: linear-gradient(270deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
+          100% { background: linear-gradient(360deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
+        }
+
+        @keyframes contact-shimmer {
+          0%, 100% { opacity: 0.4; width: 150px; }
+          50% { opacity: 0.8; width: 250px; }
         }
 
         .contact__heading {
           font-size: 36px;
           font-weight: 700;
-          color: white;
+          background: linear-gradient(135deg, #ffffff 0%, #5cb8ff 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           margin-bottom: 16px;
           letter-spacing: -0.02em;
         }
@@ -861,6 +1017,55 @@ export default function HomePage() {
             animation: none !important;
             transform: none !important;
           }
+        }
+
+        /* ==== THEME-RESPONSIVE HERO ==== */
+        /* Light theme: Dark text for visibility */
+        /* Using :global() to escape styled-jsx scoping for data-theme selector */
+        :global([data-theme="light"]) .hero__eyebrow {
+          color: var(--theme-accent);
+          text-shadow: none;
+        }
+
+        :global([data-theme="light"]) .hero__headline {
+          color: var(--theme-text);
+          text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+
+        :global([data-theme="light"]) .hero__subtext {
+          color: var(--theme-text-muted);
+        }
+
+        :global([data-theme="light"]) .hero__title {
+          color: var(--theme-text);
+          text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+
+        :global([data-theme="light"]) .hero__title--accent {
+          color: var(--theme-accent);
+        }
+
+        :global([data-theme="light"]) .hero__title--secondary {
+          color: var(--theme-text-muted);
+        }
+
+        :global([data-theme="light"]) .hero__subtitle {
+          color: var(--theme-text-muted);
+        }
+
+        :global([data-theme="light"]) .hero__tag {
+          background: rgba(0, 102, 204, 0.12);
+          color: var(--theme-accent);
+        }
+
+        /* Dim theme adjustments */
+        :global([data-theme="dim"]) .hero__eyebrow {
+          color: #ff48a9;
+          text-shadow: 0 0 20px rgba(255, 72, 169, 0.5);
+        }
+
+        :global([data-theme="dim"]) .hero__headline {
+          color: #d5dbe2;
         }
       `}</style >
     </>

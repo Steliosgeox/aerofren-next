@@ -1,0 +1,630 @@
+/* AboutPhilosophy.module.css
+ * 1:1 EXACT replica of MÅNE Studio scroll-driven animation
+ * With AEROFREN theme compliance layered on top
+ * 
+ * CRITICAL: This uses CSS Scroll-Driven Animations API
+ * Requires Chrome 115+, Edge 115+, Opera 101+
+ */
+
+/* ========================================
+   CONFIG & VARIABLES (EXACT ORIGINAL)
+   ======================================== */
+.wrap {
+    /* Palette - EXACT original values */
+    --bg: #080808;
+    --text-muted: #444;
+    --text-light: #e5e5e5;
+    --accent: #d4c5a3;
+
+    /* Timeline Scopes - CRITICAL for scroll-driven animations */
+    timeline-scope: --s1, --s2, --s3, --s4, --s5, --s6;
+
+    /* Base Reset - EXACT original */
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-light);
+    font-family: var(--font-manrope, "Manrope"), sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
+
+/* ========================================
+   THEME OVERRIDES (AEROFREN)
+   ======================================== */
+
+/* Dark Theme (default AEROFREN) */
+:global([data-theme="dark"]) .wrap {
+    --bg: #06101f;
+    --text-muted: #4b5563;
+    --text-light: #e5e5e5;
+    --accent: #00bae2;
+}
+
+/* Light Theme */
+:global([data-theme="light"]) .wrap {
+    --bg: #f0f4f8;
+    --text-muted: #64748b;
+    --text-light: #1a365d;
+    --accent: #0066cc;
+}
+
+/* Dim Theme - PURPLISH modern */
+:global([data-theme="dim"]) .wrap {
+    --bg: #152433;
+    --text-muted: #7c3aed;
+    --text-light: #d5dbe2;
+    --accent: #c084fc;
+}
+
+:global([data-theme="dim"]) .brandName {
+    color: #c084fc;
+}
+
+:global([data-theme="dim"]) .titleLarge {
+    background: linear-gradient(180deg, #e879f9 0%, #a855f7 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ========================================
+   LAYOUT: STICKY VISUALS (Right) - EXACT
+   ======================================== */
+.stickyVisual {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    z-index: 10;
+    pointer-events: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shapeContainer {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+
+    /* Entry/Exit Animation - EXACT */
+    animation-name: shapeFade;
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Timeline Linkages - EXACT */
+.shape1 {
+    animation-timeline: --s1;
+}
+
+.shape2 {
+    animation-timeline: --s2;
+}
+
+.shape3 {
+    animation-timeline: --s3;
+}
+
+.shape4 {
+    animation-timeline: --s4;
+}
+
+.shape5 {
+    animation-timeline: --s5;
+}
+
+.shape6 {
+    animation-timeline: --s6;
+}
+
+/* ========================================
+   LAYOUT: CONTENT (Left) - EXACT
+   ======================================== */
+.content {
+    width: 50%;
+    padding-bottom: 20vh;
+    position: relative;
+    z-index: 20;
+}
+
+.header {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    padding-left: 10vw;
+}
+
+.scrollSection {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 10vw;
+    padding-right: 2rem;
+
+    /* View Timeline Source - CRITICAL */
+    view-timeline-axis: block;
+    view-timeline-inset: 40% 40%;
+}
+
+/* Section IDs - EXACT */
+.s1 {
+    view-timeline-name: --s1;
+}
+
+.s2 {
+    view-timeline-name: --s2;
+}
+
+.s3 {
+    view-timeline-name: --s3;
+}
+
+.s4 {
+    view-timeline-name: --s4;
+}
+
+.s5 {
+    view-timeline-name: --s5;
+}
+
+.s6 {
+    view-timeline-name: --s6;
+}
+
+.closingSection {
+    height: 60vh;
+    display: flex;
+    align-items: center;
+    padding-left: 10vw;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 10vh;
+}
+
+/* ========================================
+   COMPONENTS: TYPOGRAPHY - EXACT
+   ======================================== */
+.brandName {
+    font-size: 1.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 300;
+    margin: 0;
+    color: var(--accent);
+    opacity: 0.8;
+}
+
+.titleLarge {
+    display: block;
+    font-size: 5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-light);
+    margin-top: 1rem;
+    line-height: 1;
+}
+
+.focusText {
+    font-size: 3.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 500px;
+    letter-spacing: -0.02em;
+
+    /* Magnify Effect - EXACT */
+    animation: contentFocus linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+}
+
+.description {
+    font-size: 1.1rem;
+    color: #666;
+    margin-top: 1.5rem;
+    max-width: 420px;
+    line-height: 1.7;
+    font-weight: 300;
+    border-left: 2px solid var(--accent);
+    padding-left: 1.5rem;
+
+    /* Sync with Header - EXACT */
+    animation: contentFocus linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+}
+
+.closer {
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: var(--text-muted);
+}
+
+.closer strong {
+    display: block;
+    font-size: 2rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+/* ========================================
+   COMPONENTS: SHAPES (CSS Art) - EXACT
+   ======================================== */
+
+/* 1. Circle Outline */
+.circleOutline {
+    width: 300px;
+    height: 300px;
+    border: 2px solid var(--text-light);
+    border-radius: 50%;
+    box-shadow: 0 0 60px rgba(255, 255, 255, 0.05);
+}
+
+/* 2. Textured Stone */
+.stoneBlock {
+    width: 250px;
+    height: 350px;
+    background: linear-gradient(135deg, #333, #111);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.stoneBlock::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+}
+
+/* 3. Grid */
+.gridLines {
+    width: 300px;
+    height: 300px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
+}
+
+.gridBox {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gridBox:nth-child(1) {
+    border-top: 0;
+    border-left: 0;
+}
+
+.gridBox:nth-child(4) {
+    border-bottom: 0;
+    border-right: 0;
+}
+
+/* 4. Balance */
+.balance {
+    width: 300px;
+    height: 300px;
+    position: relative;
+}
+
+.bCircle {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    mix-blend-mode: exclusion;
+}
+
+.b1 {
+    background: #fff;
+    top: 20%;
+    left: 20%;
+}
+
+.b2 {
+    background: #666;
+    bottom: 20%;
+    right: 20%;
+}
+
+/* 5. Light Orb */
+.lightOrb {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%,
+            var(--accent),
+            transparent 60%);
+    filter: blur(40px);
+    opacity: 0.6;
+}
+
+/* 6. End Line */
+.endLine {
+    width: 2px;
+    height: 300px;
+    background: var(--text-light);
+    position: relative;
+}
+
+.endLine::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 1px;
+    background: var(--text-light);
+}
+
+/* ========================================
+   COMPONENTS: PROGRESS INDICATORS - EXACT
+   ======================================== */
+
+/* Desktop: Vertical Line on Border */
+.desktopProgress {
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: top;
+    transform: scaleY(0);
+    animation: progressGrow linear;
+    animation-timeline: scroll();
+    z-index: 20;
+}
+
+/* Mobile: Circular Widget */
+.mobileProgress {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    padding: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.mobileProgress svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progressCircle {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: circleGrow linear;
+    animation-timeline: scroll();
+}
+
+.trackCircle {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 8;
+}
+
+/* ========================================
+   KEYFRAMES - EXACT ORIGINAL SYNTAX
+   ======================================== */
+@keyframes shapeFade {
+    entry 0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.9);
+    }
+
+    entry 100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    exit 0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    exit 100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(1.1);
+    }
+}
+
+@keyframes contentFocus {
+    0% {
+        filter: blur(12px);
+        opacity: 0;
+        transform: scale(0.8) translateY(40px);
+        border-color: transparent;
+    }
+
+    45%,
+    55% {
+        filter: blur(0);
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        color: var(--text-light);
+        border-color: var(--accent);
+    }
+
+    100% {
+        filter: blur(12px);
+        opacity: 0;
+        transform: scale(0.95) translateY(-40px);
+        border-color: transparent;
+    }
+}
+
+@keyframes progressGrow {
+    to {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes circleGrow {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - EXACT
+   ======================================== */
+@media (max-width: 768px) {
+    .stickyVisual {
+        opacity: 0.1;
+        width: 100%;
+        z-index: -1;
+        border-left: none;
+    }
+
+    .content {
+        width: 100%;
+    }
+
+    .scrollSection {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .header {
+        padding-left: 1.5rem;
+    }
+
+    /* Adjust Typography */
+    .focusText {
+        font-size: 2rem;
+    }
+
+    .titleLarge {
+        font-size: 3.5rem;
+    }
+
+    /* Toggle Progress Indicators */
+    .desktopProgress {
+        display: none;
+    }
+
+    .mobileProgress {
+        display: block;
+    }
+}
+
+/* ========================================
+   DIM THEME OVERRIDES (Purplish accents)
+   ======================================== */
+:global([data-theme="dim"]) .circleOutline {
+    border-color: #a855f7;
+    box-shadow: 0 0 60px rgba(168, 85, 247, 0.2);
+}
+
+:global([data-theme="dim"]) .stoneBlock {
+    background: linear-gradient(135deg, #3b2667, #1a1a2e);
+}
+
+:global([data-theme="dim"]) .gridBox {
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+:global([data-theme="dim"]) .b1 {
+    background: #c084fc;
+}
+
+:global([data-theme="dim"]) .b2 {
+    background: #7c3aed;
+}
+
+:global([data-theme="dim"]) .lightOrb {
+    background: radial-gradient(circle at 30% 30%, #e879f9, transparent 60%);
+}
+
+:global([data-theme="dim"]) .endLine,
+:global([data-theme="dim"]) .endLine::before {
+    background: #c084fc;
+}
+
+:global([data-theme="dim"]) .desktopProgress {
+    background: linear-gradient(180deg, #c084fc, #e879f9);
+}
+
+:global([data-theme="dim"]) .progressCircle {
+    stroke: #c084fc;
+}
+
+:global([data-theme="dim"]) .closer strong {
+    color: #e879f9;
+}
+
+/* ========================================
+   LIGHT THEME OVERRIDES
+   ======================================== */
+:global([data-theme="light"]) .circleOutline {
+    border-color: #1a365d;
+    box-shadow: 0 0 60px rgba(0, 102, 204, 0.1);
+}
+
+:global([data-theme="light"]) .stoneBlock {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+}
+
+:global([data-theme="light"]) .gridBox {
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+:global([data-theme="light"]) .b1 {
+    background: #1a365d;
+}
+
+:global([data-theme="light"]) .b2 {
+    background: #94a3b8;
+}
+
+:global([data-theme="light"]) .endLine,
+:global([data-theme="light"]) .endLine::before {
+    background: #1a365d;
+}
+
+:global([data-theme="light"]) .description {
+    color: #64748b;
+}
+
+:global([data-theme="light"]) .closingSection {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   REDUCED MOTION FALLBACK
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+
+    .shapeContainer,
+    .focusText,
+    .description,
+    .desktopProgress,
+    .progressCircle {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+}
