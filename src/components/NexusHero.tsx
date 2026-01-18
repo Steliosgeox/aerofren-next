@@ -607,8 +607,13 @@ export default function NexusHero() {
         const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
-        // Animation loop
+        // Track if component is mounted for animation loop
+        let isMounted = true;
+
+        // Animation loop with mounted check
         const animate = () => {
+            // CRITICAL: Stop loop if unmounted
+            if (!isMounted) return;
             if (!clockRef.current || !materialRef.current || !rendererRef.current) return;
 
             // Smooth mouse movement (0.20 smoothness factor)
@@ -677,35 +682,47 @@ export default function NexusHero() {
         );
         scrollTriggerRef.current = fadeAnimation.scrollTrigger as ScrollTrigger;
 
-        // Cleanup
+        // Cleanup - CRITICAL: Must be synchronous and thorough
         return () => {
+            // FIRST: Stop animation loop immediately
+            isMounted = false;
             cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = 0;
+
+            // SECOND: Remove all event listeners
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("touchmove", handleTouchMove);
             window.removeEventListener("resize", handleResize);
 
-            // Cleanup ScrollTrigger
+            // THIRD: Kill ScrollTrigger BEFORE disposing renderer
             if (scrollTriggerRef.current) {
                 scrollTriggerRef.current.kill();
                 scrollTriggerRef.current = null;
             }
 
-            if (rendererRef.current) {
-                rendererRef.current.dispose();
-                try {
-                    if (containerRef.current && rendererRef.current.domElement &&
-                        containerRef.current.contains(rendererRef.current.domElement)) {
-                        containerRef.current.removeChild(rendererRef.current.domElement);
-                    }
-                } catch (e) {
-                    // DOM already cleaned up by React
-                }
+            // FOURTH: Dispose Three.js resources synchronously
+            if (materialRef.current) {
+                materialRef.current.dispose();
+                materialRef.current = null;
             }
 
             geometry.dispose();
-            material.dispose();
+
+            if (rendererRef.current) {
+                rendererRef.current.dispose();
+                rendererRef.current.forceContextLoss();
+                const canvas = rendererRef.current.domElement;
+                if (canvas && canvas.parentNode) {
+                    canvas.parentNode.removeChild(canvas);
+                }
+                rendererRef.current = null;
+            }
+
+            // FIFTH: Clear refs
+            canvasRef.current = null;
+            clockRef.current = null;
         };
-    }, [handlePointerMove, currentTheme]);
+    }, [handlePointerMove]);
 
     return (
         <section className="nexus-hero">

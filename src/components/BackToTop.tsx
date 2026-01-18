@@ -18,14 +18,22 @@ gsap.registerPlugin(ScrollToPlugin);
 export function BackToTop() {
     const [isVisible, setIsVisible] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
+    const tweenRef = useRef<gsap.core.Tween | null>(null);
 
-    // Track scroll position and show/hide button
+    // Track scroll position and show/hide button - THROTTLED
     useEffect(() => {
         const SCROLL_THRESHOLD = 300;
+        let ticking = false;
 
         const handleScroll = () => {
-            const shouldShow = window.scrollY > SCROLL_THRESHOLD;
-            setIsVisible(shouldShow);
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const shouldShow = window.scrollY > SCROLL_THRESHOLD;
+                    setIsVisible(shouldShow);
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
 
         // Initial check
@@ -39,9 +47,14 @@ export function BackToTop() {
     useEffect(() => {
         if (!buttonRef.current) return;
 
+        // Kill any existing tween before starting a new one
+        if (tweenRef.current) {
+            tweenRef.current.kill();
+        }
+
         if (isVisible) {
             // Show animation
-            gsap.to(buttonRef.current, {
+            tweenRef.current = gsap.to(buttonRef.current, {
                 opacity: 1,
                 scale: 1,
                 y: 0,
@@ -50,7 +63,7 @@ export function BackToTop() {
             });
         } else {
             // Hide animation
-            gsap.to(buttonRef.current, {
+            tweenRef.current = gsap.to(buttonRef.current, {
                 opacity: 0,
                 scale: 0.8,
                 y: 20,
@@ -58,6 +71,13 @@ export function BackToTop() {
                 ease: "power2.in",
             });
         }
+
+        return () => {
+            if (tweenRef.current) {
+                tweenRef.current.kill();
+                tweenRef.current = null;
+            }
+        };
     }, [isVisible]);
 
     // Scroll to top with GSAP

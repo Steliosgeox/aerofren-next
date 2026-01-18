@@ -47,26 +47,28 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     // Refresh ScrollTrigger after smoother is created
     ScrollTrigger.refresh();
 
-    // Cleanup - CRITICAL: Kill ScrollSmoother first, then all ScrollTriggers
-    // This order is important to prevent orphaned triggers causing hydration errors
+    // Cleanup - CRITICAL: Must be SYNCHRONOUS (no requestAnimationFrame!)
+    // Async cleanup causes multiple instances to coexist during navigation
     return () => {
-      // First, disable scrolling updates
+      // FIRST: Kill all ScrollTriggers BEFORE killing smoother
+      // This prevents orphaned callbacks from firing
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+
+      // SECOND: Kill ScrollSmoother
       if (smootherRef.current) {
         smootherRef.current.paused(true);
+        smootherRef.current.kill();
+        smootherRef.current = null;
       }
 
-      // Give GSAP a frame to settle before killing
-      requestAnimationFrame(() => {
-        if (smootherRef.current) {
-          smootherRef.current.kill();
-          smootherRef.current = null;
-        }
-        // Kill all remaining ScrollTriggers to prevent DOM conflicts
-        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-        ScrollTrigger.clearMatchMedia();
-        // Clear any cached values
-        ScrollTrigger.clearScrollMemory();
-      });
+      // THIRD: Clear all GSAP scroll-related caches
+      ScrollTrigger.clearMatchMedia();
+      ScrollTrigger.clearScrollMemory();
+
+      // FOURTH: Reset scroll position for clean navigation
+      if (typeof window !== "undefined") {
+        window.scrollTo(0, 0);
+      }
     };
   }, []);
 

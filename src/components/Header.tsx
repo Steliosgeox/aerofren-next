@@ -101,6 +101,16 @@ function HeaderComponent() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Cleanup mega menu timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (megaMenuTimeoutRef.current) {
+        clearTimeout(megaMenuTimeoutRef.current);
+        megaMenuTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   const handleSignOut = async () => {
     await signOut();
     setUserMenuOpen(false);
@@ -132,7 +142,9 @@ function HeaderComponent() {
     });
 
     return () => {
+      // Kill ScrollTrigger first, then the tween
       scrollTrigger.kill();
+      showAnim.kill();
     };
   }, []);
 

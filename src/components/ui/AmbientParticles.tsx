@@ -72,9 +72,15 @@ export default function AmbientParticles() {
             animationsRef.current.push(anim);
         });
 
-        // Cleanup
+        // Cleanup - CRITICAL: Pause THEN kill to stop immediately
         return () => {
-            animationsRef.current.forEach(anim => anim?.kill());
+            animationsRef.current.forEach(anim => {
+                if (anim) {
+                    anim.pause();
+                    anim.kill();
+                }
+            });
+            animationsRef.current = [];
         };
     }, { scope: containerRef });
 

@@ -234,13 +234,7 @@ export default function ScrollFrameAnimation() {
         );
 
         return () => {
-            // Kill tweens first
-            staticFadeout.kill();
-            canvasFadein.kill();
-            frameTween.kill();
-            containerFadeout.kill();
-
-            // Get the ScrollTrigger instances from the tweens and kill them
+            // CRITICAL: Kill ScrollTriggers FIRST, then tweens (correct order)
             const triggers = [
                 staticFadeout.scrollTrigger,
                 canvasFadein.scrollTrigger,
@@ -248,7 +242,17 @@ export default function ScrollFrameAnimation() {
                 containerFadeout.scrollTrigger,
             ].filter(Boolean);
 
+            // Kill triggers first to stop scroll callbacks
             triggers.forEach(trigger => trigger?.kill());
+
+            // Then kill the tweens
+            staticFadeout.kill();
+            canvasFadein.kill();
+            frameTween.kill();
+            containerFadeout.kill();
+
+            // Reset frame to 0 for clean state on remount
+            currentFrameRef.current = 0;
         };
     }, [isLoaded, drawFrame]);
 
