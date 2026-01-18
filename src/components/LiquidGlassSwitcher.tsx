@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 type Theme = "light" | "dark" | "dim";
 
 export function LiquidGlassSwitcher() {
-  const [theme, setTheme] = useState<Theme>("dim");
+  const [theme, setTheme] = useState<Theme>("dark");
   const switcherRef = useRef<HTMLFieldSetElement>(null);
   const previousRef = useRef<string>("2");
 
@@ -76,7 +76,6 @@ export function LiquidGlassSwitcher() {
           box-sizing: border-box;
           padding: 4px;
           margin: 0;
-          margin-right: 40px;
           border: none;
           border-radius: 99em;
           background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
@@ -435,7 +434,7 @@ export function LiquidGlassSwitcher() {
           </svg>
         </label>
 
-{/* SVG filters removed - placeholders were causing 404 errors */}
+        {/* SVG filters removed - placeholders were causing 404 errors */}
       </fieldset>
     </>
   );

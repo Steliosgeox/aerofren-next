@@ -194,7 +194,7 @@ function HeaderComponent() {
 
   return (
     <>
-      <style jsx>{`
+      <style jsx global>{`
         .glass-header {
           ${glassHeaderStyles.base}
         }
@@ -203,6 +203,18 @@ function HeaderComponent() {
           background-color: color-mix(in srgb, var(--c-glass) 25%, transparent) !important;
           backdrop-filter: blur(28px) saturate(var(--saturation, 150%)) !important;
           -webkit-backdrop-filter: blur(28px) saturate(var(--saturation, 150%)) !important;
+        }
+        .logo-hover {
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
+          filter: drop-shadow(0 0 0px transparent);
+          will-change: transform, filter;
+        }
+        .logo-hover:hover {
+          transform: scale(1.08);
+          filter: drop-shadow(0 0 20px rgba(0, 186, 226, 0.6)) drop-shadow(0 0 40px rgba(0, 186, 226, 0.3));
+        }
+        .logo-hover:active {
+          transform: scale(0.98);
         }
       `}</style>
 
@@ -215,42 +227,42 @@ function HeaderComponent() {
       >
         <div className="max-w-7xl mx-auto px-6 h-full">
           <div className="flex items-center justify-between h-full">
-            {/* Logo - Theme-aware */}
-            <Link href="/" className="flex items-center gap-3 group">
+            {/* Logo - Theme-aware with premium hover effect */}
+            <Link href="/" className="flex items-center gap-3 group logo-hover">
               {/* Dark theme logo */}
               <Image
-                src="/images/logo-dark.webp"
+                src="/images/LOGOdark.webp"
                 alt="AEROFREN"
-                width={280}
-                height={80}
-                className="h-20 w-auto object-contain hidden [html[data-theme='dark']_&]:block"
+                width={510}
+                height={144}
+                className="h-[9rem] w-auto object-contain hidden [html[data-theme='dark']_&]:block -mt-2 ml-2"
                 priority
               />
-              {/* Light theme logo */}
+              {/* Light theme logo - slightly larger & shifted down for visual balance */}
               <Image
-                src="/images/logo-light.webp"
+                src="/images/LOGOlight.webp"
                 alt="AEROFREN"
-                width={280}
-                height={80}
-                className="h-20 w-auto object-contain hidden [html[data-theme='light']_&]:block"
+                width={620}
+                height={176}
+                className="h-[11rem] w-auto object-contain hidden [html[data-theme='light']_&]:block mt-2 -ml-2"
                 priority
               />
               {/* Dim theme logo */}
               <Image
-                src="/images/logo-dim.webp"
+                src="/images/LOGOdim.webp"
                 alt="AEROFREN"
-                width={280}
-                height={80}
-                className="h-20 w-auto object-contain hidden [html[data-theme='dim']_&]:block"
+                width={510}
+                height={144}
+                className="h-[9rem] w-auto object-contain hidden [html[data-theme='dim']_&]:block -mt-2 ml-2"
                 priority
               />
               {/* Default (no theme set = dark) */}
               <Image
-                src="/images/logo-dark.webp"
+                src="/images/LOGOdark.webp"
                 alt="AEROFREN"
-                width={280}
-                height={80}
-                className="h-20 w-auto object-contain [html[data-theme]_&]:hidden"
+                width={510}
+                height={144}
+                className="h-[9rem] w-auto object-contain [html[data-theme]_&]:hidden -mt-2 ml-2"
                 priority
               />
             </Link>

@@ -32,7 +32,7 @@ export default function MainLayout({
 
       {/* ScrollSmoother wrapper for buttery smooth scrolling */}
       <SmoothScrollProvider>
-        <main className="pt-[100px] min-h-screen">{children}</main>
+        <main className="min-h-screen">{children}</main>
         <Footer />
       </SmoothScrollProvider>
 

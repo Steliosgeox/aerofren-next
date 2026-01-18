@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Inter, Manrope } from "next/font/google"
+import { ThemeProvider } from "next-themes"
 import "./globals.css"
 import StyledComponentsRegistry from "@/lib/registry"
 import { AuthWrapper } from "@/components/AuthWrapper"
@@ -70,12 +71,20 @@ export default function RootLayout({
   return (
     <html lang="el" suppressHydrationWarning>
       <body className={`${inter.className} ${manrope.variable}`} suppressHydrationWarning>
-        <AuthWrapper>
-          <StyledComponentsRegistry>
-            {children}
-          </StyledComponentsRegistry>
-        </AuthWrapper>
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="dark"
+          enableSystem
+          themes={["dark", "dim", "light"]}
+        >
+          <AuthWrapper>
+            <StyledComponentsRegistry>
+              {children}
+            </StyledComponentsRegistry>
+          </AuthWrapper>
+        </ThemeProvider>
       </body>
     </html>
   )
 }
+

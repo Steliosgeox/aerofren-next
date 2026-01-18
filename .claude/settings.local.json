@@ -12,7 +12,8 @@
       "Bash(if not exist \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\" mkdir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\")",
       "Bash(xcopy:*)",
       "Bash(powershell -Command:*)",
-      "Bash(dir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\")"
+      "Bash(dir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\")",
+      "Bash(npm install:*)"
     ]
   }
 }

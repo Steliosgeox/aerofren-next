@@ -311,10 +311,10 @@ export default function ScrollFrameAnimation() {
         .scroll-frame-static-gradient {
           position: absolute;
           inset: 0;
-          background: 
-            radial-gradient(ellipse 120% 100% at 50% 0%, rgba(0, 102, 204, 0.15) 0%, transparent 50%),
-            radial-gradient(ellipse 80% 60% at 80% 100%, rgba(0, 186, 226, 0.1) 0%, transparent 50%),
-            linear-gradient(135deg, #06101f 0%, #0a1628 30%, #0d1d35 60%, #06101f 100%);
+          background-image: url('/images/BackgroundDark.webp');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
         }
 
         .scroll-frame-static-pattern {
@@ -340,12 +340,14 @@ export default function ScrollFrameAnimation() {
           50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
 
-        /* Light theme: Brighter static background */
+        /* Light theme background */
         [data-theme="light"] .scroll-frame-static-gradient {
-          background: 
-            radial-gradient(ellipse 120% 100% at 50% 0%, rgba(0, 102, 204, 0.2) 0%, transparent 50%),
-            radial-gradient(ellipse 80% 60% at 80% 100%, rgba(0, 186, 226, 0.15) 0%, transparent 50%),
-            linear-gradient(135deg, #e8f4fc 0%, #d0e8f7 30%, #b8dcf3 60%, #e8f4fc 100%);
+          background-image: url('/images/BackgroundLight.webp');
+        }
+
+        /* Dim theme background */
+        [data-theme="dim"] .scroll-frame-static-gradient {
+          background-image: url('/images/BackgroundDim.webp');
         }
 
         [data-theme="light"] .scroll-frame-static-pattern {

@@ -561,22 +561,20 @@ h4,
   bottom: 0;
   z-index: -10;
   pointer-events: none;
-  background-image: url('/bg/waves.svg');
+  background-image: url('/images/BackgroundDark.webp');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  /* Full opacity - no darkening */
   opacity: 1;
-  transition: filter 400ms ease;
 }
 
-/* Theme-responsive waves coloring */
+/* Theme-responsive backgrounds */
 [data-theme="light"] .waves-background {
-  filter: invert(1) hue-rotate(180deg) brightness(0.95);
+  background-image: url('/images/BackgroundLight.webp');
 }
 
 [data-theme="dim"] .waves-background {
-  filter: hue-rotate(15deg) saturate(1.3) brightness(1.1);
+  background-image: url('/images/BackgroundDim.webp');
 }
 
 /* Ensure main content has transparent backgrounds to show waves */
