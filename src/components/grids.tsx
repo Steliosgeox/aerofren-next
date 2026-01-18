@@ -126,13 +126,10 @@ const Threads: React.FC<ThreadsProps> = ({
     if (!containerRef.current) return;
     const container = containerRef.current;
 
-    // Cap pixel ratio for performance - MAX 1.0 for this effect
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.0);
-
     const renderer = new Renderer({
       alpha: true,
-      dpr: pixelRatio,
-      powerPreference: 'low-power' // Prefer integrated GPU if available
+      dpr: window.devicePixelRatio || 1,
+      powerPreference: 'high-performance'
     });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
@@ -159,18 +156,17 @@ const Threads: React.FC<ThreadsProps> = ({
 
     const mesh = new Mesh(gl, { geometry, program });
 
+    // Cache rect for mouse calculations - declared here, updated in resize
+    let cachedRect = container.getBoundingClientRect();
+
     function resize() {
       const { clientWidth, clientHeight } = container;
-      // Render at reduced resolution for performance
-      const scale = 0.75; // 75% resolution
-      renderer.setSize(clientWidth * scale, clientHeight * scale);
-      program.uniforms.iResolution.value.r = clientWidth * scale;
-      program.uniforms.iResolution.value.g = clientHeight * scale;
+      renderer.setSize(clientWidth, clientHeight);
+      program.uniforms.iResolution.value.r = clientWidth;
+      program.uniforms.iResolution.value.g = clientHeight;
       program.uniforms.iResolution.value.b = clientWidth / clientHeight;
-
-      // Scale canvas back up with CSS
-      gl.canvas.style.width = clientWidth + 'px';
-      gl.canvas.style.height = clientHeight + 'px';
+      // Update cached rect on resize
+      cachedRect = container.getBoundingClientRect();
     }
 
     // Debounced resize
@@ -195,9 +191,9 @@ const Threads: React.FC<ThreadsProps> = ({
     let targetMouse = [0.5, 0.5];
 
     function handleMouseMove(e: MouseEvent) {
-      const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = 1.0 - (e.clientY - rect.top) / rect.height;
+      // Use cached rect - updated only on resize
+      const x = (e.clientX - cachedRect.left) / cachedRect.width;
+      const y = 1.0 - (e.clientY - cachedRect.top) / cachedRect.height;
       targetMouse = [x, y];
     }
 

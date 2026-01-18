@@ -437,6 +437,8 @@ export default function NexusHero() {
     const cursorSphere3DRef = useRef(new THREE.Vector3(0, 0, 0));
     const targetMousePositionRef = useRef(new THREE.Vector2(0.5, 0.5));
     const mousePositionRef = useRef(new THREE.Vector2(0.5, 0.5));
+    const cachedRectRef = useRef<DOMRect | null>(null);
+    const tempVector3Ref = useRef(new THREE.Vector3(0, 0, 0)); // Reusable vector
 
     const [currentTheme, setCurrentTheme] = useState<"dark" | "light" | "dim">("dark");
     const [isLoaded, setIsLoaded] = useState(false);
@@ -495,20 +497,22 @@ export default function NexusHero() {
         return () => observer.disconnect();
     }, []);
 
-    // Convert screen to world coordinates
+    // Convert screen to world coordinates - reuses vector to avoid GC
     const screenToWorldJS = useCallback((normalizedX: number, normalizedY: number) => {
         const uvX = normalizedX * 2.0 - 1.0;
         const uvY = normalizedY * 2.0 - 1.0;
         const aspect = typeof window !== "undefined" ? window.innerWidth / window.innerHeight : 1;
-        return new THREE.Vector3(uvX * aspect * 2.0, uvY * 2.0, 0.0);
+        tempVector3Ref.current.set(uvX * aspect * 2.0, uvY * 2.0, 0.0);
+        return tempVector3Ref.current;
     }, []);
 
-    // Handle pointer movement - uses canvas-relative coordinates for accuracy
+    // Handle pointer movement - uses CACHED rect to avoid layout thrashing
     const handlePointerMove = useCallback((clientX: number, clientY: number) => {
-        if (typeof window === "undefined" || !containerRef.current) return;
+        if (typeof window === "undefined") return;
 
-        // Get canvas bounds to calculate position relative to the canvas
-        const rect = containerRef.current.getBoundingClientRect();
+        // Use cached rect - updated only on resize, NOT every mouse move
+        const rect = cachedRectRef.current;
+        if (!rect) return;
 
         // Calculate position relative to the canvas container
         const relativeX = clientX - rect.left;
@@ -694,6 +698,11 @@ export default function NexusHero() {
             renderer.setSize(newWidth, newHeight);
             renderer.setPixelRatio(currentPixelRatio);
 
+            // Update cached rect for mouse position calculations
+            if (containerRef.current) {
+                cachedRectRef.current = containerRef.current.getBoundingClientRect();
+            }
+
             if (materialRef.current) {
                 materialRef.current.uniforms.uResolution.value.set(newWidth, newHeight);
                 materialRef.current.uniforms.uActualResolution.value.set(
@@ -708,6 +717,9 @@ export default function NexusHero() {
         window.addEventListener("mousemove", handleMouseMove, { passive: true });
         window.addEventListener("touchmove", handleTouchMove, { passive: true });
         window.addEventListener("resize", handleResize, { passive: true });
+
+        // Initialize cached rect for mouse calculations
+        cachedRectRef.current = containerRef.current.getBoundingClientRect();
 
         // Initialize cursor position
         handlePointerMove(window.innerWidth / 2, window.innerHeight / 2);
