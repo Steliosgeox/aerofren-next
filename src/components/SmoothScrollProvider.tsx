@@ -47,19 +47,28 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     // Refresh ScrollTrigger after smoother is created
     ScrollTrigger.refresh();
 
-    // Cleanup - CRITICAL: Must be SYNCHRONOUS (no requestAnimationFrame!)
-    // Async cleanup causes multiple instances to coexist during navigation
-    return () => {
-      // FIRST: Kill all ScrollTriggers BEFORE killing smoother
-      // This prevents orphaned callbacks from firing
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    // Cleanup handled in separate useLayoutEffect for proper timing
+  }, []);
 
-      // SECOND: Kill ScrollSmoother
+  // CRITICAL: useLayoutEffect cleanup runs synchronously before React commits DOM changes
+  // This prevents "removeChild" errors from GSAP's pinned/moved elements
+  useLayoutEffect(() => {
+    return () => {
+      // FIRST: Kill ScrollSmoother BEFORE killing triggers
       if (smootherRef.current) {
         smootherRef.current.paused(true);
         smootherRef.current.kill();
         smootherRef.current = null;
       }
+
+      // SECOND: Kill all ScrollTriggers with error handling
+      ScrollTrigger.getAll().forEach(t => {
+        try {
+          t.kill();
+        } catch {
+          // Ignore cleanup errors - element may already be removed
+        }
+      });
 
       // THIRD: Clear all GSAP scroll-related caches
       ScrollTrigger.clearMatchMedia();

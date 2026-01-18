@@ -166,92 +166,35 @@ export default function ScrollFrameAnimation() {
         drawFrame(0);
 
         const vh = window.innerHeight;
-        const frameObj = { frame: 0 };
 
-        // ANIMATION 1: Static background fades out as user scrolls
-        const staticFadeout = gsap.fromTo(staticBg,
-            { opacity: 1 },
-            {
-                opacity: 0,
-                ease: "power2.inOut",
-                scrollTrigger: {
-                    trigger: "body",
-                    start: `+=${vh * CROSSFADE_START_SCROLL}`,
-                    end: `+=${vh * CROSSFADE_END_SCROLL}`,
-                    scrub: 0.2,
-                },
-            }
-        );
-
-        // ANIMATION 2: Canvas fades in as static fades out
-        const canvasFadein = gsap.fromTo(canvasWrapper,
-            { opacity: 0 },
-            {
-                opacity: 1,
-                ease: "power2.inOut",
-                scrollTrigger: {
-                    trigger: "body",
-                    start: `+=${vh * CROSSFADE_START_SCROLL}`,
-                    end: `+=${vh * CROSSFADE_END_SCROLL}`,
-                    scrub: 0.2,
-                },
-            }
-        );
-
-        // ANIMATION 3: Frame animation (full hero height)
-        const frameTween = gsap.to(frameObj, {
-            frame: FRAME_COUNT - 1,
-            snap: "frame",
-            ease: "none",
+        // Single consolidated timeline - reduces 4 ScrollTriggers to 1
+        const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: "body",
                 start: "top top",
                 end: `+=${vh}`,
-                scrub: 0.3,
-                onUpdate: () => {
-                    const newFrame = Math.round(frameObj.frame);
-                    if (newFrame !== currentFrameRef.current) {
-                        currentFrameRef.current = newFrame;
-                        drawFrame(newFrame);
+                scrub: 0.5, // Higher = fewer updates (was 0.2)
+                onUpdate: (self) => {
+                    const frame = Math.round(self.progress * (FRAME_COUNT - 1));
+                    if (frame !== currentFrameRef.current) {
+                        currentFrameRef.current = frame;
+                        requestAnimationFrame(() => drawFrame(frame));
                     }
                 },
             },
         });
 
-        // ANIMATION 4: Entire container fades out at hero end
-        const containerFadeout = gsap.fromTo(container,
-            { opacity: 1 },
-            {
-                opacity: 0,
-                ease: "power2.out",
-                scrollTrigger: {
-                    trigger: "body",
-                    start: `+=${vh * 0.75}`,
-                    end: `+=${vh}`,
-                    scrub: 0.2,
-                },
-            }
-        );
+        // Position animations on timeline (0 to 1 = scroll progress)
+        // Static background fades out (0% - 20% of scroll)
+        tl.fromTo(staticBg, { opacity: 1 }, { opacity: 0, duration: 0.2 }, 0);
+        // Canvas fades in (10% - 20% of scroll)
+        tl.fromTo(canvasWrapper, { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.1);
+        // Container fades out at end (75% - 100% of scroll)
+        tl.fromTo(container, { opacity: 1 }, { opacity: 0, duration: 0.25 }, 0.75);
 
         return () => {
-            // CRITICAL: Kill ScrollTriggers FIRST, then tweens (correct order)
-            const triggers = [
-                staticFadeout.scrollTrigger,
-                canvasFadein.scrollTrigger,
-                frameTween.scrollTrigger,
-                containerFadeout.scrollTrigger,
-            ].filter(Boolean);
-
-            // Kill triggers first to stop scroll callbacks
-            triggers.forEach(trigger => trigger?.kill());
-
-            // Then kill the tweens
-            staticFadeout.kill();
-            canvasFadein.kill();
-            frameTween.kill();
-            containerFadeout.kill();
-
-            // Reset frame to 0 for clean state on remount
+            tl.scrollTrigger?.kill();
+            tl.kill();
             currentFrameRef.current = 0;
         };
     }, [isLoaded, drawFrame]);

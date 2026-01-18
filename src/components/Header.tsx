@@ -63,11 +63,13 @@ const glassHeaderStyles = {
     left: 0;
     right: 0;
     z-index: 50;
+    contain: layout style;
+    will-change: transform;
     transition: all var(--theme-transition, 0.4s cubic-bezier(0.4, 0, 0.2, 1));
     background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
     backdrop-filter: blur(20px) saturate(var(--saturation, 150%));
     -webkit-backdrop-filter: blur(20px) saturate(var(--saturation, 150%));
-    box-shadow: 
+    box-shadow:
       inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
       inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
       inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 50%), transparent),
@@ -151,10 +153,14 @@ function HeaderComponent() {
   // Scroll state for height transition - THROTTLED with requestAnimationFrame
   useEffect(() => {
     let ticking = false;
+    let lastY = 0;
     const handleScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastY) < 10) return; // Ignore < 10px changes
       if (!ticking) {
         requestAnimationFrame(() => {
-          setIsScrolled(window.scrollY > 20);
+          setIsScrolled(y > 20);
+          lastY = y;
           ticking = false;
         });
         ticking = true;

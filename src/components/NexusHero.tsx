@@ -336,9 +336,9 @@ const createFragmentShader = (isLowPower: boolean, isMobile: boolean, isSafari: 
 
     float rayMarch(vec3 ro, vec3 rd) {
         float t = 0.0;
-        int maxSteps = uIsMobile > 0.5 ? 16 : (uIsSafari > 0.5 ? 16 : 48);
+        int maxSteps = uIsMobile > 0.5 ? 12 : (uIsSafari > 0.5 ? 16 : 32);
 
-        for (int i = 0; i < 48; i++) {
+        for (int i = 0; i < 32; i++) {
             if (i >= maxSteps) break;
 
             vec3 p = ro + rd * t;
@@ -439,6 +439,8 @@ export default function NexusHero() {
 
     const [currentTheme, setCurrentTheme] = useState<"dark" | "light" | "dim">("dark");
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
+    const isVisibleRef = useRef(true);
 
     // Watch for theme changes
     useEffect(() => {
@@ -452,6 +454,21 @@ export default function NexusHero() {
         const observer = new MutationObserver(checkTheme);
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
+        return () => observer.disconnect();
+    }, []);
+
+    // Visibility detection - skip GPU work when scrolled away
+    useEffect(() => {
+        if (!containerRef.current) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visible = entries[0]?.isIntersecting ?? true;
+                setIsVisible(visible);
+                isVisibleRef.current = visible;
+            },
+            { threshold: 0.05 }
+        );
+        observer.observe(containerRef.current);
         return () => observer.disconnect();
     }, []);
 
@@ -547,8 +564,12 @@ export default function NexusHero() {
         const width = window.innerWidth;
         const height = window.innerHeight;
 
-        renderer.setPixelRatio(device.pixelRatio);
-        renderer.setSize(width, height);
+        // Clamp resolution to prevent excessive GPU load
+        const MAX_WIDTH = 1920;
+        const MAX_HEIGHT = 1080;
+        const clampedPixelRatio = Math.min(device.pixelRatio, 1.5);
+        renderer.setPixelRatio(clampedPixelRatio);
+        renderer.setSize(Math.min(width, MAX_WIDTH), Math.min(height, MAX_HEIGHT));
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -614,6 +635,13 @@ export default function NexusHero() {
         const animate = () => {
             // CRITICAL: Stop loop if unmounted
             if (!isMounted) return;
+
+            // SKIP rendering when scrolled away (saves 100% GPU when invisible)
+            if (!isVisibleRef.current) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+                return;
+            }
+
             if (!clockRef.current || !materialRef.current || !rendererRef.current) return;
 
             // Smooth mouse movement (0.20 smoothness factor)

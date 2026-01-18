@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import type { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /**
  * HorizontalGallery Component - ROCK SOLID Cross-Device Version
@@ -107,6 +108,7 @@ const galleryCategories = [
 export default function HorizontalGallery() {
   const sectionRef = useRef<HTMLElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -121,6 +123,17 @@ export default function HorizontalGallery() {
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
 
+  // CRITICAL: useLayoutEffect for cleanup - runs synchronously before React commits DOM changes
+  // This prevents "removeChild" errors from GSAP's pinned elements
+  useLayoutEffect(() => {
+    return () => {
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.kill();
+        scrollTriggerRef.current = null;
+      }
+    };
+  }, []);
+
   // GSAP animations - only on desktop, with dynamic import
   useEffect(() => {
     if (!isMounted || !isDesktop) return;
@@ -129,7 +142,9 @@ export default function HorizontalGallery() {
     const strip = stripRef.current;
     if (!section || !strip) return;
 
-    let cleanup: (() => void) | undefined;
+    let resizeTimeout: NodeJS.Timeout | null = null;
+    let resizeHandler: (() => void) | null = null;
+    let initTimer: NodeJS.Timeout | null = null;
 
     // Dynamic import GSAP to avoid SSR issues
     const initGSAP = async () => {
@@ -140,8 +155,8 @@ export default function HorizontalGallery() {
         const getScrollLength = () => strip.scrollWidth - window.innerWidth;
         let horizontalScrollLength = getScrollLength();
 
-        // Create horizontal scroll animation
-        const scrollTrigger = ScrollTrigger.create({
+        // Create horizontal scroll animation - store in ref for cleanup
+        scrollTriggerRef.current = ScrollTrigger.create({
           trigger: section,
           pin: true,
           pinSpacing: true,
@@ -156,30 +171,28 @@ export default function HorizontalGallery() {
           },
         });
 
-        // Refresh on resize
-        const handleResize = () => {
+        // Refresh on resize - DEBOUNCED to prevent layout thrashing
+        resizeHandler = () => {
           horizontalScrollLength = getScrollLength();
-          ScrollTrigger.refresh();
+          if (resizeTimeout) clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => ScrollTrigger.refresh(), 150);
         };
 
-        window.addEventListener("resize", handleResize);
-        ScrollTrigger.refresh();
-
-        cleanup = () => {
-          scrollTrigger.kill();
-          window.removeEventListener("resize", handleResize);
-        };
+        window.addEventListener("resize", resizeHandler);
+        // Initial refresh with slight delay
+        setTimeout(() => ScrollTrigger.refresh(), 100);
       } catch (error) {
         console.warn("GSAP not available, falling back to CSS scroll");
       }
     };
 
     // Small delay to ensure DOM is ready
-    const timer = setTimeout(initGSAP, 100);
+    initTimer = setTimeout(initGSAP, 100);
 
     return () => {
-      clearTimeout(timer);
-      if (cleanup) cleanup();
+      if (initTimer) clearTimeout(initTimer);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      if (resizeHandler) window.removeEventListener("resize", resizeHandler);
     };
   }, [isMounted, isDesktop]);
 
