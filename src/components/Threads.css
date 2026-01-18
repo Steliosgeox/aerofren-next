@@ -1,0 +1,19 @@
+.threads-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none; /* Allow mouse events to pass through to underlying layers */
+}
+
+.threads-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* When mouse interaction is enabled, we need pointer events */
+.threads-container--interactive {
+  pointer-events: auto;
+}

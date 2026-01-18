@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import * as THREE from "three";
 import Link from "next/link";
 import LiquidButton from "./LiquidButton";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
+import Threads from "./grids";
 
 /**
  * NexusHero - Premium Three.js Metaballs Hero Section
@@ -442,6 +443,28 @@ export default function NexusHero() {
     const [isVisible, setIsVisible] = useState(true);
     const isVisibleRef = useRef(true);
 
+    // Theme-aware Threads color configuration - more vibrant colors
+    const threadsColors = useMemo((): { primary: [number, number, number]; secondary: [number, number, number] } => {
+        switch (currentTheme) {
+            case "light":
+                return {
+                    primary: [0.0, 0.5, 0.9],    // Vibrant blue
+                    secondary: [0.2, 0.7, 1.0]   // Lighter cyan-blue
+                };
+            case "dim":
+                return {
+                    primary: [0.7, 0.4, 1.0],    // Vibrant purple
+                    secondary: [0.9, 0.5, 0.8]   // Pink-purple gradient
+                };
+            case "dark":
+            default:
+                return {
+                    primary: [0.0, 0.8, 1.0],    // Bright cyan
+                    secondary: [0.4, 0.9, 1.0]   // Light cyan gradient
+                };
+        }
+    }, [currentTheme]);
+
     // Watch for theme changes
     useEffect(() => {
         const checkTheme = () => {
@@ -757,6 +780,18 @@ export default function NexusHero() {
             {/* Three.js Canvas Container */}
             <div ref={containerRef} className="nexus-hero__canvas" />
 
+            {/* Threads Effect Layer - Between canvas and content */}
+            <div className="nexus-hero__threads">
+                <Threads
+                    color={threadsColors.primary}
+                    secondaryColor={threadsColors.secondary}
+                    amplitude={1}
+                    distance={0}
+                    enableMouseInteraction
+                    lineCount={20}
+                />
+            </div>
+
             {/* Noise Texture Overlay */}
             <div className="nexus-hero__noise" />
 
@@ -830,6 +865,16 @@ export default function NexusHero() {
                     width: 100% !important;
                     height: 100% !important;
                     display: block;
+                }
+
+                .nexus-hero__threads {
+                    position: absolute;
+                    inset: 0;
+                    z-index: 1;
+                    opacity: 0.45;
+                    pointer-events: auto;
+                    will-change: opacity;
+                    transform: translateZ(0); /* GPU acceleration */
                 }
 
                 .nexus-hero__noise {
@@ -1012,6 +1057,10 @@ export default function NexusHero() {
                     /* No background */
                 }
 
+                :global([data-theme="light"]) .nexus-hero__threads {
+                    opacity: 0.35;
+                }
+
                 :global([data-theme="light"]) .nexus-hero__headline {
                     color: #0a1628;
                     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -1035,6 +1084,10 @@ export default function NexusHero() {
 
                 :global([data-theme="dim"]) .nexus-hero {
                     /* No background */
+                }
+
+                :global([data-theme="dim"]) .nexus-hero__threads {
+                    opacity: 0.4;
                 }
 
                 :global([data-theme="dim"]) .nexus-hero__eyebrow {
