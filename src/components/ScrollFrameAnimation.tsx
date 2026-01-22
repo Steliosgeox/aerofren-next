@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
+import { debounce } from "@/lib/debounce";
 
 /**
  * ScrollFrameAnimation Component
@@ -136,7 +137,7 @@ export default function ScrollFrameAnimation() {
         ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     }, []);
 
-    // Setup canvas sizing
+    // Setup canvas sizing - debounced to prevent layout thrashing
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -147,9 +148,17 @@ export default function ScrollFrameAnimation() {
             drawFrame(currentFrameRef.current);
         };
 
+        // Debounce resize handler (100ms) to prevent excessive canvas redraws
+        const debouncedResize = debounce(handleResize, 100);
+
+        // Run immediately on mount
         handleResize();
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
+        window.addEventListener("resize", debouncedResize, { passive: true });
+
+        return () => {
+            debouncedResize.cancel();
+            window.removeEventListener("resize", debouncedResize);
+        };
     }, [drawFrame]);
 
     // Setup all GSAP animations

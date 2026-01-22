@@ -5,6 +5,7 @@ import * as THREE from "three";
 import Link from "next/link";
 import LiquidButton from "./LiquidButton";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
+import { debounce } from "@/lib/debounce";
 
 /**
  * NexusHero - Premium Three.js Metaballs Hero Section
@@ -705,10 +706,13 @@ export default function NexusHero() {
             }
         };
 
+        // Debounce resize handler (100ms) to prevent layout thrashing
+        const debouncedResize = debounce(handleResize, 100);
+
         // Add event listeners
         window.addEventListener("mousemove", handleMouseMove, { passive: true });
         window.addEventListener("touchmove", handleTouchMove, { passive: true });
-        window.addEventListener("resize", handleResize, { passive: true });
+        window.addEventListener("resize", debouncedResize, { passive: true });
 
         // Initialize cached rect for mouse calculations
         cachedRectRef.current = containerRef.current.getBoundingClientRect();
@@ -744,10 +748,11 @@ export default function NexusHero() {
             cancelAnimationFrame(animationFrameRef.current);
             animationFrameRef.current = 0;
 
-            // SECOND: Remove all event listeners
+            // SECOND: Remove all event listeners and cancel debounced handler
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("touchmove", handleTouchMove);
-            window.removeEventListener("resize", handleResize);
+            debouncedResize.cancel();
+            window.removeEventListener("resize", debouncedResize);
 
             // THIRD: Kill ScrollTrigger BEFORE disposing renderer
             if (scrollTriggerRef.current) {

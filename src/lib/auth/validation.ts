@@ -16,16 +16,16 @@ export const emailSchema = z
             .email('Μη έγκυρη διεύθυνση email')
     );
 
-// Password validation
+// Password validation - basic (for login, accepts 6+ for backwards compatibility)
 export const passwordSchema = z
     .string()
     .min(6, 'Ο κωδικός πρέπει να είναι τουλάχιστον 6 χαρακτήρες')
     .max(128, 'Ο κωδικός είναι πολύ μεγάλος');
 
-// Strong password validation (for signup)
+// Strong password validation (for signup - requires 8+ chars with complexity)
 export const strongPasswordSchema = z
     .string()
-    .min(6, 'Ο κωδικός πρέπει να είναι τουλάχιστον 6 χαρακτήρες')
+    .min(8, 'Ο κωδικός πρέπει να είναι τουλάχιστον 8 χαρακτήρες')
     .max(128, 'Ο κωδικός είναι πολύ μεγάλος')
     .refine(
         (password) => /[a-zA-Z]/.test(password),

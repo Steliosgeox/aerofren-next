@@ -5,10 +5,7 @@ import { useRef, useEffect, memo } from 'react';
 interface DarkVeilProps {
     hueShift?: number;
     noiseIntensity?: number;
-    scanlineIntensity?: number;
     speed?: number;
-    scanlineFrequency?: number;
-    warpAmount?: number;
 }
 
 /**
@@ -18,10 +15,7 @@ interface DarkVeilProps {
 const DarkVeil = memo(function DarkVeil({
     hueShift = 0,
     noiseIntensity = 0.03,
-    scanlineIntensity = 0,
     speed = 0.5,
-    scanlineFrequency = 0,
-    warpAmount = 0,
 }: DarkVeilProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<number>(0);

@@ -585,3 +585,119 @@ export async function getAllChatSessionsWithEscalation(): Promise<ChatSessionInf
         return [];
     }
 }
+
+// =====================================
+// CONTACT FORM
+// =====================================
+
+const CONTACTS_COLLECTION = 'contactSubmissions';
+
+export interface ContactSubmission {
+    id?: string;
+    name: string;
+    email: string;
+    phone?: string;
+    company?: string;
+    message: string;
+    submittedAt: Timestamp;
+    ipAddress?: string;
+    status: 'new' | 'read' | 'replied' | 'archived';
+}
+
+/**
+ * Save a contact form submission to Firestore
+ */
+export async function saveContactSubmission(
+    data: Omit<ContactSubmission, 'id' | 'submittedAt' | 'status'> & { ipAddress?: string }
+): Promise<string | null> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            console.warn('Firebase not configured - cannot save contact submission');
+            return null;
+        }
+
+        const submission: Omit<ContactSubmission, 'id'> = {
+            name: data.name,
+            email: data.email,
+            message: data.message,
+            submittedAt: Timestamp.now(),
+            status: 'new',
+        };
+
+        // Only add optional fields if they exist
+        if (data.phone) submission.phone = data.phone;
+        if (data.company) submission.company = data.company;
+        if (data.ipAddress) submission.ipAddress = data.ipAddress;
+
+        const docRef = await addDoc(collection(firestore, CONTACTS_COLLECTION), submission);
+        return docRef.id;
+    } catch (error) {
+        console.error('Error saving contact submission:', error);
+        return null;
+    }
+}
+
+/**
+ * Get all contact submissions (for admin use)
+ */
+export async function getContactSubmissions(): Promise<ContactSubmission[]> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            return [];
+        }
+
+        const q = query(
+            collection(firestore, CONTACTS_COLLECTION),
+            orderBy('submittedAt', 'desc')
+        );
+
+        const querySnapshot = await getDocs(q);
+        const submissions: ContactSubmission[] = [];
+
+        querySnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data() as DocumentData;
+            submissions.push({
+                id: docSnapshot.id,
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                company: data.company,
+                message: data.message,
+                submittedAt: data.submittedAt,
+                ipAddress: data.ipAddress,
+                status: data.status || 'new',
+            });
+        });
+
+        return submissions;
+    } catch (error) {
+        console.error('Error fetching contact submissions:', error);
+        return [];
+    }
+}
+
+/**
+ * Update contact submission status
+ */
+export async function updateContactStatus(
+    submissionId: string,
+    status: ContactSubmission['status']
+): Promise<boolean> {
+    try {
+        const firestore = getFirestoreDb();
+
+        if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+            return false;
+        }
+
+        await updateDoc(doc(firestore, CONTACTS_COLLECTION, submissionId), { status });
+        return true;
+    } catch (error) {
+        console.error('Error updating contact status:', error);
+        return false;
+    }
+}

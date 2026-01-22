@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect, useState } from "react";
+import { useRef, useEffect, useLayoutEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ScrollTrigger } from "gsap/ScrollTrigger";
+import { debounce } from "@/lib/debounce";
 
 /**
  * HorizontalGallery Component - ROCK SOLID Cross-Device Version
@@ -112,15 +113,23 @@ export default function HorizontalGallery() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Detect device type on mount
+  // Detect device type on mount - debounced to prevent layout thrashing
   useEffect(() => {
     setIsMounted(true);
     const checkDesktop = () => {
       setIsDesktop(window.innerWidth >= 1024);
     };
+    // Create debounced version for resize events (100ms delay)
+    const debouncedCheckDesktop = debounce(checkDesktop, 100);
+
+    // Run immediately on mount
     checkDesktop();
-    window.addEventListener("resize", checkDesktop);
-    return () => window.removeEventListener("resize", checkDesktop);
+    window.addEventListener("resize", debouncedCheckDesktop, { passive: true });
+
+    return () => {
+      debouncedCheckDesktop.cancel();
+      window.removeEventListener("resize", debouncedCheckDesktop);
+    };
   }, []);
 
   // CRITICAL: useLayoutEffect for cleanup - runs synchronously before React commits DOM changes

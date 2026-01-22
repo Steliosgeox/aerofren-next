@@ -7,7 +7,7 @@
 
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, memo, useMemo } from 'react';
 import {
   ArrowRight,
   Headset,
@@ -47,15 +47,55 @@ interface ChatResponse {
 // Storage key
 const STORAGE_KEY = 'aerofren_chat_session';
 
-// Custom Markdown components
-const AIChatText = {
-  p: ({ children }: { children?: React.ReactNode }) => (
-    <p className="chatbot__message-text">{children}</p>
-  ),
-  ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="chatbot__message-text">{children}</ul>
-  ),
+// Type for markdown component overrides
+type MarkdownComponents = {
+  p: React.ComponentType<{ children?: React.ReactNode }>;
+  ul: React.ComponentType<{ children?: React.ReactNode }>;
 };
+
+// Memoized Markdown components to prevent re-renders
+const AIChatText: MarkdownComponents = {
+  p: memo(({ children }: { children?: React.ReactNode }) => (
+    <p className="chatbot__message-text">{children}</p>
+  )),
+  ul: memo(({ children }: { children?: React.ReactNode }) => (
+    <ul className="chatbot__message-text">{children}</ul>
+  )),
+};
+
+// Memoized message component to prevent unnecessary re-renders
+const ChatMessage = memo(function ChatMessage({
+  message,
+  AIChatText
+}: {
+  message: Message;
+  AIChatText: MarkdownComponents;
+}) {
+  const messageClass = `chatbot__message chatbot__message--${message.type}`;
+
+  return (
+    <div className={messageClass}>
+      {message.type === 'ai' && (
+        <div className="chatbot__message-icon">
+          <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
+            <Headset className="chatbot__icon-svg" />
+          </div>
+        </div>
+      )}
+      <div className="chatbot__message-content">
+        <ReactMarkdown components={AIChatText}>
+          {message.content}
+        </ReactMarkdown>
+        {message.type === 'user' && (
+          <>
+            <div className="chatbot__message-bubble" />
+            <div className="chatbot__message-bubble chatbot__message-bubble--end" />
+          </>
+        )}
+      </div>
+    </div>
+  );
+});
 
 /**
  * AEROFREN Chatbot - Two-state layout matching original design
@@ -225,22 +265,31 @@ export function Chatbot() {
     }
   }, [user, sessionId, isEscalated, randomID]);
 
-  // Scroll to bottom when messages change (using GSAP for smoothness)
+  // Track previous message count to only scroll on new messages
+  const prevMessageCountRef = useRef(0);
+
+  // Scroll to bottom when NEW messages arrive (not on every render)
   useEffect(() => {
-    if (chatScrollerRef.current) {
+    const newCount = messages.length;
+    const prevCount = prevMessageCountRef.current;
+
+    // Only scroll if we have new messages
+    if (newCount > prevCount && chatScrollerRef.current) {
       const scroller = chatScrollerRef.current;
-      // Small delay to ensure DOM has updated
-      setTimeout(() => {
+      // Use requestAnimationFrame for smoother timing
+      requestAnimationFrame(() => {
         if (scroller) {
           gsap.to(scroller, {
             scrollTop: scroller.scrollHeight,
-            duration: 0.8,
+            duration: 0.6,
             ease: 'power2.out',
           });
         }
-      }, 100);
+      });
     }
-  }, [messages]);
+
+    prevMessageCountRef.current = newCount;
+  }, [messages.length]);  // Only depend on length, not entire array
 
   // Calculate scrollbar width
   useLayoutEffect(() => {
@@ -437,33 +486,13 @@ export function Chatbot() {
                     ref={chatMessagesRef}
                     style={messagesStyle}
                   >
-                    {messages.map((message) => {
-                      const messageClass = `chatbot__message chatbot__message--${message.type}`;
-
-                      return (
-                        <div key={`message${message.id}`} className={messageClass}>
-                          {message.type === 'ai' && (
-                            <div className="chatbot__message-icon">
-                              <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
-                                <Headset className="chatbot__icon-svg" />
-                              </div>
-                            </div>
-                          )}
-                          <div className="chatbot__message-content">
-                            <ReactMarkdown components={AIChatText}>
-                              {message.content}
-                            </ReactMarkdown>
-                            {/* Purple bubbles for user messages */}
-                            {message.type === 'user' && (
-                              <>
-                                <div className="chatbot__message-bubble" />
-                                <div className="chatbot__message-bubble chatbot__message-bubble--end" />
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {messages.map((message) => (
+                      <ChatMessage
+                        key={message.id}
+                        message={message}
+                        AIChatText={AIChatText}
+                      />
+                    ))}
                     {isLoading && (
                       <div className="chatbot__message chatbot__message--ai chatbot__message--ai-loading">
                         <div className="chatbot__message-icon">

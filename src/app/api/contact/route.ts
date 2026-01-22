@@ -1,5 +1,17 @@
+/**
+ * Contact Form API Route
+ *
+ * Handles contact form submissions with:
+ * - Rate limiting (5 requests/minute per IP)
+ * - Zod validation
+ * - Honeypot bot detection
+ * - Firestore persistence
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
+import { saveContactSubmission } from '@/lib/firebase';
 
 /**
  * Contact form validation schema
@@ -14,11 +26,28 @@ const contactSchema = z.object({
 });
 
 /**
- * Contact API Route
- * Handles contact form submissions
+ * POST /api/contact
+ * Submit a contact form
  */
 export async function POST(request: NextRequest) {
     try {
+        // Server-side rate limiting
+        const clientIP = getClientIP(request);
+        const rateLimit = checkRateLimit(`contact:${clientIP}`, RATE_LIMITS.contact);
+
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: 'Πολλές προσπάθειες. Δοκιμάστε ξανά αργότερα.' },
+                {
+                    status: 429,
+                    headers: {
+                        'X-RateLimit-Remaining': '0',
+                        'X-RateLimit-Reset': String(Math.ceil(rateLimit.resetIn / 1000)),
+                    },
+                }
+            );
+        }
+
         const body = await request.json();
 
         // Validate with Zod
@@ -37,21 +66,36 @@ export async function POST(request: NextRequest) {
 
         const { name, email, phone, company, message } = validation.data;
 
-        // TODO: Implement actual email sending or database storage
-        // For now, log and return success
-        console.log('Contact form submission:', {
+        // Save to Firestore
+        const submissionId = await saveContactSubmission({
             name,
             email,
             phone,
             company,
-            message: message.substring(0, 100) + '...',
-            timestamp: new Date().toISOString(),
+            message,
+            ipAddress: clientIP !== 'anonymous' ? clientIP : undefined,
         });
 
-        return NextResponse.json({
-            success: true,
-            message: 'Το μήνυμά σας στάλθηκε επιτυχώς.',
-        });
+        if (!submissionId) {
+            // Firestore save failed - log for debugging but don't expose to user
+            console.error('Failed to save contact submission to Firestore');
+            return NextResponse.json(
+                { error: 'Αποτυχία αποθήκευσης. Παρακαλώ δοκιμάστε ξανά.' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: 'Το μήνυμά σας στάλθηκε επιτυχώς.',
+            },
+            {
+                headers: {
+                    'X-RateLimit-Remaining': String(rateLimit.remaining),
+                },
+            }
+        );
     } catch (error) {
         console.error('Contact API error:', error);
         return NextResponse.json(
@@ -61,6 +105,10 @@ export async function POST(request: NextRequest) {
     }
 }
 
+/**
+ * GET /api/contact
+ * Health check endpoint
+ */
 export async function GET() {
     return NextResponse.json({
         status: 'ok',

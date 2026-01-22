@@ -83,7 +83,7 @@ describe('Password Validation', () => {
 
 describe('Strong Password Validation', () => {
     it('accepts passwords with letters and numbers', () => {
-        const validPasswords = ['abc123', 'Password1', '1a2b3c'];
+        const validPasswords = ['abcd1234', 'Password1', '1a2b3c4d'];
 
         validPasswords.forEach((password) => {
             const result = strongPasswordSchema.safeParse(password);
@@ -196,8 +196,8 @@ describe('Signup Validation', () => {
         const result = validateSignup({
             name: 'John Doe',
             email: 'test@example.com',
-            password: 'pass123',
-            confirmPassword: 'pass123',
+            password: 'password1',
+            confirmPassword: 'password1',
         });
 
         expect(result.success).toBe(true);
@@ -207,8 +207,8 @@ describe('Signup Validation', () => {
     it('allows empty name (optional)', () => {
         const result = validateSignup({
             email: 'test@example.com',
-            password: 'pass123',
-            confirmPassword: 'pass123',
+            password: 'password1',
+            confirmPassword: 'password1',
         });
 
         expect(result.success).toBe(true);
@@ -217,7 +217,7 @@ describe('Signup Validation', () => {
     it('returns error when passwords do not match', () => {
         const result = validateSignup({
             email: 'test@example.com',
-            password: 'pass123',
+            password: 'password1',
             confirmPassword: 'different',
         });
 
@@ -251,8 +251,8 @@ describe('Signup Validation', () => {
         const result = validateSignup({
             name: '<script>alert("xss")</script>',
             email: 'test@example.com',
-            password: 'pass123',
-            confirmPassword: 'pass123',
+            password: 'password1',
+            confirmPassword: 'password1',
         });
 
         expect(result.success).toBe(true);
