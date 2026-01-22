@@ -11,7 +11,11 @@ import {
     signInWithPopup,
     signOut as firebaseSignOut,
     onAuthStateChanged,
-    User
+    User,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile,
+    sendPasswordResetEmail
 } from 'firebase/auth';
 import { getFirestore, Firestore, collection, addDoc, query, where, orderBy, getDocs, Timestamp, DocumentData, doc, updateDoc, setDoc, getCountFromServer } from 'firebase/firestore';
 
@@ -71,6 +75,60 @@ export async function signOut(): Promise<void> {
         await firebaseSignOut(auth);
     } catch (error) {
         console.error('Sign out error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Sign up with email and password
+ */
+export async function signUpWithEmail(
+    email: string,
+    password: string,
+    displayName?: string
+): Promise<User | null> {
+    try {
+        const auth = getFirebaseAuth();
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+
+        // Update profile with display name if provided
+        if (displayName && result.user) {
+            await updateProfile(result.user, { displayName });
+        }
+
+        return result.user;
+    } catch (error) {
+        console.error('Email sign-up error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Sign in with email and password
+ */
+export async function signInWithEmail(
+    email: string,
+    password: string
+): Promise<User | null> {
+    try {
+        const auth = getFirebaseAuth();
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        return result.user;
+    } catch (error) {
+        console.error('Email sign-in error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Send password reset email
+ */
+export async function resetPassword(email: string): Promise<void> {
+    try {
+        const auth = getFirebaseAuth();
+        await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+        console.error('Password reset error:', error);
         throw error;
     }
 }

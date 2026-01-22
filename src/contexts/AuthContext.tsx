@@ -21,6 +21,9 @@ interface AuthContextType {
     loading: boolean;
     isAdmin: boolean;
     signInWithGoogle: () => Promise<void>;
+    signInWithEmail: (email: string, password: string) => Promise<void>;
+    signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
+    resetPassword: (email: string) => Promise<void>;
     signOut: () => Promise<void>;
 }
 
@@ -95,6 +98,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     };
 
+    const signInWithEmail = async (email: string, password: string) => {
+        try {
+            setLoading(true);
+            const { signInWithEmail: firebaseSignInWithEmail } = await import('@/lib/firebase');
+            await firebaseSignInWithEmail(email, password);
+        } catch (error) {
+            console.error('Email sign in error:', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const signUpWithEmail = async (email: string, password: string, displayName?: string) => {
+        try {
+            setLoading(true);
+            const { signUpWithEmail: firebaseSignUpWithEmail } = await import('@/lib/firebase');
+            await firebaseSignUpWithEmail(email, password, displayName);
+        } catch (error) {
+            console.error('Email sign up error:', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const resetPassword = async (email: string) => {
+        try {
+            const { resetPassword: firebaseResetPassword } = await import('@/lib/firebase');
+            await firebaseResetPassword(email);
+        } catch (error) {
+            console.error('Password reset error:', error);
+            throw error;
+        }
+    };
+
     const signOut = async () => {
         try {
             const { signOut: firebaseSignOut } = await import('@/lib/firebase');
@@ -110,6 +149,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         loading: !mounted || loading,
         isAdmin,
         signInWithGoogle,
+        signInWithEmail,
+        signUpWithEmail,
+        resetPassword,
         signOut,
     };
 
@@ -126,6 +168,9 @@ const defaultAuthContext: AuthContextType = {
     loading: true,
     isAdmin: false,
     signInWithGoogle: async () => { },
+    signInWithEmail: async () => { },
+    signUpWithEmail: async () => { },
+    resetPassword: async () => { },
     signOut: async () => { },
 };
 

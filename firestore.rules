@@ -1,15 +1,69 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Chat messages - anyone can write (for anonymous chat), authenticated can read
-    match /chatMessages/{document=**} {
+    
+    // ==========================================
+    // CHAT MESSAGES - Validated writes, auth reads
+    // ==========================================
+    match /chatMessages/{messageId} {
+      // Only authenticated users can read chat history
       allow read: if request.auth != null;
-      allow write: if true;
+      
+      // Create rules with validation
+      allow create: if 
+        // Session ID validation
+        request.resource.data.sessionId is string &&
+        request.resource.data.sessionId.size() > 0 &&
+        request.resource.data.sessionId.size() <= 100 &&
+        // Role must be user or assistant
+        request.resource.data.role in ['user', 'assistant'] &&
+        // Content validation
+        request.resource.data.content is string &&
+        request.resource.data.content.size() > 0 &&
+        request.resource.data.content.size() <= 5000 &&
+        // Required timestamp fields
+        request.resource.data.timestamp is timestamp &&
+        request.resource.data.expiresAt is timestamp;
+      
+      // No updates or deletes for regular users (prevents tampering)
+      allow update, delete: if false;
     }
     
-    // User profiles - only the user can read/write their own profile
+    // ==========================================
+    // ESCALATED CHATS - Auth create, admin read/update
+    // ==========================================
+    match /escalatedChats/{sessionId} {
+      // Authenticated users can escalate their own chats
+      allow create: if 
+        request.auth != null &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.sessionId is string &&
+        request.resource.data.status in ['pending', 'in_progress', 'resolved'];
+      
+      // Only admins can read and update escalations
+      allow read, update: if 
+        request.auth != null && 
+        request.auth.token.email in [
+          'info@aerofren.gr',
+          'admin@aerofren.gr'
+        ];
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ==========================================
+    // USER PROFILES - Owner only access
+    // ==========================================
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ==========================================
+    // DEFAULT DENY - Block everything else
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

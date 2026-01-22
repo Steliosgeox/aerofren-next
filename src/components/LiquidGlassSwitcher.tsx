@@ -1,13 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
+import { useTheme } from "next-themes";
 
 type Theme = "light" | "dark" | "dim";
 
 export function LiquidGlassSwitcher() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const switcherRef = useRef<HTMLFieldSetElement>(null);
-  const previousRef = useRef<string>("2");
+  const id = useId(); // Unique ID per instance to avoid radio name collisions
+
+  // Prevent hydration mismatch - only render after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Track previous selection for animation direction
   useEffect(() => {
@@ -41,16 +48,25 @@ export function LiquidGlassSwitcher() {
         radio.removeEventListener("change", handleChange);
       });
     };
-  }, []);
+  }, [mounted, resolvedTheme]);
 
-  // Apply theme to document
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
-
-  const handleChange = (newTheme: Theme) => {
+  const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
   };
+
+  // Use resolvedTheme for comparison (handles system theme resolution)
+  const currentTheme = (resolvedTheme || theme || "dark") as Theme;
+
+  // SSR guard: show skeleton placeholder until mounted to prevent layout shift
+  if (!mounted) {
+    return (
+      <div
+        className="w-[140px] h-[44px] rounded-full animate-pulse"
+        style={{ background: "rgba(255, 255, 255, 0.1)" }}
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <>
@@ -363,11 +379,11 @@ export function LiquidGlassSwitcher() {
           <input
             className="switcher__input"
             type="radio"
-            name="theme"
+            name={`theme-${id}`}
             value="light"
             c-option="1"
-            checked={theme === "light"}
-            onChange={() => handleChange("light")}
+            checked={currentTheme === "light"}
+            onChange={() => handleThemeChange("light")}
           />
           <svg
             className="switcher__icon"
@@ -392,11 +408,11 @@ export function LiquidGlassSwitcher() {
           <input
             className="switcher__input"
             type="radio"
-            name="theme"
+            name={`theme-${id}`}
             value="dark"
             c-option="2"
-            checked={theme === "dark"}
-            onChange={() => handleChange("dark")}
+            checked={currentTheme === "dark"}
+            onChange={() => handleThemeChange("dark")}
           />
           <svg
             className="switcher__icon"
@@ -415,11 +431,11 @@ export function LiquidGlassSwitcher() {
           <input
             className="switcher__input"
             type="radio"
-            name="theme"
+            name={`theme-${id}`}
             value="dim"
             c-option="3"
-            checked={theme === "dim"}
-            onChange={() => handleChange("dim")}
+            checked={currentTheme === "dim"}
+            onChange={() => handleThemeChange("dim")}
           />
           <svg
             className="switcher__icon"

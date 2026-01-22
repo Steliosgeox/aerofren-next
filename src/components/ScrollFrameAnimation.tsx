@@ -210,7 +210,6 @@ export default function ScrollFrameAnimation() {
                 <div ref={staticBgRef} className="scroll-frame-static">
                     <div className="scroll-frame-static-gradient" />
                     <div className="scroll-frame-static-pattern" />
-                    <div className="scroll-frame-static-glow" />
                 </div>
 
                 {/* Canvas wrapper - fades in when splash arrives */}
@@ -271,22 +270,6 @@ export default function ScrollFrameAnimation() {
           opacity: 0.5;
         }
 
-        .scroll-frame-static-glow {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 800px;
-          height: 800px;
-          background: radial-gradient(circle, rgba(0, 186, 226, 0.12) 0%, transparent 60%);
-          animation: pulse-glow 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-          0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-        }
-
         /* Light theme background */
         [data-theme="light"] .scroll-frame-static-gradient {
           background-image: url('/images/BackgroundLight.webp');
@@ -300,10 +283,6 @@ export default function ScrollFrameAnimation() {
         [data-theme="light"] .scroll-frame-static-pattern {
           background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230066cc' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
           opacity: 0.8;
-        }
-
-        [data-theme="light"] .scroll-frame-static-glow {
-          background: radial-gradient(circle, rgba(0, 102, 204, 0.15) 0%, transparent 60%);
         }
 
         /* Canvas wrapper */

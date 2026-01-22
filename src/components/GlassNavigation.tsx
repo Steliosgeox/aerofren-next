@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
@@ -15,9 +15,10 @@ interface GlassNavigationProps {
   items: NavItem[];
   onItemClick?: (item: NavItem) => void;
   onDropdownHover?: (item: NavItem, isHovering: boolean) => void;
+  isIntegrated?: boolean;
 }
 
-const StyledWrapper = styled.div`
+const StyledWrapper = styled.div<{ $isIntegrated?: boolean }>`
   .glass-nav-group {
     --text: var(--theme-text, #e5e5e5);
     --text-active: var(--theme-text, #fff);
@@ -25,15 +26,16 @@ const StyledWrapper = styled.div`
 
     display: flex;
     position: relative;
-    background-color: color-mix(in srgb, var(--c-glass, #bbbbbc) 12%, transparent);
-    border-radius: 1rem;
-    backdrop-filter: blur(12px) saturate(var(--saturation, 150%));
-    -webkit-backdrop-filter: blur(12px) saturate(var(--saturation, 150%));
-    box-shadow:
+    background-color: ${props => props.$isIntegrated ? 'transparent' : 'color-mix(in srgb, var(--c-glass, #bbbbbc) 12%, transparent)'};
+    border-radius: ${props => props.$isIntegrated ? '0' : '1rem'};
+    backdrop-filter: ${props => props.$isIntegrated ? 'none' : 'blur(12px) saturate(var(--saturation, 150%))'};
+    -webkit-backdrop-filter: ${props => props.$isIntegrated ? 'none' : 'blur(12px) saturate(var(--saturation, 150%))'};
+    box-shadow: ${props => props.$isIntegrated ? 'none' : `
       inset 0 0 0 1px color-mix(in srgb, var(--c-light, #fff) calc(var(--glass-reflex-light, 0.3) * 10%), transparent),
       inset 1px 1px 4px color-mix(in srgb, var(--c-light, #fff) calc(var(--glass-reflex-light, 0.3) * 40%), transparent),
       inset -1px -1px 4px color-mix(in srgb, var(--c-dark, #000) calc(var(--glass-reflex-dark, 2) * 8%), transparent),
-      0 4px 12px color-mix(in srgb, var(--c-dark, #000) calc(var(--glass-reflex-dark, 2) * 6%), transparent);
+      0 4px 12px color-mix(in srgb, var(--c-dark, #000) calc(var(--glass-reflex-dark, 2) * 6%), transparent)
+    `};
     overflow: hidden;
     width: fit-content;
     transition: all var(--theme-transition, 0.4s ease);
@@ -74,7 +76,7 @@ const StyledWrapper = styled.div`
     position: absolute;
     top: 0;
     bottom: 0;
-    border-radius: 1rem;
+    border-radius: ${props => props.$isIntegrated ? '0.8rem' : '1rem'};
     z-index: 1;
     transition:
       transform 0.5s cubic-bezier(0.37, 1.95, 0.66, 0.56),
@@ -108,8 +110,10 @@ export function GlassNavigation({
   items,
   onItemClick,
   onDropdownHover,
+  isIntegrated = false,
 }: GlassNavigationProps) {
   const pathname = usePathname();
+  const id = useId(); // Unique ID to prevent radio name collision with multiple instances
 
   // Calculate which item is active
   const activeIndex = items.findIndex((item) => {
@@ -123,19 +127,19 @@ export function GlassNavigation({
   const itemWidth = 100 / items.length;
 
   return (
-    <StyledWrapper suppressHydrationWarning>
+    <StyledWrapper suppressHydrationWarning $isIntegrated={isIntegrated}>
       <div className="glass-nav-group">
         {items.map((item, index) => (
           <React.Fragment key={item.path}>
             <input
               type="radio"
-              name="nav"
-              id={`glass-nav-${index}`}
+              name={`nav-${id}`}
+              id={`glass-nav-${id}-${index}`}
               checked={activeIndex === index}
               readOnly
             />
             <label
-              htmlFor={`glass-nav-${index}`}
+              htmlFor={`glass-nav-${id}-${index}`}
               className={item.hasDropdown ? "dropdown-indicator" : ""}
               onClick={() => onItemClick?.(item)}
               onMouseEnter={() =>

@@ -648,8 +648,14 @@ h4,
   background: transparent;
 }
 
-/* Firefox */
-* {
+/* Firefox - Apply to html and elements that commonly scroll */
+html,
+body,
+[data-scroll-container],
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 102, 204, 0.5) rgba(6, 16, 31, 0.8);
 }
@@ -664,7 +670,13 @@ h4,
   border: 2px solid rgba(240, 244, 248, 0.9);
 }
 
-[data-theme="light"] * {
+[data-theme="light"] html,
+[data-theme="light"] body,
+[data-theme="light"] [data-scroll-container],
+[data-theme="light"] .overflow-auto,
+[data-theme="light"] .overflow-y-auto,
+[data-theme="light"] .overflow-x-auto,
+[data-theme="light"] .overflow-scroll {
   scrollbar-color: rgba(0, 102, 204, 0.4) rgba(240, 244, 248, 0.9);
 }
 

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { categories } from "@/data/categories";
-import { GlassNavigation } from "./GlassNavigation";
 import { SocialTooltips } from "./SocialTooltips";
+import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "next-themes";
 // Import from centralized GSAP config - plugins are pre-registered there
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import {
@@ -54,6 +55,39 @@ const navItems = [
   { name: "Ποιοι Είμαστε", path: "/about" },
   { name: "Επικοινωνία", path: "/contact" },
 ];
+
+// Optimized Logo Component - Only loads ONE image based on theme
+function LogoImage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Logo configuration per theme
+  const logoConfig = {
+    dark: { src: "/images/LOGOdark.webp", width: 510, height: 144, className: "h-[9rem] -mt-2 ml-2" },
+    dim: { src: "/images/LOGOdim.webp", width: 510, height: 144, className: "h-[9rem] -mt-2 ml-2" },
+    light: { src: "/images/LOGOlight.webp", width: 620, height: 176, className: "h-[11rem] mt-2 -ml-2" },
+  };
+
+  // Default to dark during SSR/before mount
+  const themeKey = (mounted ? resolvedTheme : "dark") as keyof typeof logoConfig;
+  const config = logoConfig[themeKey] || logoConfig.dark;
+
+  return (
+    <Image
+      src={config.src}
+      alt="AEROFREN"
+      width={config.width}
+      height={config.height}
+      className={`${config.className} w-auto object-contain`}
+      priority
+    />
+  );
+}
+
 
 // Glass header styles - iOS 26 Liquid Glass Effect
 const glassHeaderStyles = {
@@ -113,11 +147,11 @@ function HeaderComponent() {
     };
   }, []);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await signOut();
     setUserMenuOpen(false);
     router.push('/');
-  };
+  }, [signOut, router]);
 
   // GSAP scroll animation
   useEffect(() => {
@@ -184,20 +218,20 @@ function HeaderComponent() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleMegaMenuEnter = () => {
+  const handleMegaMenuEnter = useCallback(() => {
     if (megaMenuTimeoutRef.current) {
       clearTimeout(megaMenuTimeoutRef.current);
     }
     setMegaMenuOpen(true);
-  };
+  }, []);
 
-  const handleMegaMenuLeave = () => {
+  const handleMegaMenuLeave = useCallback(() => {
     megaMenuTimeoutRef.current = setTimeout(() => {
       setMegaMenuOpen(false);
     }, 150);
-  };
+  }, []);
 
-  const handleNavDropdownHover = (
+  const handleNavDropdownHover = useCallback((
     item: { hasDropdown?: boolean },
     isHovering: boolean
   ) => {
@@ -208,7 +242,29 @@ function HeaderComponent() {
         handleMegaMenuLeave();
       }
     }
-  };
+  }, [handleMegaMenuEnter, handleMegaMenuLeave]);
+
+  // Memoized style objects to prevent recreation on every render
+  const megaMenuStyles = useMemo(() => ({
+    background: "var(--theme-mega-bg)",
+    backdropFilter: "blur(20px)",
+    boxShadow: `inset 1px 1px 0 var(--theme-glass-inset-light), 0 20px 50px rgba(0, 0, 0, 0.5)`,
+    border: "1px solid var(--theme-glass-border)",
+    transition: "all var(--theme-transition)",
+  }), []);
+
+  const userDropdownStyles = useMemo(() => ({
+    background: "var(--theme-mega-bg)",
+    backdropFilter: "blur(20px)",
+    border: "1px solid var(--theme-glass-border)",
+    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
+  }), []);
+
+  const loginButtonStyles = useMemo(() => ({
+    background: "rgba(255, 255, 255, 0.1)",
+    color: "var(--theme-text)",
+    border: "1px solid rgba(255, 255, 255, 0.15)",
+  }), []);
 
   return (
     <>
@@ -243,153 +299,113 @@ function HeaderComponent() {
           height: isScrolled ? "90px" : "100px",
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 h-full">
-          <div className="flex items-center justify-between h-full">
+        <div className="w-full px-8 h-full">
+          <div className="grid grid-cols-[1fr_auto_1fr] grid-rows-1 items-center h-full relative">
             {/* Logo - Theme-aware with premium hover effect */}
-            <Link href="/" className="flex items-center gap-3 group logo-hover">
-              {/* Dark theme logo */}
-              <Image
-                src="/images/LOGOdark.webp"
-                alt="AEROFREN"
-                width={510}
-                height={144}
-                className="h-[9rem] w-auto object-contain hidden [html[data-theme='dark']_&]:block -mt-2 ml-2"
-                priority
-              />
-              {/* Light theme logo - slightly larger & shifted down for visual balance */}
-              <Image
-                src="/images/LOGOlight.webp"
-                alt="AEROFREN"
-                width={620}
-                height={176}
-                className="h-[11rem] w-auto object-contain hidden [html[data-theme='light']_&]:block mt-2 -ml-2"
-                priority
-              />
-              {/* Dim theme logo */}
-              <Image
-                src="/images/LOGOdim.webp"
-                alt="AEROFREN"
-                width={510}
-                height={144}
-                className="h-[9rem] w-auto object-contain hidden [html[data-theme='dim']_&]:block -mt-2 ml-2"
-                priority
-              />
-              {/* Default (no theme set = dark) */}
-              <Image
-                src="/images/LOGOdark.webp"
-                alt="AEROFREN"
-                width={510}
-                height={144}
-                className="h-[9rem] w-auto object-contain [html[data-theme]_&]:hidden -mt-2 ml-2"
-                priority
-              />
+            <Link href="/" className="flex items-center gap-3 group logo-hover shrink-0 z-20 justify-self-start">
+              <LogoImage />
             </Link>
 
-            {/* Desktop Navigation with Glass Effect */}
-            <nav
-              className="hidden lg:flex items-center relative"
-              ref={megaMenuRef}
-              onMouseLeave={handleMegaMenuLeave}
-            >
-              <GlassNavigation
-                items={navItems}
-                onDropdownHover={handleNavDropdownHover}
-              />
+            {/* Desktop Navigation with Glass Effect - Grid Centered */}
+            <div className="hidden xl:flex justify-self-center z-10">
+              <nav
+                className="flex items-center relative"
+                ref={megaMenuRef}
+                onMouseLeave={handleMegaMenuLeave}
+              >
+                <UnifiedHeaderMenu
+                  navItems={navItems}
+                  onDropdownHover={handleNavDropdownHover}
+                />
 
-              {/* Mega Menu for Products */}
-              {megaMenuOpen && (
-                <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[800px] rounded-2xl overflow-hidden"
-                  style={{
-                    background: "var(--theme-mega-bg)",
-                    backdropFilter: "blur(20px)",
-                    boxShadow: `
-                      inset 1px 1px 0 var(--theme-glass-inset-light),
-                      0 20px 50px rgba(0, 0, 0, 0.5)
-                    `,
-                    border: "1px solid var(--theme-glass-border)",
-                    transition: "all var(--theme-transition)",
-                  }}
-                  onMouseEnter={handleMegaMenuEnter}
-                  onMouseLeave={handleMegaMenuLeave}
-                >
-                  <div className="p-6">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: '1px solid var(--theme-glass-border)' }}>
-                      <h3 className="font-bold" style={{ color: 'var(--theme-text)' }}>
-                        Κατηγορίες Προϊόντων
-                      </h3>
-                      <Link
-                        href="/products"
-                        className="text-sm font-semibold hover:underline flex items-center gap-1"
-                        style={{ color: 'var(--theme-accent)' }}
-                      >
-                        Δες Όλα
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </div>
-
-                    {/* Categories Grid */}
-                    <div className="grid grid-cols-3 gap-2">
-                      {categories.slice(0, 12).map((category) => (
+                {/* Mega Menu for Products */}
+                {megaMenuOpen && (
+                  <div
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-3 max-w-[800px] w-[90vw] xl:w-[800px] rounded-2xl overflow-hidden"
+                    style={megaMenuStyles}
+                    onMouseEnter={handleMegaMenuEnter}
+                    onMouseLeave={handleMegaMenuLeave}
+                  >
+                    <div className="p-6">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: '1px solid var(--theme-glass-border)' }}>
+                        <h3 className="font-bold" style={{ color: 'var(--theme-text)' }}>
+                          Κατηγορίες Προϊόντων
+                        </h3>
                         <Link
-                          key={category.id}
-                          href={`/products/${category.slug}`}
-                          className="flex items-center gap-3 p-3 rounded-xl transition-colors group"
-                          style={{ ['--hover-bg' as string]: 'var(--theme-glass-bg)' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-glass-bg)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                          onClick={() => setMegaMenuOpen(false)}
+                          href="/products"
+                          className="text-sm font-semibold hover:underline flex items-center gap-1"
+                          style={{ color: 'var(--theme-accent)' }}
                         >
-                          <div
-                            className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform`}
-                          >
-                            {iconMap[category.icon] || (
-                              <Package className="w-5 h-5" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <span
-                              className="font-semibold text-sm block truncate transition-colors"
-                              style={{ color: 'var(--theme-text)' }}
-                            >
-                              {category.nameEl}
-                            </span>
-                            <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.75rem' }}>
-                              {category.productCount.toLocaleString("el-GR")}{" "}
-                              προϊόντα
-                            </span>
-                          </div>
+                          Δες Όλα
+                          <ArrowRight className="w-4 h-4" />
                         </Link>
-                      ))}
-                    </div>
+                      </div>
 
-                    {/* Footer CTA */}
-                    <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--theme-glass-border)' }}>
-                      <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-                        Δεν βρήκατε αυτό που ψάχνετε;
-                      </p>
-                      <a
-                        href="tel:2103461645"
-                        className="text-sm font-bold hover:underline flex items-center gap-1"
-                        style={{ color: 'var(--theme-accent)' }}
-                      >
-                        <Phone className="w-4 h-4" />
-                        210 3461645
-                      </a>
+                      {/* Categories Grid */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {categories.slice(0, 12).map((category) => (
+                          <Link
+                            key={category.id}
+                            href={`/products/${category.slug}`}
+                            className="flex items-center gap-3 p-3 rounded-xl transition-colors group"
+                            style={{ ['--hover-bg' as string]: 'var(--theme-glass-bg)' }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-glass-bg)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                            onClick={() => setMegaMenuOpen(false)}
+                          >
+                            <div
+                              className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform`}
+                            >
+                              {iconMap[category.icon] || (
+                                <Package className="w-5 h-5" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <span
+                                className="font-semibold text-sm block truncate transition-colors"
+                                style={{ color: 'var(--theme-text)' }}
+                              >
+                                {category.nameEl}
+                              </span>
+                              <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.75rem' }}>
+                                {category.productCount.toLocaleString("el-GR")}{" "}
+                                προϊόντα
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+
+                      {/* Footer CTA */}
+                      <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--theme-glass-border)' }}>
+                        <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
+                          Δεν βρήκατε αυτό που ψάχνετε;
+                        </p>
+                        <a
+                          href="tel:2103461645"
+                          className="text-sm font-bold hover:underline flex items-center gap-1"
+                          style={{ color: 'var(--theme-accent)' }}
+                        >
+                          <Phone className="w-4 h-4" />
+                          210 3461645
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </nav>
+                )}
+              </nav>
+            </div>
 
-            {/* Desktop CTA - Theme Switcher + Social Icons + User */}
-            <div className="hidden lg:flex items-center gap-5">
-              <LiquidGlassSwitcher />
-              <SocialTooltips />
+            {/* Desktop CTA - Theme Switcher + User - Right Side Grid */}
+            <div className="hidden xl:grid grid-cols-[1fr_auto] items-center z-20 justify-self-end w-full">
+              {/* Theme Switcher - Centered in remaining space */}
+              <div className="justify-self-center">
+                <LiquidGlassSwitcher />
+              </div>
 
-              {/* User Avatar / Login Button - Always render container for stable DOM */}
-              <div className="relative" ref={userMenuRef}>
+              {/* Login / User Avatar - Anchored Right */}
+              <div className="relative justify-self-end" ref={userMenuRef}>
                 {user && !authLoading ? (
                   <>
                     <button
@@ -413,18 +429,13 @@ function HeaderComponent() {
                     {userMenuOpen && (
                       <div
                         className="absolute right-0 top-full mt-2 w-56 rounded-xl overflow-hidden z-50"
-                        style={{
-                          background: "rgba(15, 23, 42, 0.95)",
-                          backdropFilter: "blur(20px)",
-                          border: "1px solid rgba(255, 255, 255, 0.1)",
-                          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
-                        }}
+                        style={userDropdownStyles}
                       >
-                        <div className="p-3 border-b border-white/10">
-                          <p className="text-sm font-medium text-white truncate">
+                        <div className="p-3" style={{ borderBottom: "1px solid var(--theme-glass-border)" }}>
+                          <p className="text-sm font-medium truncate" style={{ color: "var(--theme-text)" }}>
                             {user.displayName || 'Χρήστης'}
                           </p>
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-xs truncate" style={{ color: "var(--theme-text-muted)" }}>
                             {user.email}
                           </p>
                         </div>
@@ -433,7 +444,10 @@ function HeaderComponent() {
                             <Link
                               href="/admin"
                               onClick={() => setUserMenuOpen(false)}
-                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+                              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+                              style={{ color: "var(--theme-text-muted)" }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--theme-glass-bg)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             >
                               <Shield className="w-4 h-4" />
                               Admin Dashboard
@@ -441,7 +455,10 @@ function HeaderComponent() {
                           )}
                           <button
                             onClick={handleSignOut}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+                            style={{ color: "var(--theme-text-muted)" }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--theme-glass-bg)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                           >
                             <LogOut className="w-4 h-4" />
                             Αποσύνδεση
@@ -454,11 +471,7 @@ function HeaderComponent() {
                   <Link
                     href="/login"
                     className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-                    style={{
-                      background: "rgba(255, 255, 255, 0.1)",
-                      color: "var(--theme-text)",
-                      border: "1px solid rgba(255, 255, 255, 0.15)",
-                    }}
+                    style={loginButtonStyles}
                   >
                     <User className="w-4 h-4" />
                     Σύνδεση
@@ -467,10 +480,11 @@ function HeaderComponent() {
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Z-indexed to be clickable */}
             <button
-              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors text-white"
+              className="xl:hidden col-start-3 justify-self-end p-2 hover:bg-white/10 rounded-lg transition-colors text-white z-20"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -484,11 +498,11 @@ function HeaderComponent() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div
-            className="lg:hidden absolute top-full left-0 right-0 max-h-[calc(100vh-6rem)] overflow-auto"
+            className="xl:hidden absolute top-full left-0 right-0 max-h-[calc(100vh-6rem)] overflow-auto"
             style={{
-              background: "rgba(14, 16, 15, 0.95)",
+              background: "var(--theme-mega-bg)",
               backdropFilter: "blur(20px)",
-              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+              borderTop: "1px solid var(--theme-glass-border)",
             }}
           >
             <nav className="p-6 space-y-2">
@@ -498,8 +512,8 @@ function HeaderComponent() {
                     href={item.path}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`block px-4 py-3 rounded-xl text-lg font-bold transition-colors ${pathname === item.path
-                      ? "text-[#00bae2] bg-white/10"
-                      : "text-white hover:bg-white/5"
+                      ? "text-[var(--theme-accent)] bg-[var(--theme-glass-bg)]"
+                      : "text-[var(--theme-text)] hover:bg-[var(--theme-glass-bg)]"
                       }`}
                   >
                     {item.name}
@@ -507,13 +521,13 @@ function HeaderComponent() {
 
                   {/* Mobile Subcategories for Products */}
                   {item.hasDropdown && (
-                    <div className="ml-4 mt-2 space-y-1 border-l-2 border-white/20 pl-4">
+                    <div className="ml-4 mt-2 space-y-1 border-l-2 border-[var(--theme-glass-border)] pl-4">
                       {categories.slice(0, 6).map((category) => (
                         <Link
                           key={category.id}
                           href={`/products/${category.slug}`}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block px-3 py-2 text-sm text-gray-400 hover:text-[#00bae2] transition-colors"
+                          className="block px-3 py-2 text-sm text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors"
                         >
                           {category.nameEl}
                         </Link>
@@ -521,7 +535,7 @@ function HeaderComponent() {
                       <Link
                         href="/products"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm font-semibold text-[#00bae2]"
+                        className="block px-3 py-2 text-sm font-semibold text-[var(--theme-accent)]"
                       >
                         Δες Όλα →
                       </Link>
@@ -530,13 +544,17 @@ function HeaderComponent() {
                 </div>
               ))}
 
-              <div className="pt-4 border-t border-white/10 space-y-3">
-                <div className="flex justify-center">
+              <div className="pt-4 border-t border-[var(--theme-glass-border)] space-y-3">
+                {/* Theme Switcher for Mobile */}
+                <div className="flex justify-center pb-2">
+                  <LiquidGlassSwitcher />
+                </div>
+                <div className="flex justify-center text-[var(--theme-text)]">
                   <SocialTooltips />
                 </div>
                 <a
                   href="tel:2103461645"
-                  className="flex items-center justify-center gap-2 w-full h-12 border border-white/20 rounded-xl font-bold text-white hover:border-[#00bae2] transition-colors"
+                  className="flex items-center justify-center gap-2 w-full h-12 border border-[var(--theme-glass-border)] rounded-xl font-bold text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors"
                 >
                   <Phone className="w-5 h-5" />
                   210 3461645

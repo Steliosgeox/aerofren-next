@@ -4,7 +4,6 @@ import { Chatbot } from "@/components/Chatbot"
 import { BackToTop } from "@/components/BackToTop"
 import SmoothScrollProvider from "@/components/SmoothScrollProvider"
 import ScrollFrameAnimation from "@/components/ScrollFrameAnimation"
-import AmbientParticles from "@/components/ui/AmbientParticles"
 
 export default function MainLayout({
   children,
@@ -23,9 +22,6 @@ export default function MainLayout({
 
       {/* Scroll-controlled frame animation (z-index: 0) */}
       <ScrollFrameAnimation />
-
-      {/* Ambient floating particles (z-index: -1) */}
-      <AmbientParticles />
 
       {/* Header - Fixed for accessibility */}
       <Header />

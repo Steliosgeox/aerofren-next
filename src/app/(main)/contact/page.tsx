@@ -1,23 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
+import { MagicBento, ParticleCard } from "@/components/MagicBento";
 import {
   Phone,
   Mail,
   MapPin,
   Clock,
   Send,
-  ArrowRight,
   Building2,
   CheckCircle,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 
+// Dynamic import to avoid SSR issues with WebGL
+const DarkVeil = dynamic(() => import("@/components/DarkVeil"), { ssr: false });
+
+/**
+ * Contact Page - Premium Redesign
+ * 
+ * Features:
+ * - Theme-compliant glassmorphic dark design
+ * - MagicBento cards with GSAP spotlight/particle effects
+ * - Working contact form with API submission
+ * - Premium animations and micro-interactions
+ */
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -26,320 +40,371 @@ export default function ContactPage() {
     company: "",
     subject: "",
     message: "",
+    honeypot: "", // Spam protection
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setError(null);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Honeypot check (if filled, it's a bot)
+    if (formData.honeypot) {
+      setIsSubmitted(true);
+      return;
+    }
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    // Basic validation
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setError("Παρακαλώ συμπληρώστε τα υποχρεωτικά πεδία.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Παρακαλώ εισάγετε έγκυρο email.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          company: formData.company.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Αποτυχία αποστολής. Δοκιμάστε ξανά.");
+      }
+
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Αποτυχία αποστολής. Δοκιμάστε ξανά.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  const resetForm = () => {
+    setIsSubmitted(false);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      subject: "",
+      message: "",
+      honeypot: "",
+    });
+    setError(null);
+  };
+
+  // Contact info data
+  const contactCards = [
+    {
+      icon: Phone,
+      title: "Τηλέφωνο",
+      primary: "210 3461645",
+      secondary: "Δευτέρα - Παρασκευή",
+      href: "tel:2103461645",
+      iconBg: "from-blue-500/20 to-blue-600/10",
+      iconColor: "text-blue-400",
+    },
+    {
+      icon: Mail,
+      title: "Email",
+      primary: "info@aerofren.gr",
+      secondary: "Απάντηση εντός 24 ωρών",
+      href: "mailto:info@aerofren.gr",
+      iconBg: "from-cyan-500/20 to-cyan-600/10",
+      iconColor: "text-cyan-400",
+    },
+    {
+      icon: MapPin,
+      title: "Διεύθυνση",
+      primary: "Χρυσοστόμου Σμύρνης 26",
+      secondary: "Μοσχάτο 18344, Αθήνα",
+      href: "https://maps.google.com/?q=Χρυσοστόμου+Σμύρνης+26+Μοσχάτο",
+      iconBg: "from-emerald-500/20 to-emerald-600/10",
+      iconColor: "text-emerald-400",
+    },
+    {
+      icon: Clock,
+      title: "Ωράριο",
+      primary: "08:00 - 16:00",
+      secondary: "Σαβ-Κυρ: Κλειστά",
+      iconBg: "from-purple-500/20 to-purple-600/10",
+      iconColor: "text-purple-400",
+    },
+    {
+      icon: Building2,
+      title: "Επωνυμία",
+      primary: "AEROFREN",
+      secondary: "Κουτελίδου Αικατερίνη Β.",
+      tags: ["B2B Only", "Από το 1990"],
+      iconBg: "from-amber-500/20 to-amber-600/10",
+      iconColor: "text-amber-400",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-20 pt-32">
-        <div className="max-w-7xl mx-auto px-6">
+    <div className="min-h-screen bg-[#060010]">
+      {/* DarkVeil WebGL Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+        <DarkVeil
+          hueShift={0}
+          noiseIntensity={0}
+          scanlineIntensity={0}
+          speed={0.5}
+          scanlineFrequency={0}
+          warpAmount={0}
+        />
+      </div>
+
+      {/* Hero Section - Streamlined */}
+      <section className="relative pt-24 pb-4 overflow-hidden z-10">
+        <div className="relative max-w-7xl mx-auto px-6">
           <Breadcrumbs items={[{ label: "Επικοινωνία", href: "/contact" }]} />
 
-          <div className="mt-6">
-            <span className="text-[#0066cc] font-bold tracking-widest uppercase text-sm mb-4 block">
-              Επικοινωνία
-            </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-4">
-              ΕΠΙΚΟΙΝΩΝΗΣΤΕ
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0066cc] to-blue-400">
-                ΜΑΖΙ ΜΑΣ
-              </span>
-            </h1>
-            <p className="text-xl text-slate-300 max-w-2xl">
-              Είμαστε εδώ για να σας εξυπηρετήσουμε. Επικοινωνήστε μαζί μας για
-              προσφορές, τεχνικές πληροφορίες ή οποιαδήποτε απορία.
-            </p>
+          <div className="mt-4 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-4xl font-extrabold text-[var(--theme-text)]">
+                ΕΠΙΚΟΙΝΩΝΗΣΤΕ{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--brand)] to-blue-400">
+                  ΜΑΖΙ ΜΑΣ
+                </span>
+              </h1>
+              <p className="text-sm text-[var(--theme-text-muted)] mt-2 max-w-lg">
+                Είμαστε εδώ για να σας εξυπηρετήσουμε. Επικοινωνήστε μαζί μας για
+                προσφορές, τεχνικές πληροφορίες ή οποιαδήποτε απορία.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-16">
+      {/* Main Content - Height-Aligned Layout */}
+      <section className="relative py-6 z-10">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Contact Info Cards */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Phone */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-[#0066cc]/10 rounded-xl flex items-center justify-center shrink-0">
-                      <Phone className="w-6 h-6 text-[#0066cc]" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-lg mb-1">
-                        Τηλέφωνο
-                      </h3>
-                      <a
-                        href="tel:2103461645"
-                        className="text-2xl font-bold text-[#0066cc] hover:underline"
+          <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
+            {/* Contact Info Cards - Left Column - Wider for balance */}
+            <div className="lg:w-[420px] lg:shrink-0 flex flex-col">
+              <div className="flex-1">
+                <MagicBento
+                  enableSpotlight
+                  spotlightRadius={250}
+                  glowColor="0, 102, 204"
+                >
+                  <div className="space-y-3 flex flex-col justify-between h-full">
+                    {contactCards.map((card, index) => (
+                      <ParticleCard
+                        key={index}
+                        className="group cursor-pointer rounded-lg transition-all duration-300 hover:-translate-y-0.5 flex-1"
+                        glowColor="0, 102, 204"
+                        enableBorderGlow
+                        clickEffect
+                        enableTilt={false}
+                        enableMagnetism={false}
+                        particleCount={5}
                       >
-                        210 3461645
-                      </a>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Δευτέρα - Παρασκευή
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Email */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-[hsl(var(--secondary))]/10 rounded-xl flex items-center justify-center shrink-0">
-                      <Mail className="w-6 h-6 text-[hsl(var(--secondary))]" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-lg mb-1">
-                        Email
-                      </h3>
-                      <a
-                        href="mailto:info@aerofren.gr"
-                        className="text-lg font-semibold text-slate-700 hover:text-[#0066cc] transition-colors"
-                      >
-                        info@aerofren.gr
-                      </a>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Απάντηση εντός 24 ωρών
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Address */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
-                      <MapPin className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-lg mb-1">
-                        Διεύθυνση
-                      </h3>
-                      <p className="text-slate-700 font-medium">
-                        Χρυσοστόμου Σμύρνης 26
-                        <br />
-                        Μοσχάτο, 18344
-                        <br />
-                        Αθήνα
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Hours */}
-              <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
-                      <Clock className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-lg mb-2">
-                        Ωράριο Λειτουργίας
-                      </h3>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Δευτέρα - Παρασκευή</span>
-                          <span className="font-semibold text-slate-900">
-                            08:00 - 16:00
-                          </span>
+                        <div className="p-4 bg-[var(--glass-dark-bg)] backdrop-blur-xl border border-[var(--glass-dark-border)] rounded-lg h-full flex items-center">
+                          {card.href ? (
+                            <a href={card.href} className="flex items-center gap-3 w-full" target={card.href.startsWith('http') ? '_blank' : undefined}>
+                              <div className={`w-10 h-10 bg-gradient-to-br ${card.iconBg} rounded-lg flex items-center justify-center shrink-0`}>
+                                <card.icon className={`w-4 h-4 ${card.iconColor}`} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-semibold text-[var(--theme-text)]">{card.title}</h3>
+                                <p className="text-xs font-bold text-[var(--brand)] group-hover:text-blue-400 transition-colors truncate">
+                                  {card.primary}
+                                </p>
+                                <p className="text-[11px] text-[var(--theme-text-muted)]">{card.secondary}</p>
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="flex items-center gap-3 w-full">
+                              <div className={`w-10 h-10 bg-gradient-to-br ${card.iconBg} rounded-lg flex items-center justify-center shrink-0`}>
+                                <card.icon className={`w-4 h-4 ${card.iconColor}`} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-semibold text-[var(--theme-text)]">{card.title}</h3>
+                                <p className="text-xs font-bold text-[var(--theme-text)]">{card.primary}</p>
+                                <p className="text-[11px] text-[var(--theme-text-muted)]">{card.secondary}</p>
+                                {card.tags && (
+                                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                                    {card.tags.map((tag, i) => (
+                                      <span key={i} className="px-1.5 py-0.5 rounded text-[10px] bg-white/5 text-[var(--theme-text-muted)] border border-white/10">
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Σάββατο - Κυριακή</span>
-                          <span className="font-semibold text-red-500">Κλειστά</span>
-                        </div>
-                      </div>
-                    </div>
+                      </ParticleCard>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Company Info */}
-              <Card className="border-0 shadow-lg bg-slate-900 text-white">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
-                      <Building2 className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg mb-2">Επωνυμία</h3>
-                      <p className="text-slate-300">
-                        AEROFREN
-                        <br />
-                        Κουτελίδου Αικατερίνη Β.
-                      </p>
-                      <div className="flex gap-2 mt-3">
-                        <span className="px-2 py-1 rounded text-xs bg-white/10">
-                          B2B Only
-                        </span>
-                        <span className="px-2 py-1 rounded text-xs bg-white/10">
-                          Από το 1990
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                </MagicBento>
+              </div>
             </div>
 
-            {/* Contact Form */}
-            <div className="lg:col-span-2">
-              <Card className="border-0 shadow-2xl overflow-hidden">
-                <div className="h-2 bg-gradient-to-r from-[#0066cc] to-blue-400" />
-                <CardContent className="p-8 md:p-10">
+            {/* Contact Form - Right Column - Matches cards height */}
+            <div className="flex-1 flex flex-col">
+              <div
+                className="relative flex-1 flex flex-col rounded-xl overflow-hidden bg-[var(--glass-dark-bg)] backdrop-blur-xl border border-[var(--glass-dark-border)] shadow-xl transition-opacity duration-500"
+                style={{ opacity: mounted ? 1 : 0 }}
+              >
+                {/* Gradient top bar */}
+                <div className="h-1 bg-gradient-to-r from-[var(--brand)] via-blue-400 to-cyan-400 shrink-0" />
+
+                <div className="flex-1 p-4 md:p-5 flex flex-col overflow-auto">
                   {isSubmitted ? (
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle className="w-10 h-10 text-green-600" />
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <CheckCircle className="w-8 h-8 text-emerald-400" />
                       </div>
-                      <h2 className="text-2xl font-bold text-slate-900 mb-3">
+                      <h2 className="text-xl font-bold text-[var(--theme-text)] mb-2">
                         Ευχαριστούμε για το μήνυμά σας!
                       </h2>
-                      <p className="text-slate-600 mb-6 max-w-md mx-auto">
+                      <p className="text-sm text-[var(--theme-text-muted)] mb-4 max-w-md mx-auto">
                         Λάβαμε το αίτημά σας και θα επικοινωνήσουμε μαζί σας το
                         συντομότερο δυνατό, εντός 24 ωρών.
                       </p>
-                      <Button
-                        onClick={() => {
-                          setIsSubmitted(false);
-                          setFormData({
-                            name: "",
-                            email: "",
-                            phone: "",
-                            company: "",
-                            subject: "",
-                            message: "",
-                          });
-                        }}
-                      >
+                      <Button onClick={resetForm} variant="outline" size="sm" className="border-[var(--brand)] text-[var(--brand)] hover:bg-[var(--brand)]/10">
                         Νέο Μήνυμα
                       </Button>
                     </div>
                   ) : (
                     <>
-                      <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                      <div className="mb-4">
+                        <h2 className="text-base font-bold text-[var(--theme-text)] mb-0.5">
                           Στείλτε μας Μήνυμα
                         </h2>
-                        <p className="text-slate-500">
-                          Συμπληρώστε τη φόρμα και θα επικοινωνήσουμε μαζί σας
-                          το συντομότερο.
+                        <p className="text-xs text-[var(--theme-text-muted)]">
+                          Συμπληρώστε τη φόρμα και θα επικοινωνήσουμε μαζί σας το συντομότερο.
                         </p>
                       </div>
 
-                      <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <Label htmlFor="name">Ονοματεπώνυμο *</Label>
+                      {error && (
+                        <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
+                          <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                          <span className="text-red-300 text-sm">{error}</span>
+                        </div>
+                      )}
+
+                      <form ref={formRef} onSubmit={handleSubmit} className="space-y-3" noValidate>
+                        {/* Honeypot - invisible to users */}
+                        <input
+                          type="text"
+                          name="honeypot"
+                          value={formData.honeypot}
+                          onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                          className="hidden"
+                          tabIndex={-1}
+                          autoComplete="off"
+                        />
+
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label htmlFor="name" className="text-xs text-[var(--theme-text)]">Ονοματεπώνυμο *</Label>
                             <Input
                               id="name"
                               required
                               value={formData.name}
-                              onChange={(e) =>
-                                setFormData({ ...formData, name: e.target.value })
-                              }
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                               placeholder="Γιάννης Παπαδόπουλος"
+                              className="bg-white/5 border-white/10 text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)]/50 focus:border-[var(--brand)] focus:ring-[var(--brand)]/20"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="company">Εταιρεία</Label>
+                          <div className="space-y-1">
+                            <Label htmlFor="company" className="text-xs text-[var(--theme-text)]">Εταιρεία</Label>
                             <Input
                               id="company"
                               value={formData.company}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  company: e.target.value,
-                                })
-                              }
+                              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                               placeholder="Όνομα εταιρείας"
+                              className="bg-white/5 border-white/10 text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)]/50 focus:border-[var(--brand)] focus:ring-[var(--brand)]/20"
                             />
                           </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <Label htmlFor="email">Email *</Label>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label htmlFor="email" className="text-xs text-[var(--theme-text)]">Email *</Label>
                             <Input
                               id="email"
                               type="email"
                               required
                               value={formData.email}
-                              onChange={(e) =>
-                                setFormData({ ...formData, email: e.target.value })
-                              }
+                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                               placeholder="email@example.com"
+                              className="bg-white/5 border-white/10 text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)]/50 focus:border-[var(--brand)] focus:ring-[var(--brand)]/20"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="phone">Τηλέφωνο</Label>
+                          <div className="space-y-1">
+                            <Label htmlFor="phone" className="text-xs text-[var(--theme-text)]">Τηλέφωνο</Label>
                             <Input
                               id="phone"
                               type="tel"
                               value={formData.phone}
-                              onChange={(e) =>
-                                setFormData({ ...formData, phone: e.target.value })
-                              }
+                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                               placeholder="210 1234567"
+                              className="bg-white/5 border-white/10 text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)]/50 focus:border-[var(--brand)] focus:ring-[var(--brand)]/20"
                             />
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="subject">Θέμα</Label>
+                        <div className="space-y-1">
+                          <Label htmlFor="subject" className="text-xs text-[var(--theme-text)]">Θέμα</Label>
                           <Input
                             id="subject"
                             value={formData.subject}
-                            onChange={(e) =>
-                              setFormData({ ...formData, subject: e.target.value })
-                            }
+                            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                             placeholder="π.χ. Αίτημα προσφοράς, Τεχνική ερώτηση..."
+                            className="bg-white/5 border-white/10 text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)]/50 focus:border-[var(--brand)] focus:ring-[var(--brand)]/20"
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="message">Μήνυμα *</Label>
+                        <div className="space-y-1">
+                          <Label htmlFor="message" className="text-xs text-[var(--theme-text)]">Μήνυμα *</Label>
                           <Textarea
                             id="message"
                             required
                             value={formData.message}
-                            onChange={(e) =>
-                              setFormData({ ...formData, message: e.target.value })
-                            }
+                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             placeholder="Περιγράψτε το αίτημά σας, κωδικούς προϊόντων, ποσότητες..."
-                            rows={6}
+                            rows={3}
+                            className="bg-white/5 border-white/10 text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)]/50 focus:border-[var(--brand)] focus:ring-[var(--brand)]/20 resize-none"
                           />
                         </div>
 
                         <Button
                           type="submit"
-                          size="lg"
-                          className="w-full h-14 font-bold"
+                          className="w-full h-9 text-sm font-semibold bg-gradient-to-r from-[var(--brand)] to-blue-500 hover:from-[var(--brand-dark)] hover:to-blue-600 text-white shadow-md shadow-blue-500/20 transition-all hover:shadow-blue-500/30 hover:-translate-y-0.5"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? (
                             <span className="flex items-center gap-2">
-                              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              <Loader2 className="w-5 h-5 animate-spin" />
                               Αποστολή...
                             </span>
                           ) : (
@@ -350,12 +415,9 @@ export default function ContactPage() {
                           )}
                         </Button>
 
-                        <p className="text-xs text-slate-500 text-center">
+                        <p className="text-xs text-[var(--theme-text-muted)] text-center">
                           Με την αποστολή συμφωνείτε με την{" "}
-                          <a
-                            href="#"
-                            className="underline hover:text-[hsl(var(--primary))]"
-                          >
+                          <a href="/privacy" className="underline hover:text-[var(--brand)] transition-colors">
                             Πολιτική Απορρήτου
                           </a>{" "}
                           μας.
@@ -363,57 +425,61 @@ export default function ContactPage() {
                       </form>
                     </>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Map Section */}
-      <section className="py-16 bg-white">
+      {/* Map Section - Compact */}
+      <section className="relative py-10 z-10">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-[var(--theme-text)] mb-1">
               Επισκεφτείτε μας
             </h2>
-            <p className="text-slate-500">
+            <p className="text-sm text-[var(--theme-text-muted)]">
               Χρυσοστόμου Σμύρνης 26, Μοσχάτο 18344, Αθήνα
             </p>
           </div>
 
-          <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-200">
+          <div className="rounded-xl overflow-hidden border border-[var(--glass-dark-border)] shadow-lg">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3146.0458789285867!2d23.67820231531961!3d37.94829497972867!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14a1bd5e5d5d5d5d%3A0x5d5d5d5d5d5d5d5d!2sMoschato%2C%20Greece!5e0!3m2!1sen!2sgr!4v1234567890123!5m2!1sen!2sgr"
               width="100%"
-              height="450"
+              height="300"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="grayscale hover:grayscale-0 transition-all duration-500"
+              className="grayscale-[50%] hover:grayscale-0 transition-all duration-500"
             />
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-[hsl(var(--primary))] to-blue-700 text-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Προτιμάτε να μιλήσετε απευθείας;
-          </h2>
-          <p className="text-xl text-white/80 mb-8">
-            Η τεχνική μας ομάδα είναι διαθέσιμη για να απαντήσει σε κάθε σας
-            ερώτηση.
-          </p>
-          <a
-            href="tel:2103461645"
-            className="inline-flex items-center justify-center h-16 px-10 bg-white text-[hsl(var(--primary))] font-bold text-lg rounded-xl hover:bg-slate-100 transition-colors shadow-xl"
-          >
-            <Phone className="w-6 h-6 mr-3" />
-            Καλέστε: 210 3461645
-          </a>
+      {/* CTA Section - Compact */}
+      <section className="relative py-10 pb-16 z-10">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-[var(--brand)] via-blue-600 to-blue-700 p-8 md:p-10 text-center">
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
+
+            <h2 className="relative text-2xl md:text-3xl font-bold text-white mb-3">
+              Προτιμάτε να μιλήσετε απευθείας;
+            </h2>
+            <p className="relative text-lg text-white/80 mb-6">
+              Η τεχνική μας ομάδα είναι διαθέσιμη για να απαντήσει σε κάθε σας ερώτηση.
+            </p>
+            <a
+              href="tel:2103461645"
+              className="relative inline-flex items-center justify-center h-12 px-8 bg-white text-[var(--brand)] font-semibold rounded-lg hover:bg-slate-100 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <Phone className="w-5 h-5 mr-2" />
+              Καλέστε: 210 3461645
+            </a>
+          </div>
         </div>
       </section>
     </div>

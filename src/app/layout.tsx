@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes"
 import "./globals.css"
 import StyledComponentsRegistry from "@/lib/registry"
 import { AuthWrapper } from "@/components/AuthWrapper"
+import ErrorBoundary from "@/components/ui/ErrorBoundary"
 
 const inter = Inter({ subsets: ["latin", "greek"] })
 const manrope = Manrope({
@@ -77,11 +78,13 @@ export default function RootLayout({
           enableSystem
           themes={["dark", "dim", "light"]}
         >
-          <AuthWrapper>
-            <StyledComponentsRegistry>
-              {children}
-            </StyledComponentsRegistry>
-          </AuthWrapper>
+          <ErrorBoundary>
+            <AuthWrapper>
+              <StyledComponentsRegistry>
+                {children}
+              </StyledComponentsRegistry>
+            </AuthWrapper>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

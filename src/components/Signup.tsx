@@ -3,28 +3,21 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, Mail, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Mail, User, AlertTriangle } from 'lucide-react';
 import GlassSurface from '@/components/ui/GlassSurface';
 import { AuthLayout, ValuePanel, ChatButton, AuthInput } from '@/components/auth';
-import { useAuthForm, INPUT_LIMITS, validateResetPassword, getAuthErrorMessage } from '@/lib/auth';
+import { useAuthForm, INPUT_LIMITS } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 
 /**
- * Login Component - Tailwind Refactored
- * Lines reduced: 427 → ~250
+ * Signup Component - Tailwind Refactored
+ * Registration page with Google OAuth and email/password options
  */
-export default function Login() {
+export default function Signup() {
     const router = useRouter();
-    const { resetPassword } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [showEmailForm, setShowEmailForm] = useState(false);
-
-    // Forgot password states
-    const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const [resetEmail, setResetEmail] = useState('');
-    const [isResetting, setIsResetting] = useState(false);
-    const [resetSent, setResetSent] = useState(false);
-    const [resetError, setResetError] = useState('');
 
     const {
         formData,
@@ -32,8 +25,6 @@ export default function Login() {
         fieldErrors,
         showPassword,
         isLocked,
-        authLoading,
-        user,
         isGoogleLoading,
         isEmailLoading,
         updateField,
@@ -42,41 +33,13 @@ export default function Login() {
         clearErrors,
         togglePassword,
         formatLockoutTime,
-    } = useAuthForm('login');
+    } = useAuthForm('signup');
 
     useEffect(() => { setMounted(true); }, []);
 
     useEffect(() => {
         if (user && !authLoading) router.push('/');
     }, [user, authLoading, router]);
-
-    const handleForgotPassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const validation = validateResetPassword({ email: resetEmail });
-        if (!validation.success) {
-            setResetError(validation.errors?.email || 'Μη έγκυρο email.');
-            return;
-        }
-
-        try {
-            setResetError('');
-            setIsResetting(true);
-            await resetPassword(validation.data!.email);
-            setResetSent(true);
-        } catch (err) {
-            setResetError(getAuthErrorMessage(err));
-        } finally {
-            setIsResetting(false);
-        }
-    };
-
-    const handleBackToLogin = () => {
-        setShowForgotPassword(false);
-        setResetSent(false);
-        setResetEmail('');
-        setResetError('');
-        clearErrors();
-    };
 
     return (
         <AuthLayout valuePanel={<ValuePanel />}>
@@ -92,9 +55,9 @@ export default function Login() {
                 </div>
 
                 <h1 className="text-[1.75rem] font-bold text-white mb-1.5 tracking-tight [text-shadow:0_2px_20px_rgba(0,0,0,0.4)]">
-                    Σύνδεση
+                    Εγγραφή
                 </h1>
-                <p className="text-[0.9375rem] text-white/75 mb-6">Συνεχίστε στον λογαριασμό σας</p>
+                <p className="text-[0.9375rem] text-white/75 mb-6">Δημιουργήστε τον λογαριασμό σας</p>
 
                 {/* Lockout Warning */}
                 {isLocked && (
@@ -105,15 +68,15 @@ export default function Login() {
                 )}
 
                 {/* Error Message */}
-                {(error || resetError) && !isLocked && (
+                {error && !isLocked && (
                     <div className="w-full p-3 px-4 rounded-lg mb-4 text-sm flex items-center gap-2 bg-red-500/15 border border-red-500/30 text-red-300" role="alert">
-                        <span>{error || resetError}</span>
+                        <span>{error}</span>
                     </div>
                 )}
 
                 {!showEmailForm ? (
                     <>
-                        {/* Google Sign-in Button */}
+                        {/* Google Sign-up Button */}
                         <div className="w-full">
                             <button
                                 className="w-full flex items-center justify-center gap-3 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl py-3.5 px-6 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,102,204,0.5)] disabled:opacity-60 disabled:cursor-not-allowed"
@@ -131,7 +94,7 @@ export default function Login() {
                                     </svg>
                                 )}
                                 <span className="text-white font-semibold text-[0.9375rem]">
-                                    {isGoogleLoading ? 'Σύνδεση...' : 'Συνέχεια με Google'}
+                                    {isGoogleLoading ? 'Εγγραφή...' : 'Συνέχεια με Google'}
                                 </span>
                             </button>
                         </div>
@@ -151,69 +114,28 @@ export default function Login() {
                                 disabled={isLocked}
                             >
                                 <Mail size={18} />
-                                <span>Σύνδεση με Email</span>
+                                <span>Εγγραφή με Email</span>
                             </button>
                         </GlassSurface>
-                    </>
-                ) : showForgotPassword ? (
-                    <>
-                        {/* Back to Login */}
-                        <button
-                            className="flex items-center gap-1.5 text-white/70 text-sm cursor-pointer bg-transparent border-none mb-5 transition-colors hover:text-white"
-                            onClick={handleBackToLogin}
-                            type="button"
-                        >
-                            <ArrowLeft size={16} />
-                            <span>Πίσω στη σύνδεση</span>
-                        </button>
-
-                        {resetSent ? (
-                            <div className="flex flex-col items-center gap-4 text-center">
-                                <CheckCircle size={48} className="text-emerald-500" />
-                                <p className="text-white/90 text-[0.9375rem] leading-relaxed">
-                                    Σας στείλαμε email με οδηγίες επαναφοράς κωδικού στο <strong>{resetEmail}</strong>.
-                                </p>
-                                <button
-                                    type="button"
-                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(0,102,204,0.5)]"
-                                    onClick={handleBackToLogin}
-                                >
-                                    Επιστροφή στη σύνδεση
-                                </button>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleForgotPassword} className="w-full flex flex-col gap-3" noValidate>
-                                <p className="text-[0.9375rem] text-white/75 mb-4">
-                                    Εισάγετε το email σας για να λάβετε οδηγίες επαναφοράς κωδικού.
-                                </p>
-                                <AuthInput
-                                    id="reset-email"
-                                    type="email"
-                                    placeholder="Email"
-                                    value={resetEmail}
-                                    onChange={(e) => setResetEmail(e.target.value.slice(0, INPUT_LIMITS.email))}
-                                    icon="mail"
-                                    maxLength={INPUT_LIMITS.email}
-                                    autoComplete="email"
-                                    error={resetError}
-                                />
-                                <button
-                                    type="submit"
-                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,102,204,0.5)] disabled:opacity-60 disabled:cursor-not-allowed"
-                                    disabled={isResetting}
-                                >
-                                    {isResetting && <Loader2 size={20} className="animate-spin" />}
-                                    {isResetting ? 'Αποστολή...' : 'Αποστολή συνδέσμου'}
-                                </button>
-                            </form>
-                        )}
                     </>
                 ) : (
                     <>
                         {/* Email Form */}
                         <form onSubmit={handleEmailSubmit} className="w-full flex flex-col gap-3" noValidate>
                             <AuthInput
-                                id="login-email"
+                                id="signup-name"
+                                type="text"
+                                placeholder="Ονοματεπώνυμο"
+                                value={formData.name || ''}
+                                onChange={(e) => updateField('name', e.target.value)}
+                                icon="user"
+                                maxLength={INPUT_LIMITS.name}
+                                autoComplete="name"
+                                error={fieldErrors.name}
+                                disabled={isLocked}
+                            />
+                            <AuthInput
+                                id="signup-email"
                                 type="email"
                                 placeholder="Email"
                                 value={formData.email}
@@ -225,15 +147,30 @@ export default function Login() {
                                 disabled={isLocked}
                             />
                             <AuthInput
-                                id="login-password"
+                                id="signup-password"
                                 type="password"
                                 placeholder="Κωδικός"
                                 value={formData.password}
                                 onChange={(e) => updateField('password', e.target.value)}
                                 icon="lock"
                                 maxLength={INPUT_LIMITS.password}
-                                autoComplete="current-password"
+                                autoComplete="new-password"
                                 error={fieldErrors.password}
+                                disabled={isLocked}
+                                showPasswordToggle
+                                showPassword={showPassword}
+                                onTogglePassword={togglePassword}
+                            />
+                            <AuthInput
+                                id="signup-confirm-password"
+                                type="password"
+                                placeholder="Επιβεβαίωση κωδικού"
+                                value={formData.confirmPassword || ''}
+                                onChange={(e) => updateField('confirmPassword', e.target.value)}
+                                icon="lock"
+                                maxLength={INPUT_LIMITS.password}
+                                autoComplete="new-password"
+                                error={fieldErrors.confirmPassword}
                                 disabled={isLocked}
                                 showPasswordToggle
                                 showPassword={showPassword}
@@ -241,20 +178,12 @@ export default function Login() {
                             />
 
                             <button
-                                type="button"
-                                className="text-white/60 text-[0.8125rem] cursor-pointer transition-colors mt-1 inline-block bg-transparent border-none hover:text-blue-400"
-                                onClick={() => { setShowForgotPassword(true); setResetEmail(formData.email); clearErrors(); }}
-                            >
-                                Ξεχάσατε τον κωδικό;
-                            </button>
-
-                            <button
                                 type="submit"
                                 className="w-full py-3.5 px-6 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,102,204,0.5)] disabled:opacity-60 disabled:cursor-not-allowed"
                                 disabled={isEmailLoading || authLoading || isLocked}
                             >
                                 {isEmailLoading && <Loader2 size={20} className="animate-spin" />}
-                                {isEmailLoading ? 'Σύνδεση...' : 'Σύνδεση'}
+                                {isEmailLoading ? 'Εγγραφή...' : 'Δημιουργία λογαριασμού'}
                             </button>
                         </form>
 
@@ -283,11 +212,23 @@ export default function Login() {
                     </>
                 )}
 
+                {/* Terms Notice */}
+                <p className="mt-4 text-[0.75rem] text-white/50 leading-relaxed">
+                    Με την εγγραφή σας, αποδέχεστε τους{' '}
+                    <Link href="/terms" className="text-blue-400 no-underline hover:text-blue-300">
+                        Όρους Χρήσης
+                    </Link>{' '}
+                    και την{' '}
+                    <Link href="/privacy" className="text-blue-400 no-underline hover:text-blue-300">
+                        Πολιτική Απορρήτου
+                    </Link>.
+                </p>
+
                 {/* Footer */}
                 <div className="mt-5 text-sm text-white/60">
-                    Νέος χρήστης?
-                    <Link href="/signup" className="text-blue-400 no-underline font-semibold ml-1 transition-colors hover:text-blue-300">
-                        Εγγραφείτε
+                    Έχετε ήδη λογαριασμό;
+                    <Link href="/login" className="text-blue-400 no-underline font-semibold ml-1 transition-colors hover:text-blue-300">
+                        Συνδεθείτε
                     </Link>
                 </div>
 
