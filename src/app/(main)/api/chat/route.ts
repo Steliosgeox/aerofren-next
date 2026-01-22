@@ -1,9 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
-
 /**
  * Chat API Route
- * Handles chat messages for AI assistant with rate limiting
+ * Handles AI chat with Mistral API
+ *
+ * Features:
+ * - Rate limiting per IP
+ * - Conversation history support
+ * - AEROFREN system prompt
+ * - Graceful error handling with fallback responses
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { Mistral } from '@mistralai/mistralai';
+import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
+import { AEROFREN_SYSTEM_PROMPT, FALLBACK_RESPONSES } from '@/lib/chatbot/prompts';
+
+// Initialize Mistral client (lazy - only when needed)
+let mistralClient: Mistral | null = null;
+
+function getMistralClient(): Mistral | null {
+    if (!process.env.MISTRAL_API_KEY) {
+        console.warn('MISTRAL_API_KEY not configured');
+        return null;
+    }
+    if (!mistralClient) {
+        mistralClient = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
+    }
+    return mistralClient;
+}
+
+// Message type for conversation history
+interface ConversationMessage {
+    role: 'user' | 'assistant';
+    content: string;
+}
+
+/**
+ * POST /api/chat
+ * Send a message and get AI response
  */
 export async function POST(request: NextRequest) {
     try {
@@ -25,7 +58,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { message } = body;
+        const { message, sessionId, history } = body;
 
         if (!message || typeof message !== 'string') {
             return NextResponse.json(
@@ -42,12 +75,52 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // TODO: Implement actual AI chat logic here
-        // For now, return a placeholder response
+        // Get Mistral client
+        const client = getMistralClient();
+        if (!client) {
+            // No API key configured - return fallback response
+            console.warn('Mistral API not configured, returning fallback');
+            return NextResponse.json({
+                response: FALLBACK_RESPONSES.error,
+                sessionId: sessionId || 'no-session',
+            });
+        }
+
+        // Build conversation messages
+        const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
+            { role: 'system', content: AEROFREN_SYSTEM_PROMPT },
+        ];
+
+        // Add conversation history (last 10 messages for context)
+        if (Array.isArray(history)) {
+            const recentHistory = history.slice(-10) as ConversationMessage[];
+            for (const msg of recentHistory) {
+                if (msg.role === 'user' || msg.role === 'assistant') {
+                    messages.push({
+                        role: msg.role,
+                        content: msg.content,
+                    });
+                }
+            }
+        }
+
+        // Add current user message
+        messages.push({ role: 'user', content: message });
+
+        // Call Mistral API
+        const chatResponse = await client.chat.complete({
+            model: 'mistral-small-latest', // Cost-effective model
+            messages,
+            maxTokens: 500, // Keep responses concise
+            temperature: 0.7, // Balanced creativity
+        });
+
+        const aiResponse = chatResponse.choices?.[0]?.message?.content || FALLBACK_RESPONSES.error;
+
         return NextResponse.json(
             {
-                response: 'Ευχαριστούμε για το μήνυμά σας. Θα επικοινωνήσουμε σύντομα μαζί σας.',
-                timestamp: new Date().toISOString(),
+                response: aiResponse,
+                sessionId: sessionId || 'no-session',
             },
             {
                 headers: {
@@ -57,16 +130,27 @@ export async function POST(request: NextRequest) {
         );
     } catch (error) {
         console.error('Chat API error:', error);
+
+        // Return user-friendly error
         return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
+            {
+                response: FALLBACK_RESPONSES.error,
+                error: 'AI service temporarily unavailable',
+            },
+            { status: 200 } // Return 200 so frontend handles gracefully
         );
     }
 }
 
+/**
+ * GET /api/chat
+ * Health check endpoint
+ */
 export async function GET() {
+    const hasMistral = !!process.env.MISTRAL_API_KEY;
     return NextResponse.json({
         status: 'ok',
         message: 'Chat API is running',
+        mistralConfigured: hasMistral,
     });
 }
