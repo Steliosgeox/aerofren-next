@@ -188,7 +188,7 @@ export default function ScrollAnimation() {
                         <div className={styles.scaler}>
                             <img
                                 src={SCALER_IMAGE}
-                                alt="Aerofren Hero"
+                                alt="AEROFREN — Κεντρικό προϊόν"
                                 className={styles.scalerImage}
                                 loading="eager"
                             />

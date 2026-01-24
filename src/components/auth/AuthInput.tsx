@@ -103,30 +103,30 @@ export function AuthInput({
                     left: 14px;
                     top: 50%;
                     transform: translateY(-50%);
-                    color: rgba(255, 255, 255, 0.5);
+                    color: var(--theme-text-muted, rgba(255, 255, 255, 0.5));
                     pointer-events: none;
                 }
 
                 .auth-input {
                     width: 100%;
                     padding: 14px 14px 14px 44px;
-                    background: rgba(255, 255, 255, 0.06);
-                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    background: color-mix(in srgb, var(--theme-glass-bg) 85%, transparent);
+                    border: 1px solid var(--theme-glass-border);
                     border-radius: 12px;
                     font-size: 0.9375rem;
-                    color: #ffffff;
+                    color: var(--theme-text, #ffffff);
                     outline: none;
                     transition: all 0.2s;
                 }
 
                 .auth-input::placeholder {
-                    color: rgba(255, 255, 255, 0.4);
+                    color: color-mix(in srgb, var(--theme-text-muted) 85%, transparent);
                 }
 
                 .auth-input:focus {
-                    border-color: rgba(0, 102, 204, 0.5);
-                    background: rgba(255, 255, 255, 0.08);
-                    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+                    border-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
+                    background: color-mix(in srgb, var(--theme-glass-bg) 90%, transparent);
+                    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 20%, transparent);
                 }
 
                 .auth-input--error {
@@ -149,7 +149,7 @@ export function AuthInput({
                     transform: translateY(-50%);
                     background: none;
                     border: none;
-                    color: rgba(255, 255, 255, 0.5);
+                    color: var(--theme-text-muted, rgba(255, 255, 255, 0.5));
                     cursor: pointer;
                     padding: 4px;
                     display: flex;
@@ -158,7 +158,7 @@ export function AuthInput({
                 }
 
                 .auth-password-toggle:hover {
-                    color: rgba(255, 255, 255, 0.8);
+                    color: var(--theme-text, rgba(255, 255, 255, 0.8));
                 }
 
                 .auth-password-toggle:disabled {

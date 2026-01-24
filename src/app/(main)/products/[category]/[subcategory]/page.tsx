@@ -36,12 +36,12 @@ export default function SubcategoryPage() {
 
   if (!result) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--theme-bg-solid)" }}>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">
+          <h1 className="text-2xl font-bold text-[var(--theme-text)] mb-4">
             Η υποκατηγορία δεν βρέθηκε
           </h1>
-          <a href="/products" className="text-[#0066cc] hover:underline">
+          <a href="/products" className="text-[var(--theme-accent)] hover:underline">
             Επιστροφή στον κατάλογο
           </a>
         </div>
@@ -53,9 +53,9 @@ export default function SubcategoryPage() {
   const sampleProducts = generateSampleProducts(subcategory.nameEl);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" style={{ background: "var(--theme-bg-solid)" }}>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-12 pt-28 overflow-hidden">
+      <section className="relative bg-[var(--theme-bg-solid)] text-[var(--theme-text)] py-12 pt-28 overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-10">
           <Image
             src={subcategory.image}
@@ -81,7 +81,7 @@ export default function SubcategoryPage() {
             <h1 className="text-3xl md:text-4xl font-extrabold mb-2">
               {subcategory.nameEl}
             </h1>
-            <p className="text-slate-300">
+            <p className="text-[var(--theme-text-muted)]">
               {subcategory.productCount.toLocaleString("el-GR")} προϊόντα σε αυτή την κατηγορία
             </p>
           </div>
@@ -100,13 +100,13 @@ export default function SubcategoryPage() {
             {/* Content */}
             <div className="flex-1">
               {/* Info Banner */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 flex items-start gap-3">
-                <Package className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="bg-[color-mix(in_srgb,var(--theme-accent)_12%,transparent)] border border-[color-mix(in_srgb,var(--theme-accent)_35%,transparent)] rounded-xl p-4 mb-8 flex items-start gap-3">
+                <Package className="w-5 h-5 text-[var(--theme-accent)] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm text-amber-800 font-medium">
+                  <p className="text-sm text-[var(--theme-text)] font-medium">
                     Η AEROFREN δεν διαθέτει ηλεκτρονικό κατάστημα.
                   </p>
-                  <p className="text-sm text-amber-700">
+                  <p className="text-sm text-[var(--theme-text-muted)]">
                     Για τιμές και παραγγελίες επικοινωνήστε μαζί μας ή στείλτε
                     αίτημα προσφοράς.
                   </p>
@@ -118,10 +118,10 @@ export default function SubcategoryPage() {
                 {sampleProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg hover:border-[#0066cc] transition-all group"
+                    className="bg-[var(--theme-glass-bg)] rounded-xl border border-[var(--theme-glass-border)] overflow-hidden hover:shadow-lg hover:border-[var(--theme-accent)] transition-all group"
                   >
                     {/* Product Image */}
-                    <div className="relative h-40 bg-slate-100">
+                    <div className="relative h-40 bg-[var(--theme-glass-bg)]">
                       <Image
                         src={product.image}
                         alt={product.name}
@@ -132,13 +132,13 @@ export default function SubcategoryPage() {
 
                     {/* Product Info */}
                     <div className="p-4">
-                      <span className="text-xs text-slate-500 font-mono">
+                      <span className="text-xs text-[var(--theme-text-muted)] font-mono">
                         {product.sku}
                       </span>
-                      <h3 className="font-semibold text-slate-900 mt-1 line-clamp-2 group-hover:text-[#0066cc] transition-colors">
+                      <h3 className="font-semibold text-[var(--theme-text)] mt-1 line-clamp-2 group-hover:text-[var(--theme-accent)] transition-colors">
                         {product.name}
                       </h3>
-                      <p className="text-sm text-slate-500 mt-1 line-clamp-2">
+                      <p className="text-sm text-[var(--theme-text-muted)] mt-1 line-clamp-2">
                         {product.description}
                       </p>
 
@@ -154,7 +154,7 @@ export default function SubcategoryPage() {
                           })
                         }
                       >
-                        Ζητήστε Τιμή
+                        Ζητήστε τιμή
                       </Button>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ export default function SubcategoryPage() {
 
               {/* Load More Placeholder */}
               <div className="mt-8 text-center">
-                <p className="text-slate-500 mb-4">
+                <p className="text-[var(--theme-text-muted)] mb-4">
                   Εμφανίζονται {sampleProducts.length} από{" "}
                   {subcategory.productCount.toLocaleString("el-GR")} προϊόντα
                 </p>
@@ -174,11 +174,11 @@ export default function SubcategoryPage() {
               </div>
 
               {/* Contact CTA */}
-              <div className="mt-12 bg-white rounded-2xl border border-slate-200 p-8">
-                <h3 className="text-xl font-bold text-slate-900 mb-4">
-                  Χρειάζεστε Βοήθεια με την Επιλογή;
+              <div className="mt-12 bg-[var(--theme-glass-bg)] rounded-2xl border border-[var(--theme-glass-border)] p-8">
+                <h3 className="text-xl font-bold text-[var(--theme-text)] mb-4">
+                  Χρειάζεστε βοήθεια με την επιλογή;
                 </h3>
-                <p className="text-slate-600 mb-6">
+                <p className="text-[var(--theme-text-muted)] mb-6">
                   Η τεχνική μας ομάδα είναι έτοιμη να σας καθοδηγήσει στην επιλογή
                   των κατάλληλων προϊόντων για την εφαρμογή σας.
                 </p>
@@ -186,16 +186,16 @@ export default function SubcategoryPage() {
                 <div className="grid sm:grid-cols-3 gap-4">
                   <a
                     href="tel:2103461645"
-                    className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 hover:bg-[#0066cc]/10 transition-colors group"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] transition-colors group"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-[#0066cc]/10 flex items-center justify-center text-[#0066cc] group-hover:bg-[#0066cc] group-hover:text-white transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-[var(--theme-accent)]/10 flex items-center justify-center text-[var(--theme-accent)] group-hover:bg-[var(--theme-accent)] group-hover:text-[var(--theme-text-inverse)] transition-colors">
                       <Phone className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-500 block">
+                      <span className="text-xs text-[var(--theme-text-muted)] block">
                         Τηλέφωνο
                       </span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold text-[var(--theme-text)]">
                         210 3461645
                       </span>
                     </div>
@@ -203,14 +203,14 @@ export default function SubcategoryPage() {
 
                   <a
                     href="mailto:info@aerofren.gr"
-                    className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 hover:bg-[#0066cc]/10 transition-colors group"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] transition-colors group"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-[#0066cc]/10 flex items-center justify-center text-[#0066cc] group-hover:bg-[#0066cc] group-hover:text-white transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-[var(--theme-accent)]/10 flex items-center justify-center text-[var(--theme-accent)] group-hover:bg-[var(--theme-accent)] group-hover:text-[var(--theme-text-inverse)] transition-colors">
                       <Mail className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-500 block">Email</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="text-xs text-[var(--theme-text-muted)] block">E-mail</span>
+                      <span className="font-semibold text-[var(--theme-text)]">
                         info@aerofren.gr
                       </span>
                     </div>
@@ -218,16 +218,16 @@ export default function SubcategoryPage() {
 
                   <button
                     onClick={() => setQuoteModal({ isOpen: true })}
-                    className="flex items-center gap-3 p-4 rounded-xl bg-[#0066cc] text-white hover:bg-[#0066cc]/90 transition-colors"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-[var(--theme-accent)] text-[var(--theme-text-inverse)] hover:bg-[var(--theme-accent-hover)] transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] flex items-center justify-center">
                       <MessageCircle className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <span className="text-xs text-white/80 block">
-                        Online
+                      <span className="text-xs text-[var(--theme-text-inverse)]/80 block">
+                        Διαδικτυακά
                       </span>
-                      <span className="font-semibold">Ζητήστε Προσφορά</span>
+                      <span className="font-semibold">Ζητήστε προσφορά</span>
                     </div>
                   </button>
                 </div>

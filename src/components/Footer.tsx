@@ -4,14 +4,14 @@ import { useState, useCallback, memo } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
-    Facebook,
-    Instagram,
-    Linkedin,
-    Shield,
-    Truck,
-    Award,
-    Clock,
-    ArrowUpRight,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Shield,
+  Truck,
+  Award,
+  Clock,
+  ArrowUpRight,
 } from "lucide-react";
 import { MagicBento, ParticleCard } from "@/components/MagicBento";
 
@@ -20,483 +20,465 @@ import { MagicBento, ParticleCard } from "@/components/MagicBento";
 // =============================================================================
 
 interface NavItem {
-    name: string;
-    path: string;
+  name: string;
+  path: string;
 }
 
 interface SocialLink {
-    icon: LucideIcon;
-    href: string;
-    label: string;
+  icon: LucideIcon;
+  href: string;
+  label: string;
 }
 
 interface TrustBadge {
-    icon: LucideIcon;
-    label: string;
-    desc: string;
+  icon: LucideIcon;
+  label: string;
+  desc: string;
 }
 
 // =============================================================================
-// CONSTANTS (Extracted for maintainability)
+// CONSTANTS
 // =============================================================================
 
 const NAV_ITEMS: NavItem[] = [
-    { name: "Αρχική", path: "/" },
-    { name: "Προϊόντα", path: "/products" },
-    { name: "Ποιοι Είμαστε", path: "/about" },
-    { name: "Επικοινωνία", path: "/contact" },
-    { name: "Όροι Χρήσης", path: "/terms" },
-    { name: "Πολιτική Απορρήτου", path: "/privacy" },
-] as const;
+  { name: "Αρχική", path: "/" },
+  { name: "Προϊόντα", path: "/products" },
+  { name: "Η Εταιρεία", path: "/about" },
+  { name: "Επικοινωνία", path: "/contact" },
+  { name: "Όροι Χρήσης", path: "/terms" },
+  { name: "Πολιτική Απορρήτου", path: "/privacy" },
+];
 
 const CATEGORY_LINKS: NavItem[] = [
-    { name: "Ρακόρ Ταχυσυνδέσεις", path: "/products/push-in-fittings" },
-    { name: "Πνευματικές Βαλβίδες", path: "/products/pneumatic-valves" },
-    { name: "Σωλήνες & Σπιράλ", path: "/products/hoses-pipes" },
-    { name: "Βάνες Σφαιρικές", path: "/products/ball-valves" },
-] as const;
+  { name: "Ρακόρ ταχυσύνδεσης", path: "/products/push-in-fittings" },
+  { name: "Πνευματικές βαλβίδες", path: "/products/pneumatic-valves" },
+  { name: "Σωλήνες & σπιράλ", path: "/products/hoses-pipes" },
+  { name: "Σφαιρικές βάνες", path: "/products/ball-valves" },
+];
 
 const SOCIAL_LINKS: SocialLink[] = [
-    { icon: Facebook, href: "https://facebook.com/aerofren", label: "Facebook" },
-    { icon: Instagram, href: "https://instagram.com/aerofren", label: "Instagram" },
-    { icon: Linkedin, href: "https://linkedin.com/company/aerofren", label: "LinkedIn" },
-] as const;
+  { icon: Facebook, href: "https://facebook.com/aerofren", label: "Facebook" },
+  { icon: Instagram, href: "https://instagram.com/aerofren", label: "Instagram" },
+  { icon: Linkedin, href: "https://linkedin.com/company/aerofren", label: "LinkedIn" },
+];
 
 const TRUST_BADGES: TrustBadge[] = [
-    { icon: Shield, label: "Εγγύηση Ποιότητας", desc: "ISO 9001:2015" },
-    { icon: Truck, label: "Αποστολή 24ωρο", desc: "Πανελλαδική" },
-    { icon: Award, label: "35+ Χρόνια", desc: "Since 1989" },
-    { icon: Clock, label: "Support", desc: "Τεχνική Κάλυψη" },
-] as const;
+  { icon: Shield, label: "Εγγύηση ποιότητας", desc: "ISO 9001:2015" },
+  { icon: Truck, label: "Αποστολή 24ωρη", desc: "Πανελλαδική" },
+  { icon: Award, label: "35+ χρόνια", desc: "Από το 1989" },
+  { icon: Clock, label: "Άμεση διαθεσιμότητα", desc: "Τεχνική κάλυψη" },
+];
 
 const CONTACT_INFO = {
-    phone: "210 3461645",
-    phoneHref: "tel:2103461645",
-    email: "info@aerofren.gr",
-    emailHref: "mailto:info@aerofren.gr",
-    address: {
-        street: "Χρυσοστόμου Σμύρνης 26",
-        city: "Μοσχάτο, Αθήνα",
-    },
+  phone: "210 3461645",
+  phoneHref: "tel:2103461645",
+  email: "info@aerofren.gr",
+  emailHref: "mailto:info@aerofren.gr",
+  address: {
+    street: "Χρυσοστόμου Σμύρνης 26",
+    city: "Μοσχάτο, Αθήνα",
+  },
 } as const;
 
 // =============================================================================
-// SUB-COMPONENTS (Extracted for better separation of concerns)
+// SUB-COMPONENTS
 // =============================================================================
 
-/** Film grain noise texture overlay */
 const NoiseOverlay = memo(function NoiseOverlay() {
-    return (
-        <div
-            className="absolute inset-0 opacity-[0.03] pointer-events-none z-20 mix-blend-overlay"
-            aria-hidden="true"
-        >
-            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                <filter id="footerNoiseFilter">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.6" stitchTiles="stitch" />
-                </filter>
-                <rect width="100%" height="100%" filter="url(#footerNoiseFilter)" />
-            </svg>
-        </div>
-    );
+  // PERFORMANCE: Replaced GPU-intensive SVG feTurbulence filter with static CSS noise
+  // The visual difference is negligible at 0.03 opacity, but GPU savings are significant
+  return (
+    <div
+      className="absolute inset-0 opacity-[0.03] pointer-events-none z-20 mix-blend-overlay"
+      aria-hidden="true"
+      style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        backgroundSize: '256px 256px',
+      }}
+    />
+  );
 });
 
-/** Animated fluid mesh background blobs */
 const FluidBackground = memo(function FluidBackground() {
-    return (
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/20 blur-[150px] rounded-full animate-blob mix-blend-screen" />
-            <div className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-cyan-900/10 blur-[180px] rounded-full animate-blob animation-delay-2000 mix-blend-screen" />
-            <div className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] bg-indigo-900/20 blur-[160px] rounded-full animate-blob animation-delay-4000 mix-blend-screen" />
-        </div>
-    );
+  return (
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+      <div
+        className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full animate-blob mix-blend-screen"
+        style={{ background: "color-mix(in srgb, var(--theme-accent) 20%, transparent)" }}
+      />
+      <div
+        className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] blur-[180px] rounded-full animate-blob animation-delay-2000 mix-blend-screen"
+        style={{ background: "color-mix(in srgb, var(--theme-accent) 12%, transparent)" }}
+      />
+      <div
+        className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] blur-[160px] rounded-full animate-blob animation-delay-4000 mix-blend-screen"
+        style={{ background: "color-mix(in srgb, var(--theme-accent) 18%, transparent)" }}
+      />
+    </div>
+  );
 });
 
-/** Architectural watermark text */
 const WatermarkText = memo(function WatermarkText() {
-    return (
-        <div
-            className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0 opacity-[0.02]"
-            aria-hidden="true"
-        >
-            <div className="absolute -left-20 top-20 text-[20vw] font-black leading-none text-white tracking-tighter select-none">
-                AERO
-            </div>
-        </div>
-    );
+  return (
+    <div
+      className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0 opacity-[0.02]"
+      aria-hidden="true"
+    >
+      <div className="absolute -left-20 top-20 text-[20vw] font-black leading-none text-[var(--theme-text)] tracking-tighter select-none">
+        AERO
+      </div>
+    </div>
+  );
 });
 
-/** Social media link button */
 const SocialButton = memo(function SocialButton({ social }: { social: SocialLink }) {
-    const Icon = social.icon;
-    return (
-        <a
-            href={social.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Follow us on ${social.label}`}
-            className="group relative w-14 h-14 flex items-center justify-center rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-        >
-            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/0 to-cyan-500/0 group-hover:from-cyan-500/20 group-hover:to-transparent transition-all duration-500" />
-            <Icon className="w-5 h-5 text-white/70 group-hover:text-white relative z-10 transition-transform duration-300 group-hover:scale-110" />
-        </a>
-    );
+  const Icon = social.icon;
+  return (
+    <a
+      href={social.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Επισκεφθείτε μας στο ${social.label}`}
+      className="group relative w-14 h-14 flex items-center justify-center rounded-full bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_90%,transparent)] hover:border-[color-mix(in_srgb,var(--theme-accent)_40%,transparent)] transition-all duration-300 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)]"
+    >
+      <div className="absolute inset-0 bg-gradient-to-tr from-transparent to-transparent group-hover:from-[color-mix(in_srgb,var(--theme-accent)_25%,transparent)] group-hover:to-transparent transition-all duration-500" />
+      <Icon className="w-5 h-5 text-[var(--theme-text-muted)] group-hover:text-[var(--theme-text)] relative z-10 transition-transform duration-300 group-hover:scale-110" />
+    </a>
+  );
 });
 
-/** Trust badge card */
 const TrustBadgeCard = memo(function TrustBadgeCard({ badge }: { badge: TrustBadge }) {
-    const Icon = badge.icon;
-    return (
-        <div className="group p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-cyan-500/30 hover:bg-white/[0.04] transition-all">
-            <Icon className="w-5 h-5 text-cyan-500/60 mb-3 group-hover:text-cyan-400 transition-colors" aria-hidden="true" />
-            <div className="font-medium text-white/90 text-sm">{badge.label}</div>
-            <div className="text-[10px] text-white/30 font-mono mt-1 uppercase">{badge.desc}</div>
-        </div>
-    );
+  const Icon = badge.icon;
+  return (
+    <div className="group p-4 rounded-xl bg-[color-mix(in_srgb,var(--theme-glass-bg)_80%,transparent)] border border-[var(--theme-glass-border)] hover:border-[color-mix(in_srgb,var(--theme-accent)_35%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_90%,transparent)] transition-all">
+      <Icon className="w-5 h-5 text-[color-mix(in_srgb,var(--theme-accent)_70%,transparent)] mb-3 group-hover:text-[var(--theme-accent)] transition-colors" aria-hidden="true" />
+      <div className="font-medium text-[var(--theme-text)] text-sm">{badge.label}</div>
+      <div className="text-[10px] text-[var(--theme-text-muted)] font-mono mt-1 uppercase">{badge.desc}</div>
+    </div>
+  );
 });
 
-/** Navigation link with animated underline */
 const NavLink = memo(function NavLink({ item, showIndicator = false }: { item: NavItem; showIndicator?: boolean }) {
-    return (
-        <li>
-            <Link
-                href={item.path}
-                className={`text-sm text-white/60 hover:text-white transition-colors block leading-tight ${showIndicator ? "flex items-center gap-2 group" : ""
-                    }`}
-            >
-                {showIndicator && (
-                    <span className="w-0 group-hover:w-2 h-px bg-cyan-400 transition-all duration-300" aria-hidden="true" />
-                )}
-                {item.name}
-            </Link>
-        </li>
-    );
+  return (
+    <li>
+      <Link
+        href={item.path}
+        className={`text-sm text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors block leading-tight ${showIndicator ? "flex items-center gap-2 group" : ""
+          }`}
+      >
+        {showIndicator && (
+          <span className="w-0 group-hover:w-2 h-px bg-[var(--theme-accent)] transition-all duration-300" aria-hidden="true" />
+        )}
+        {item.name}
+      </Link>
+    </li>
+  );
 });
 
-/** Newsletter subscription form */
 interface NewsletterFormProps {
-    email: string;
-    onEmailChange: (email: string) => void;
-    onSubmit: (e: React.FormEvent) => void;
-    isSubscribed: boolean;
+  email: string;
+  onEmailChange: (email: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  isSubscribed: boolean;
 }
 
 const NewsletterForm = memo(function NewsletterForm({
-    email,
-    onEmailChange,
-    onSubmit,
-    isSubscribed
+  email,
+  onEmailChange,
+  onSubmit,
+  isSubscribed,
 }: NewsletterFormProps) {
-    if (isSubscribed) {
-        return (
-            <div
-                className="mb-12 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3"
-                role="status"
-                aria-live="polite"
-            >
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-                You are on the list.
-            </div>
-        );
-    }
-
+  if (isSubscribed) {
     return (
-        <form onSubmit={onSubmit} className="relative group mb-12">
-            <label htmlFor="footer-email" className="sr-only">
-                Email address for newsletter
-            </label>
-            <input
-                id="footer-email"
-                type="email"
-                value={email}
-                onChange={(e) => onEmailChange(e.target.value)}
-                placeholder="email@aerofren.gr"
-                required
-                aria-required="true"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-cyan-500/50 focus:bg-white/10 transition-all placeholder:text-white/20 focus:ring-2 focus:ring-cyan-500/20"
-            />
-            <button
-                type="submit"
-                aria-label="Subscribe to newsletter"
-                className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center rounded-lg bg-cyan-500 text-white hover:bg-cyan-400 hover:scale-105 transition-all shadow-lg shadow-cyan-900/20 focus:outline-none focus:ring-2 focus:ring-cyan-300"
-            >
-                <ArrowUpRight className="w-5 h-5" aria-hidden="true" />
-            </button>
-        </form>
+      <div
+        className="mb-12 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+        Η εγγραφή ολοκληρώθηκε.
+      </div>
     );
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="relative group mb-12">
+      <label htmlFor="footer-email" className="sr-only">
+        E-mail για ενημερώσεις
+      </label>
+      <input
+        id="footer-email"
+        type="email"
+        value={email}
+        onChange={(e) => onEmailChange(e.target.value)}
+        placeholder="email@aerofren.gr"
+        required
+        aria-required="true"
+        className="w-full bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] border border-[var(--theme-glass-border)] rounded-xl px-5 py-4 text-[var(--theme-text)] text-sm outline-none focus:border-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)] focus:bg-[color-mix(in_srgb,var(--theme-glass-bg)_95%,transparent)] transition-all placeholder:text-[var(--theme-text-muted)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]"
+      />
+      <button
+        type="submit"
+        aria-label="Εγγραφή στο ενημερωτικό"
+        className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center rounded-lg bg-[var(--theme-accent)] text-white hover:bg-[var(--theme-accent-hover)] hover:scale-105 transition-all shadow-lg shadow-black/20 focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--theme-accent)_35%,transparent)]"
+      >
+        <ArrowUpRight className="w-5 h-5" aria-hidden="true" />
+      </button>
+    </form>
+  );
 });
 
-/** Contact details row */
 const ContactRow = memo(function ContactRow({
-    label,
-    value,
-    href,
-    multiline = false
+  label,
+  value,
+  href,
+  multiline = false,
 }: {
-    label: string;
-    value: React.ReactNode;
-    href?: string;
-    multiline?: boolean;
+  label: string;
+  value: React.ReactNode;
+  href?: string;
+  multiline?: boolean;
 }) {
-    const content = (
-        <>
-            <span className="text-sm text-white/50 group-hover:text-white transition-colors">
-                {label}
-            </span>
-            <span className={`${multiline ? "text-right font-light" : "text-lg font-mono"} text-white leading-tight`}>
-                {value}
-            </span>
-        </>
-    );
+  const content = (
+    <>
+      <span className="text-sm text-[var(--theme-text-muted)] group-hover:text-[var(--theme-text)] transition-colors">
+        {label}
+      </span>
+      <span className={`${multiline ? "text-right font-light" : "text-lg font-mono"} text-[var(--theme-text)] leading-tight`}>
+        {value}
+      </span>
+    </>
+  );
 
-    const className = `flex items-${multiline ? "start" : "center"} justify-between group py-2 border-b border-white/5 ${href ? "cursor-pointer hover:border-white/20" : ""
-        } transition-all`;
+  const className = `flex items-${multiline ? "start" : "center"} justify-between group py-2 border-b border-[var(--theme-glass-border)] ${href ? "cursor-pointer hover:border-[color-mix(in_srgb,var(--theme-accent)_35%,transparent)]" : ""
+    } transition-all`;
 
-    if (href) {
-        return <a href={href} className={className}>{content}</a>;
-    }
-    return <div className={className}>{content}</div>;
+  if (href) {
+    return <a href={href} className={className}>{content}</a>;
+  }
+  return <div className={className}>{content}</div>;
 });
 
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-/**
- * AEROSPACE LUXURY FOOTER
- * Concept: "Orbital Station"
- * 
- * Features:
- * - NanoBanana Liquid Mesh Background (Animated)
- * - Film Grain Texture (Materiality)
- * - Architectural Typography (Editorial Layout)
- * - Liquid Glass Panels with diffuse reflections
- * 
- * @refactored Extracted sub-components for maintainability
- * @refactored Added proper TypeScript types
- * @refactored Improved accessibility (aria-labels, sr-only, focus states)
- * @refactored Removed unused imports
- * @refactored Memoized static components
- */
 export function Footer() {
-    const [email, setEmail] = useState("");
-    const [isSubscribed, setIsSubscribed] = useState(false);
-    const [emailError, setEmailError] = useState<string | null>(null);
+  const glowColor = "var(--theme-accent-rgb)";
+  const [email, setEmail] = useState("");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
-    const validateEmail = useCallback((email: string): boolean => {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(email);
-    }, []);
+  const validateEmail = useCallback((value: string): boolean => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(value);
+  }, []);
 
-    const handleNewsletterSubmit = useCallback((e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email.trim()) {
-            setEmailError("Email is required");
-            return;
-        }
-        if (!validateEmail(email)) {
-            setEmailError("Please enter a valid email address");
-            return;
-        }
-        // TODO: Integrate with actual newsletter API
-        setIsSubscribed(true);
-        setEmail("");
-        setEmailError(null);
-    }, [email, validateEmail]);
+  const handleNewsletterSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setEmailError("Το e-mail είναι υποχρεωτικό.");
+      return;
+    }
+    if (!validateEmail(email)) {
+      setEmailError("Παρακαλώ εισάγετε έγκυρο e-mail.");
+      return;
+    }
+    setIsSubscribed(true);
+    setEmail("");
+    setEmailError(null);
+  }, [email, validateEmail]);
 
-    const handleEmailChange = useCallback((value: string) => {
-        setEmail(value);
-        if (emailError) {
-            setEmailError(null);
-        }
-    }, [emailError]);
+  const handleEmailChange = useCallback((value: string) => {
+    setEmail(value);
+    if (emailError) {
+      setEmailError(null);
+    }
+  }, [emailError]);
 
-    const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
 
-    return (
-        <footer
-            className="relative bg-[#02040a] text-white overflow-hidden isolate selection:bg-cyan-500/30"
-            role="contentinfo"
-            aria-label="Site footer"
+  return (
+    <footer
+      className="relative bg-[var(--theme-bg-solid)] text-[var(--theme-text)] overflow-hidden isolate selection:bg-[color-mix(in_srgb,var(--theme-accent)_30%,transparent)]"
+      role="contentinfo"
+      aria-label="Υποσέλιδο"
+    >
+      <NoiseOverlay />
+      <FluidBackground />
+      <WatermarkText />
+
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-24">
+        <MagicBento
+          enableSpotlight={true}
+          spotlightRadius={600}
+          glowColor={glowColor}
         >
-            {/* === ATMOSPHERE LAYER === */}
-            <NoiseOverlay />
-            <FluidBackground />
-            <WatermarkText />
-
-            {/* === CONTENT LAYER === */}
-            <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-24">
-                <MagicBento
-                    enableSpotlight={true}
-                    spotlightRadius={600}
-                    glowColor="100, 200, 255"
-                >
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-
-                        {/* LEFT COLUMN: IDENTITY & MANIFESTO */}
-                        <div className="lg:col-span-4 flex flex-col justify-between h-full min-h-[400px]">
-                            <div>
-                                <div className="mb-10">
-                                    <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-2 bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-white/50">
-                                        AEROFREN
-                                    </h2>
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-px w-12 bg-cyan-500/50" aria-hidden="true" />
-                                        <p className="text-cyan-400 font-mono text-sm tracking-[0.3em] uppercase">
-                                            Est. 1989
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <p className="text-lg text-white/50 leading-relaxed font-light max-w-sm">
-                                    Engineering the flow of tomorrow.
-                                    <span className="block mt-4 text-white/30 text-sm">
-                                        Premium water &amp; air systems for professional industrial applications.
-                                    </span>
-                                </p>
-                            </div>
-
-                            <nav className="mt-auto pt-12" aria-label="Social media links">
-                                <div className="flex gap-4">
-                                    {SOCIAL_LINKS.map((social) => (
-                                        <SocialButton key={social.label} social={social} />
-                                    ))}
-                                </div>
-                            </nav>
-                        </div>
-
-                        {/* MIDDLE COLUMN: NAVIGATION & DATA */}
-                        <div className="lg:col-span-4 flex flex-col gap-8">
-                            {/* Trust Grid */}
-                            <div className="grid grid-cols-2 gap-3" role="list" aria-label="Trust indicators">
-                                {TRUST_BADGES.map((badge) => (
-                                    <TrustBadgeCard key={badge.label} badge={badge} />
-                                ))}
-                            </div>
-
-                            {/* Navigation Lists */}
-                            <div className="mt-8 pt-8 border-t border-white/5">
-                                <div className="grid grid-cols-2 gap-8">
-                                    <nav aria-label="Site navigation">
-                                        <h3 className="text-xs font-mono text-white/40 uppercase tracking-widest mb-6">
-                                            Explore
-                                        </h3>
-                                        <ul className="space-y-4">
-                                            {NAV_ITEMS.map((item) => (
-                                                <NavLink key={item.path} item={item} showIndicator />
-                                            ))}
-                                        </ul>
-                                    </nav>
-                                    <nav aria-label="Product categories">
-                                        <h3 className="text-xs font-mono text-white/40 uppercase tracking-widest mb-6">
-                                            Systems
-                                        </h3>
-                                        <ul className="space-y-4">
-                                            {CATEGORY_LINKS.map((item) => (
-                                                <NavLink key={item.path} item={item} />
-                                            ))}
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* RIGHT COLUMN: CONTACT & INTERACTION */}
-                        <div className="lg:col-span-4 pl-0 lg:pl-12">
-                            <ParticleCard
-                                enableBorderGlow={true}
-                                glowColor="255, 255, 255"
-                                className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-white/[0.08] to-transparent border border-white/10 p-1"
-                            >
-                                <div className="relative bg-[#050A14] rounded-[22px] p-8 h-full">
-                                    {/* Inner ambient light */}
-                                    <div
-                                        className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-[80px] rounded-full pointer-events-none"
-                                        aria-hidden="true"
-                                    />
-
-                                    <h3 className="text-2xl font-light mb-2 text-white">
-                                        Let&apos;s Connect
-                                    </h3>
-                                    <p className="text-sm text-white/40 mb-8 font-light">
-                                        Subscribe to our technical briefing or reach our engineering team directly.
-                                    </p>
-
-                                    <NewsletterForm
-                                        email={email}
-                                        onEmailChange={handleEmailChange}
-                                        onSubmit={handleNewsletterSubmit}
-                                        isSubscribed={isSubscribed}
-                                    />
-
-                                    {/* Contact Details */}
-                                    <address className="space-y-6 not-italic">
-                                        <ContactRow
-                                            label="Call Us"
-                                            value={CONTACT_INFO.phone}
-                                            href={CONTACT_INFO.phoneHref}
-                                        />
-                                        <ContactRow
-                                            label="Email"
-                                            value={CONTACT_INFO.email}
-                                            href={CONTACT_INFO.emailHref}
-                                        />
-                                        <ContactRow
-                                            label="Visit"
-                                            value={
-                                                <>
-                                                    {CONTACT_INFO.address.street}
-                                                    <br />
-                                                    <span className="text-white/40">{CONTACT_INFO.address.city}</span>
-                                                </>
-                                            }
-                                            multiline
-                                        />
-                                    </address>
-                                </div>
-                            </ParticleCard>
-                        </div>
-                    </div>
-                </MagicBento>
-
-                {/* === FOOTER BOTTOM === */}
-                <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] uppercase tracking-widest text-white/30 font-mono">
-                    <p>
-                        <span className="sr-only">Copyright </span>
-                        AEROFREN © {currentYear} / ALL SYSTEMS OPERATIONAL
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-4 flex flex-col justify-between h-full min-h-[400px]">
+              <div>
+                <div className="mb-10">
+                  <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-2 bg-clip-text text-transparent bg-gradient-to-br from-[var(--theme-text)] via-[var(--theme-text)] to-[var(--theme-text-muted)]">
+                    AEROFREN
+                  </h2>
+                  <div className="flex items-center gap-4">
+                    <div className="h-px w-12 bg-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)]" aria-hidden="true" />
+                    <p className="text-[var(--theme-accent)] font-mono text-sm tracking-[0.3em] uppercase">
+                      Από το 1989
                     </p>
-                    <nav aria-label="Legal links" className="flex gap-8">
-                        <Link href="/terms" className="hover:text-white transition-colors focus:text-white focus:outline-none">
-                            Terms of Ops
-                        </Link>
-                        <Link href="/privacy" className="hover:text-white transition-colors focus:text-white focus:outline-none">
-                            Privacy Protocol
-                        </Link>
-                        <Link href="/sitemap" className="hover:text-white transition-colors focus:text-white focus:outline-none">
-                            Sitemap
-                        </Link>
-                    </nav>
+                  </div>
                 </div>
+
+                <p className="text-lg text-[var(--theme-text-muted)] leading-relaxed font-light max-w-sm">
+                  Σχεδιάζουμε ροές αέρα και νερού με ακρίβεια.
+                  <span className="block mt-4 text-[var(--theme-text-muted)] text-sm">
+                    Εξαρτήματα υψηλής ποιότητας για απαιτητικές βιομηχανικές εφαρμογές.
+                  </span>
+                </p>
+              </div>
+
+              <nav className="mt-auto pt-12" aria-label="Κοινωνικά δίκτυα">
+                <div className="flex gap-4">
+                  {SOCIAL_LINKS.map((social) => (
+                    <SocialButton key={social.label} social={social} />
+                  ))}
+                </div>
+              </nav>
             </div>
 
-            {/* CSS Animations - Consider moving to tailwind.config.js */}
-            <style jsx global>{`
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
-                }
-                .animate-blob {
-                    animation: blob 10s infinite ease-in-out;
-                }
-                .animation-delay-2000 {
-                    animation-delay: 2s;
-                }
-                .animation-delay-4000 {
-                    animation-delay: 4s;
-                }
-            `}</style>
-        </footer>
-    );
+            {/* MIDDLE COLUMN */}
+            <div className="lg:col-span-4 flex flex-col gap-8">
+              <div className="grid grid-cols-2 gap-3" role="list" aria-label="Διαπιστεύσεις">
+                {TRUST_BADGES.map((badge) => (
+                  <TrustBadgeCard key={badge.label} badge={badge} />
+                ))}
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-[var(--theme-glass-border)]">
+                <div className="grid grid-cols-2 gap-8">
+                  <nav aria-label="Κύρια πλοήγηση">
+                    <h3 className="text-xs font-mono text-[var(--theme-text-muted)] uppercase tracking-widest mb-6">
+                      Πλοήγηση
+                    </h3>
+                    <ul className="space-y-4">
+                      {NAV_ITEMS.map((item) => (
+                        <NavLink key={item.path} item={item} showIndicator />
+                      ))}
+                    </ul>
+                  </nav>
+                  <nav aria-label="Κατηγορίες προϊόντων">
+                    <h3 className="text-xs font-mono text-[var(--theme-text-muted)] uppercase tracking-widest mb-6">
+                      Κατηγορίες
+                    </h3>
+                    <ul className="space-y-4">
+                      {CATEGORY_LINKS.map((item) => (
+                        <NavLink key={item.path} item={item} />
+                      ))}
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="lg:col-span-4 pl-0 lg:pl-12">
+              <ParticleCard
+                enableBorderGlow={true}
+                glowColor={glowColor}
+                className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[color-mix(in_srgb,var(--theme-glass-bg)_90%,transparent)] to-transparent border border-[var(--theme-glass-border)] p-1"
+              >
+                <div className="relative bg-[var(--theme-bg-solid)] rounded-[22px] p-8 h-full">
+                  <div
+                    className="absolute top-0 right-0 w-64 h-64 bg-[color-mix(in_srgb,var(--theme-accent)_8%,transparent)] blur-[80px] rounded-full pointer-events-none"
+                    aria-hidden="true"
+                  />
+
+                  <h3 className="text-2xl font-light mb-2 text-[var(--theme-text)]">
+                    Μείνετε ενημερωμένοι
+                  </h3>
+                  <p className="text-sm text-[var(--theme-text-muted)] mb-8 font-light">
+                    Σύντομες ενημερώσεις για νέα προϊόντα και τεχνικές λύσεις.
+                  </p>
+
+                  <NewsletterForm
+                    email={email}
+                    onEmailChange={handleEmailChange}
+                    onSubmit={handleNewsletterSubmit}
+                    isSubscribed={isSubscribed}
+                  />
+
+                  {emailError && (
+                    <p className="text-xs text-red-300 mb-6">{emailError}</p>
+                  )}
+
+                  <address className="space-y-6 not-italic">
+                    <ContactRow
+                      label="Τηλέφωνο"
+                      value={CONTACT_INFO.phone}
+                      href={CONTACT_INFO.phoneHref}
+                    />
+                    <ContactRow
+                      label="E-mail"
+                      value={CONTACT_INFO.email}
+                      href={CONTACT_INFO.emailHref}
+                    />
+                    <ContactRow
+                      label="Διεύθυνση"
+                      value={
+                        <>
+                          {CONTACT_INFO.address.street}
+                          <br />
+                          <span className="text-[var(--theme-text-muted)]">{CONTACT_INFO.address.city}</span>
+                        </>
+                      }
+                      multiline
+                    />
+                  </address>
+                </div>
+              </ParticleCard>
+            </div>
+          </div>
+        </MagicBento>
+
+        {/* FOOTER BOTTOM */}
+        <div className="mt-24 pt-8 border-t border-[var(--theme-glass-border)] flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] uppercase tracking-widest text-[var(--theme-text-muted)] font-mono">
+          <p>
+            <span className="sr-only">Copyright </span>
+            AEROFREN © {currentYear} / ΟΛΑ ΤΑ ΣΥΣΤΗΜΑΤΑ ΕΝΕΡΓΑ
+          </p>
+          <nav aria-label="Νομικές πληροφορίες" className="flex gap-8">
+            <Link href="/terms" className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
+              Όροι χρήσης
+            </Link>
+            <Link href="/privacy" className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
+              Πολιτική απορρήτου
+            </Link>
+            <Link href="/sitemap" className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
+              Χάρτης ιστότοπου
+            </Link>
+          </nav>
+        </div>
+      </div>
+
+      <style jsx global>{`
+        /* PERFORMANCE: Slowed blob animation from 10s to 25s to reduce GPU cycles */
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.05); }
+          66% { transform: translate(-20px, 20px) scale(0.95); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: blob 25s infinite ease-in-out;
+          will-change: transform;
+        }
+        .animation-delay-2000 {
+          animation-delay: 5s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 10s;
+        }
+      `}</style>
+    </footer>
+  );
 }

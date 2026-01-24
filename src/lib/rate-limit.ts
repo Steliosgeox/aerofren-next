@@ -112,6 +112,18 @@ export const RATE_LIMITS = {
     // Chat history: 30 requests per minute
     chatHistory: { windowMs: 60000, maxRequests: 30 },
 
+    // Chat escalation: 5 requests per minute
+    chatEscalation: { windowMs: 60000, maxRequests: 5 },
+
     // Auth attempts: 5 per minute (brute force protection)
     auth: { windowMs: 60000, maxRequests: 5 },
+
+    // Admin reads: 60 requests per minute
+    adminData: { windowMs: 60000, maxRequests: 60 },
+
+    // Admin stats: 30 requests per minute
+    adminStats: { windowMs: 60000, maxRequests: 30 },
+
+    // Admin actions (state-changing): 20 requests per minute
+    adminActions: { windowMs: 60000, maxRequests: 20 },
 } as const;

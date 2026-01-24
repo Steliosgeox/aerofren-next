@@ -35,7 +35,6 @@ service cloud.firestore {
       // Only message owner or admin can read
       allow read: if isAuthenticated() && (
         resource.data.userId == request.auth.uid ||
-        resource.data.userId == null ||  // Anonymous sessions (backwards compat)
         isAdmin()
       );
       
@@ -60,6 +59,34 @@ service cloud.firestore {
       
       // No updates or deletes for regular users (prevents tampering)
       allow update, delete: if false;
+    }
+
+    // ==========================================
+    // CHAT SESSIONS - Admin read, client write (aggregates)
+    // ==========================================
+    match /chatSessions/{sessionId} {
+      // Only admins can read session aggregates
+      allow read: if isAdmin();
+
+      // Allow create for session aggregates
+      allow create: if
+        request.resource.data.sessionId == sessionId &&
+        request.resource.data.lastMessageAt is timestamp &&
+        request.resource.data.messageCount is number &&
+        (!('userId' in request.resource.data) ||
+          (isAuthenticated() && request.resource.data.userId == request.auth.uid));
+
+      // Allow updates while preserving ownership
+      allow update: if
+        request.resource.data.sessionId == sessionId &&
+        request.resource.data.lastMessageAt is timestamp &&
+        request.resource.data.messageCount is number &&
+        (!('userId' in request.resource.data) ||
+          (isAuthenticated() && request.resource.data.userId == request.auth.uid)) &&
+        (!('userId' in resource.data) ||
+          resource.data.userId == request.resource.data.userId);
+
+      allow delete: if false;
     }
     
     // ==========================================

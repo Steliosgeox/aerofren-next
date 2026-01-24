@@ -29,7 +29,7 @@ export function ChatButton({ onClick, className = '' }: ChatButtonProps) {
                     background: transparent;
                     border: none;
                     cursor: pointer;
-                    color: rgba(255, 255, 255, 0.85);
+                    color: var(--theme-text);
                     font-size: 0.875rem;
                     font-weight: 600;
                     padding: 0;
@@ -37,7 +37,7 @@ export function ChatButton({ onClick, className = '' }: ChatButtonProps) {
                 }
 
                 .chat-btn:hover {
-                    color: #ffffff;
+                    color: var(--theme-accent);
                 }
             `}</style>
 

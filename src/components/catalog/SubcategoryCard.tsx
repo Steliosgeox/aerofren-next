@@ -13,10 +13,10 @@ export function SubcategoryCard({ subcategory, categorySlug }: SubcategoryCardPr
   return (
     <Link
       href={`/products/${categorySlug}/${subcategory.slug}`}
-      className="group relative bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-[#0066cc] hover:shadow-lg transition-all duration-300"
+      className="group relative bg-[var(--theme-glass-bg)] rounded-xl border border-[var(--theme-glass-border)] overflow-hidden hover:border-[var(--theme-accent)] hover:shadow-lg transition-all duration-300"
     >
       {/* Image */}
-      <div className="relative h-40 overflow-hidden bg-slate-100">
+      <div className="relative h-40 overflow-hidden bg-[var(--theme-glass-bg)]">
         <Image
           src={subcategory.image}
           alt={subcategory.nameEl}
@@ -28,14 +28,14 @@ export function SubcategoryCard({ subcategory, categorySlug }: SubcategoryCardPr
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-bold text-slate-900 leading-tight mb-1 group-hover:text-[#0066cc] transition-colors line-clamp-2">
+        <h3 className="font-bold text-[var(--theme-text)] leading-tight mb-1 group-hover:text-[var(--theme-accent)] transition-colors line-clamp-2">
           {subcategory.nameEl}
         </h3>
         <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[var(--theme-text-muted)]">
             {subcategory.productCount.toLocaleString("el-GR")} προϊόντα
           </p>
-          <span className="text-[#0066cc] opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[var(--theme-accent)] opacity-0 group-hover:opacity-100 transition-opacity">
             →
           </span>
         </div>

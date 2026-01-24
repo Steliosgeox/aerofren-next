@@ -37,15 +37,15 @@ class ErrorBoundary extends Component<Props, State> {
             }
 
             return (
-                <div className="min-h-screen flex items-center justify-center bg-[#06101f] text-white p-8">
+                <div className="min-h-screen flex items-center justify-center bg-[var(--theme-bg-solid)] text-[var(--theme-text)] p-8">
                     <div className="max-w-md text-center">
                         <h1 className="text-2xl font-bold mb-4">Κάτι πήγε στραβά</h1>
-                        <p className="text-white/60 mb-6">
+                        <p className="text-[var(--theme-text-muted)] mb-6">
                             Παρουσιάστηκε ένα σφάλμα. Παρακαλώ ανανεώστε τη σελίδα.
                         </p>
                         <button
                             onClick={() => window.location.reload()}
-                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+                            className="px-6 py-3 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white rounded-lg font-medium transition-colors"
                         >
                             Ανανέωση Σελίδας
                         </button>

@@ -13,7 +13,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
     <nav className="flex items-center gap-2 text-sm py-4">
       <Link
         href="/"
-        className="flex items-center gap-1 text-slate-500 hover:text-[#0066cc] transition-colors"
+        className="flex items-center gap-1 text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors"
       >
         <Home className="w-4 h-4" />
         <span className="sr-only">Αρχική</span>
@@ -21,13 +21,13 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 
       {items.map((item, index) => (
         <div key={item.href} className="flex items-center gap-2">
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-[var(--theme-text-muted)]" />
           {index === items.length - 1 ? (
-            <span className="font-medium text-slate-900">{item.label}</span>
+            <span className="font-medium text-[var(--theme-text)]">{item.label}</span>
           ) : (
             <Link
               href={item.href}
-              className="text-slate-500 hover:text-[#0066cc] transition-colors"
+              className="text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors"
             >
               {item.label}
             </Link>

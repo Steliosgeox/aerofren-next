@@ -64,25 +64,25 @@ export function QuoteModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-[color-mix(in_srgb,var(--theme-bg-solid)_70%,transparent)] backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto">
+      <div className="relative bg-[var(--theme-bg-solid)] rounded-2xl border border-[var(--theme-glass-border)] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+        <div className="sticky top-0 bg-[var(--theme-bg-solid)] border-b border-[var(--theme-glass-border)] px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Ζητήστε Προσφορά</h2>
+            <h2 className="text-xl font-bold text-[var(--theme-text)]">Ζητήστε Προσφορά</h2>
             {categoryName && (
-              <p className="text-sm text-slate-500">{categoryName}</p>
+              <p className="text-sm text-[var(--theme-text-muted)]">{categoryName}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-[var(--theme-text-muted)]" />
           </button>
         </div>
 
@@ -90,13 +90,13 @@ export function QuoteModal({
         <div className="p-6">
           {isSubmitted ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Send className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 bg-emerald-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Send className="w-8 h-8 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
+              <h3 className="text-xl font-bold text-[var(--theme-text)] mb-2">
                 Ευχαριστούμε!
               </h3>
-              <p className="text-slate-600">
+              <p className="text-[var(--theme-text-muted)]">
                 Το αίτημά σας καταχωρήθηκε επιτυχώς. Θα επικοινωνήσουμε μαζί σας
                 σύντομα.
               </p>
@@ -104,13 +104,13 @@ export function QuoteModal({
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               {productName && (
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] rounded-xl p-4 border border-[var(--theme-glass-border)]">
+                  <span className="text-xs font-bold text-[var(--theme-text-muted)] uppercase tracking-wider">
                     Προϊόν
                   </span>
-                  <p className="font-medium text-slate-900 mt-1">{productName}</p>
+                  <p className="font-medium text-[var(--theme-text)] mt-1">{productName}</p>
                   {productSku && (
-                    <p className="text-sm text-slate-500">Κωδικός: {productSku}</p>
+                    <p className="text-sm text-[var(--theme-text-muted)]">Κωδικός: {productSku}</p>
                   )}
                 </div>
               )}
@@ -189,8 +189,8 @@ export function QuoteModal({
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-[color-mix(in_srgb,var(--theme-text)_30%,transparent)] border-t-white rounded-full animate-spin" />
                       Αποστολή...
                     </span>
                   ) : (
@@ -203,11 +203,11 @@ export function QuoteModal({
               </div>
 
               <div className="text-center pt-2">
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-[var(--theme-text-muted)]">
                   ή καλέστε μας απευθείας στο{" "}
                   <a
                     href="tel:2103461645"
-                    className="font-bold text-[#0066cc] hover:underline"
+                    className="font-bold text-[var(--theme-accent)] hover:underline"
                   >
                     210 3461645
                   </a>

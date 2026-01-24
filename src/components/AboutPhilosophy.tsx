@@ -71,46 +71,46 @@ export default function AboutPhilosophy() {
                 <header className={styles.header}>
                     <div>
                         <h1 className={styles.brandName}>AEROFREN</h1>
-                        <span className={styles.titleLarge}>Engineering<br />Excellence.</span>
+                        <span className={styles.titleLarge}>Τεχνική<br />Αριστεία.</span>
                     </div>
                 </header>
 
                 <section className={`${styles.scrollSection} ${styles.s1}`}>
-                    <p className={styles.focusText}>We don't just supply parts. We deliver precision.</p>
-                    <p className={styles.description}>Since 1990, AEROFREN has been the trusted B2B partner for professionals who demand nothing less than perfection in pneumatic and hydraulic components.</p>
+                    <p className={styles.focusText}>Δεν προμηθεύουμε απλώς εξαρτήματα. Παραδίδουμε ακρίβεια.</p>
+                    <p className={styles.description}>Από το 1990, η AEROFREN είναι ο αξιόπιστος B2B συνεργάτης για επαγγελματίες που απαιτούν τελειότητα στα πνευματικά και υδραυλικά εξαρτήματα.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s2}`}>
-                    <p className={styles.focusText}>Components that endure decades of service.</p>
-                    <p className={styles.description}>Premium brass fittings. Industrial-grade valves. Certified hoses. We source materials engineered to perform under pressure, year after year.</p>
+                    <p className={styles.focusText}>Εξαρτήματα που αντέχουν δεκαετίες λειτουργίας.</p>
+                    <p className={styles.description}>Premium ρακόρ ορείχαλκου. Βαλβίδες βιομηχανικών προδιαγραφών. Πιστοποιημένοι σωλήνες. Επιλέγουμε υλικά σχεδιασμένα να αποδίδουν υπό πίεση, χρόνο με τον χρόνο.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s3}`}>
-                    <p className={styles.focusText}>Systematic approach. Seamless integration.</p>
-                    <p className={styles.description}>From pneumatic cylinders to complete air treatment systems, our catalog is designed to work together flawlessly, reducing complexity in your installations.</p>
+                    <p className={styles.focusText}>Συστηματική προσέγγιση. Απρόσκοπτη ενσωμάτωση.</p>
+                    <p className={styles.description}>Από πνευματικούς κυλίνδρους έως ολοκληρωμένα συστήματα επεξεργασίας αέρα, ο κατάλογός μας είναι σχεδιασμένος για άψογη συνεργασία, μειώνοντας την πολυπλοκότητα στις εγκαταστάσεις σας.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s4}`}>
-                    <p className={styles.focusText}>Products that work silently in the background.</p>
-                    <p className={styles.description}>The best components are the ones you forget about. Our fittings and valves operate with quiet confidence, keeping your systems running without interruption.</p>
+                    <p className={styles.focusText}>Προϊόντα που δουλεύουν αθόρυβα στο παρασκήνιο.</p>
+                    <p className={styles.description}>Τα καλύτερα εξαρτήματα είναι εκείνα που ξεχνάς ότι υπάρχουν. Τα ρακόρ και οι βαλβίδες μας λειτουργούν με απόλυτη αξιοπιστία, κρατώντας τα συστήματά σας σε συνεχή λειτουργία.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s5}`}>
-                    <p className={styles.focusText}>Expertise as the driving force.</p>
-                    <p className={styles.description}>35+ years of technical knowledge at your service. We don't just sell products—we provide solutions, guidance, and support that make a difference.</p>
+                    <p className={styles.focusText}>Η τεχνογνωσία είναι ο κινητήριος μοχλός.</p>
+                    <p className={styles.description}>35+ χρόνια τεχνικής γνώσης στη διάθεσή σας. Δεν πουλάμε απλώς προϊόντα — προσφέρουμε λύσεις, καθοδήγηση και υποστήριξη που κάνουν τη διαφορά.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s6}`}>
-                    <p className={styles.focusText}>Built for professionals. By professionals.</p>
-                    <p className={styles.description}>Every installer, engineer, and industrial client we serve becomes a partner. Your success is the measure of our quality.</p>
+                    <p className={styles.focusText}>Φτιαγμένα για επαγγελματίες. Από επαγγελματίες.</p>
+                    <p className={styles.description}>Κάθε εγκαταστάτης, μηχανικός και βιομηχανικός πελάτης που εξυπηρετούμε γίνεται συνεργάτης. Η επιτυχία σας είναι το μέτρο της ποιότητάς μας.</p>
                 </section>
 
                 <div className={styles.closingSection}>
                     <div className={styles.closer}>
-                        <strong>Let's build something together.</strong>
+                        <strong>Ας χτίσουμε κάτι μαζί.</strong>
                         info@aerofren.gr<br />
-                        Moschato, Athens, Greece<br />
-                        +30 210 XXX XXXX
+                        Μοσχάτο, Αθήνα<br />
+                        +30 210 3461645
                     </div>
                 </div>
             </div>

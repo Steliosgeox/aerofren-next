@@ -16,21 +16,8 @@ import { ArrowUp } from "lucide-react";
  */
 export function BackToTop() {
     const [isVisible, setIsVisible] = useState(false);
-    const [theme, setTheme] = useState<"dark" | "light" | "dim">("dark");
     const buttonRef = useRef<HTMLButtonElement>(null);
     const tweenRef = useRef<gsap.core.Tween | null>(null);
-
-    // Watch theme changes
-    useEffect(() => {
-        const checkTheme = () => {
-            const t = document.documentElement.getAttribute("data-theme") as "dark" | "light" | "dim" || "dark";
-            setTheme(t);
-        };
-        checkTheme();
-        const observer = new MutationObserver(checkTheme);
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-        return () => observer.disconnect();
-    }, []);
 
     // Throttled scroll detection
     useEffect(() => {
@@ -79,26 +66,11 @@ export function BackToTop() {
         });
     };
 
-    // Theme-specific styles
-    const themeStyles = {
-        dark: {
-            button: "bg-gradient-to-br from-[rgb(18,22,30)] to-[rgb(25,32,45)] shadow-[0_0_0_4px_rgba(0,200,255,0.2),0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] hover:from-[#0099cc] hover:to-[#00ddff] hover:shadow-[0_0_0_4px_rgba(0,221,255,0.3),0_8px_24px_rgba(0,200,255,0.4)] focus-visible:outline-[#00ddff]",
-            icon: "text-white",
-            text: "text-white",
-        },
-        light: {
-            button: "bg-gradient-to-br from-[rgb(227,203,255)] to-[rgb(252,235,252)] shadow-[0_0_0_4px_rgba(180,160,255,0.25),0_4px_16px_rgba(122,24,229,0.15),inset_0_1px_0_rgba(255,255,255,0.8)] hover:from-[#7a18e5] hover:to-[#7a18e5] hover:shadow-[0_0_0_4px_rgba(122,24,229,0.3),0_8px_24px_rgba(122,24,229,0.3)] focus-visible:outline-[#7a18e5]",
-            icon: "text-[#7a18e5] group-hover:text-white",
-            text: "text-[#7a18e5] group-hover:text-white",
-        },
-        dim: {
-            button: "bg-gradient-to-br from-[rgb(20,20,20)] to-[rgb(30,25,35)] shadow-[0_0_0_4px_rgba(180,160,255,0.25),0_4px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)] hover:from-[rgb(160,140,230)] hover:to-[rgb(181,160,255)] hover:shadow-[0_0_0_4px_rgba(181,160,255,0.4),0_8px_24px_rgba(181,160,255,0.3)] focus-visible:outline-[rgb(181,160,255)]",
-            icon: "text-white",
-            text: "text-white",
-        },
+    const styles = {
+        button: "bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] border border-[var(--theme-glass-border)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--theme-accent)_20%,transparent),0_4px_16px_rgba(0,0,0,0.35),inset_0_1px_0_var(--theme-glass-inset-light)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_95%,transparent)] hover:border-[color-mix(in_srgb,var(--theme-accent)_35%,transparent)] hover:shadow-[0_0_0_4px_color-mix(in_srgb,var(--theme-accent)_30%,transparent),0_8px_24px_rgba(0,0,0,0.35)] focus-visible:outline-[color-mix(in_srgb,var(--theme-accent)_55%,transparent)]",
+        icon: "text-[var(--theme-text)] group-hover:text-[var(--theme-text)]",
+        text: "text-[var(--theme-text)]",
     };
-
-    const styles = themeStyles[theme];
 
     return (
         <div
@@ -108,7 +80,7 @@ export function BackToTop() {
             <button
                 ref={buttonRef}
                 onClick={handleClick}
-                aria-label="Back to top"
+                aria-label="Επιστροφή στην κορυφή"
                 type="button"
                 className={`
                     group
@@ -152,7 +124,7 @@ export function BackToTop() {
                         ${styles.text}
                     `}
                 >
-                    Back to Top
+                    Επιστροφή στην κορυφή
                 </span>
             </button>
         </div>

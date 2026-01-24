@@ -100,6 +100,9 @@ export default function ScrollFrameAnimation() {
     const [isLoaded, setIsLoaded] = useState(globalFrameCache.loaded);
     const [loadProgress, setLoadProgress] = useState(globalFrameCache.loaded ? 100 : 0);
     const currentFrameRef = useRef(0);
+    const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+    const rafDrawRef = useRef<number>(0);
+    const pendingFrameRef = useRef<number | null>(null);
 
     // Use global cache for frames - only loads once across all navigations
     useEffect(() => {
@@ -112,7 +115,7 @@ export default function ScrollFrameAnimation() {
     // Draw frame to canvas with cover-fit (uses global cache)
     const drawFrame = useCallback((frameIndex: number) => {
         const canvas = canvasRef.current;
-        const ctx = canvas?.getContext("2d");
+        const ctx = ctxRef.current;
         const img = globalFrameCache.images[frameIndex];
 
         if (!canvas || !ctx || !img || !img.complete) return;
@@ -143,6 +146,7 @@ export default function ScrollFrameAnimation() {
         if (!canvas) return;
 
         const handleResize = () => {
+            ctxRef.current = canvas.getContext("2d");
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             drawFrame(currentFrameRef.current);
@@ -187,7 +191,16 @@ export default function ScrollFrameAnimation() {
                     const frame = Math.round(self.progress * (FRAME_COUNT - 1));
                     if (frame !== currentFrameRef.current) {
                         currentFrameRef.current = frame;
-                        requestAnimationFrame(() => drawFrame(frame));
+                        pendingFrameRef.current = frame;
+                        if (!rafDrawRef.current) {
+                            rafDrawRef.current = requestAnimationFrame(() => {
+                                rafDrawRef.current = 0;
+                                const nextFrame = pendingFrameRef.current;
+                                if (typeof nextFrame === "number") {
+                                    drawFrame(nextFrame);
+                                }
+                            });
+                        }
                     }
                 },
             },
@@ -205,6 +218,11 @@ export default function ScrollFrameAnimation() {
             tl.scrollTrigger?.kill();
             tl.kill();
             currentFrameRef.current = 0;
+            pendingFrameRef.current = null;
+            if (rafDrawRef.current) {
+                cancelAnimationFrame(rafDrawRef.current);
+                rafDrawRef.current = 0;
+            }
         };
     }, [isLoaded, drawFrame]);
 
@@ -241,7 +259,7 @@ export default function ScrollFrameAnimation() {
                                 style={{ width: `${loadProgress}%` }}
                             />
                         </div>
-                        <span className="scroll-frame-loading-text">Loading Experience...</span>
+                        <span className="scroll-frame-loading-text">Φόρτωση εμπειρίας...</span>
                     </div>
                 )}
             </div>

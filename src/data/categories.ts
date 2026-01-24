@@ -10,7 +10,7 @@ export const categories: Category[] = [
     descriptionEl: 'Ρακόρ ταχυσύνδεσης, ρακόρ συμπίεσης και ακροδέκτες σωλήνων για πνευματικά συστήματα και υγρά',
     image: '/images/categories/push-in-fittings.jpg',
     icon: 'plug',
-    color: 'bg-blue-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 15995,
     subcategories: [
       {
@@ -78,7 +78,7 @@ export const categories: Category[] = [
     descriptionEl: 'Προσαρμογείς με σπείρωμα, πολλαπλές, χυτά εξαρτήματα και συνδέσεις',
     image: '/images/categories/thread-fittings.jpg',
     icon: 'wrench',
-    color: 'bg-slate-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 11127,
     subcategories: [
       {
@@ -137,7 +137,7 @@ export const categories: Category[] = [
     descriptionEl: 'Ταχυσύνδεσμοι, υδραυλικοί ζεύκτες και ειδικοί σύνδεσμοι',
     image: '/images/categories/couplings.jpg',
     icon: 'link',
-    color: 'bg-amber-500',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 5015,
     subcategories: [
       {
@@ -196,7 +196,7 @@ export const categories: Category[] = [
     descriptionEl: 'Βιομηχανικοί σωλήνες, πνευματικά σωληνάκια, σωλήνες, κλειδαριές και σφιγκτήρες',
     image: '/images/categories/hoses-pipes.jpg',
     icon: 'tube',
-    color: 'bg-green-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 11461,
     subcategories: [
       {
@@ -264,7 +264,7 @@ export const categories: Category[] = [
     descriptionEl: 'Σφαιρικές βαλβίδες, ρυθμιστές ροής, αντεπίστροφες βαλβίδες και φίλτρα ακαθαρσιών',
     image: '/images/categories/ball-valves.jpg',
     icon: 'valve',
-    color: 'bg-red-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 9547,
     subcategories: [
       {
@@ -323,7 +323,7 @@ export const categories: Category[] = [
     descriptionEl: 'Ρυθμιστές πίεσης, μονάδες προετοιμασίας αέρα, μανόμετρα, θερμόμετρα, μέτρηση ροής και στάθμης',
     image: '/images/categories/pressure-regulators.jpg',
     icon: 'gauge',
-    color: 'bg-purple-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 14123,
     subcategories: [
       {
@@ -391,7 +391,7 @@ export const categories: Category[] = [
     descriptionEl: 'Ηλεκτροβαλβίδες, πνευματικές βαλβίδες, χειροκίνητες/μηχανικές βαλβίδες, ρυθμιστές ταχύτητας, σιγαστήρες εξάτμισης',
     image: '/images/categories/pneumatic-valves.jpg',
     icon: 'cog',
-    color: 'bg-indigo-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 7345,
     subcategories: [
       {
@@ -450,7 +450,7 @@ export const categories: Category[] = [
     descriptionEl: 'Πνευματικοί κύλινδροι, αισθητήρες, αξεσουάρ, αποσβεστήρες κραδασμών και εξαρτήματα κενού',
     image: '/images/categories/cylinders-sensors.jpg',
     icon: 'cylinder',
-    color: 'bg-cyan-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 8379,
     subcategories: [
       {
@@ -518,7 +518,7 @@ export const categories: Category[] = [
     descriptionEl: 'Πιστόλια φυσήματος, εργαλεία πεπιεσμένου αέρα, χειροκίνητα εργαλεία και αξεσουάρ',
     image: '/images/categories/air-tools.jpg',
     icon: 'wind',
-    color: 'bg-orange-500',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 2781,
     subcategories: [
       {
@@ -586,7 +586,7 @@ export const categories: Category[] = [
     descriptionEl: 'Τσιμούχες, λιπαντικά, ρουλεμάν, ιμάντες, κόλλες, τυποποιημένα εξαρτήματα και άλλα',
     image: '/images/categories/industrial-supplies.jpg',
     icon: 'package',
-    color: 'bg-gray-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 26783,
     subcategories: [
       {
@@ -654,7 +654,7 @@ export const categories: Category[] = [
     descriptionEl: 'Εξαρτήματα συστημάτων αντίστροφης ώσμωσης, φίλτρα νερού, θήκες μεμβρανών και ρακόρ για τρόφιμα',
     image: '/images/categories/water-filtration.jpg',
     icon: 'droplet',
-    color: 'bg-sky-500',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 4500,
     subcategories: [
       {
@@ -713,7 +713,7 @@ export const categories: Category[] = [
     descriptionEl: 'Οδηγοί σωλήνων, στηρίγματα, κλιπ, αξεσουάρ στήριξης και διαχείριση καλωδίων',
     image: '/images/categories/installation-accessories.jpg',
     icon: 'tool',
-    color: 'bg-teal-600',
+    color: 'bg-[var(--theme-accent)]',
     productCount: 3200,
     subcategories: [
       {

@@ -12,7 +12,7 @@ const stats = [
   {
     icon: <Package className="w-6 h-6" />,
     value: "10.000+",
-    label: "Προϊόντα σε Stock",
+    label: "Προϊόντα σε απόθεμα",
     description: "Άμεσα διαθέσιμα",
   },
   {
@@ -35,23 +35,23 @@ interface StatsBarProps {
 
 export function StatsBar({ variant = "default" }: StatsBarProps) {
   const bgClass = {
-    default: "bg-white border-y border-slate-200",
-    dark: "bg-slate-900 text-white",
-    gradient: "bg-gradient-to-r from-[#0066cc] to-blue-700 text-white",
+    default: "bg-[var(--theme-glass-bg)] border-y border-[var(--theme-glass-border)]",
+    dark: "bg-[var(--theme-bg-solid)] text-[var(--theme-text)]",
+    gradient: "bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-hover)] text-white",
   };
 
   const textClass = {
     default: {
-      value: "text-slate-900",
-      label: "text-slate-600",
-      description: "text-slate-400",
-      icon: "bg-[#0066cc]/10 text-[#0066cc]",
+      value: "text-[var(--theme-text)]",
+      label: "text-[var(--theme-text-muted)]",
+      description: "text-[var(--theme-text-muted)]",
+      icon: "bg-[var(--theme-accent)]/10 text-[var(--theme-accent)]",
     },
     dark: {
-      value: "text-white",
-      label: "text-slate-300",
-      description: "text-slate-500",
-      icon: "bg-white/10 text-white",
+      value: "text-[var(--theme-text)]",
+      label: "text-[var(--theme-text-muted)]",
+      description: "text-[var(--theme-text-muted)]",
+      icon: "bg-[var(--theme-glass-bg)] text-[var(--theme-text)]",
     },
     gradient: {
       value: "text-white",

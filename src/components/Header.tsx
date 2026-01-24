@@ -52,7 +52,7 @@ const iconMap: Record<string, React.ReactNode> = {
 const navItems = [
   { name: "Αρχική", path: "/" },
   { name: "Προϊόντα", path: "/products", hasDropdown: true },
-  { name: "Ποιοι Είμαστε", path: "/about" },
+  { name: "Η Εταιρεία", path: "/about" },
   { name: "Επικοινωνία", path: "/contact" },
 ];
 
@@ -330,14 +330,14 @@ function HeaderComponent() {
                       {/* Header */}
                       <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: '1px solid var(--theme-glass-border)' }}>
                         <h3 className="font-bold" style={{ color: 'var(--theme-text)' }}>
-                          Κατηγορίες Προϊόντων
+                          Κατηγορίες προϊόντων
                         </h3>
                         <Link
                           href="/products"
                           className="text-sm font-semibold hover:underline flex items-center gap-1"
                           style={{ color: 'var(--theme-accent)' }}
                         >
-                          Δες Όλα
+                          Δείτε όλα
                           <ArrowRight className="w-4 h-4" />
                         </Link>
                       </div>
@@ -380,7 +380,7 @@ function HeaderComponent() {
                       {/* Footer CTA */}
                       <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--theme-glass-border)' }}>
                         <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-                          Δεν βρήκατε αυτό που ψάχνετε;
+                          Δεν βρίσκετε αυτό που χρειάζεστε;
                         </p>
                         <a
                           href="tel:2103461645"
@@ -410,16 +410,16 @@ function HeaderComponent() {
                   <>
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center gap-2 p-1 rounded-full transition-all hover:ring-2 hover:ring-white/20"
+                      className="flex items-center gap-2 p-1 rounded-full transition-all hover:ring-2 hover:ring-[color-mix(in_srgb,var(--theme-accent)_30%,transparent)]"
                     >
                       {user.photoURL ? (
                         <img
                           src={user.photoURL}
                           alt=""
-                          className="w-9 h-9 rounded-full ring-2 ring-white/20"
+                          className="w-9 h-9 rounded-full ring-2 ring-[color-mix(in_srgb,var(--theme-accent)_25%,transparent)]"
                         />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-white/20">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] flex items-center justify-center text-white font-bold text-sm ring-2 ring-[color-mix(in_srgb,var(--theme-accent)_30%,transparent)]">
                           {user.displayName?.[0] || user.email?.[0] || 'U'}
                         </div>
                       )}
@@ -450,7 +450,7 @@ function HeaderComponent() {
                               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             >
                               <Shield className="w-4 h-4" />
-                              Admin Dashboard
+                              Πίνακας Διαχείρισης
                             </Link>
                           )}
                           <button
@@ -482,9 +482,9 @@ function HeaderComponent() {
 
             {/* Mobile Menu Button - Z-indexed to be clickable */}
             <button
-              className="xl:hidden col-start-3 justify-self-end p-2 hover:bg-white/10 rounded-lg transition-colors text-white z-20"
+              className="xl:hidden col-start-3 justify-self-end p-2 hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_80%,transparent)] rounded-lg transition-colors text-[var(--theme-text)] z-20"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle navigation menu"
+              aria-label="Εναλλαγή μενού πλοήγησης"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -537,7 +537,7 @@ function HeaderComponent() {
                         onClick={() => setMobileMenuOpen(false)}
                         className="block px-3 py-2 text-sm font-semibold text-[var(--theme-accent)]"
                       >
-                        Δες Όλα →
+                        Δείτε όλα →
                       </Link>
                     </div>
                   )}

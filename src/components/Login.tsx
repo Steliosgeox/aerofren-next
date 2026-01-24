@@ -85,16 +85,16 @@ export default function Login() {
                 style={{ opacity: mounted ? 1 : 0 }}
             >
                 {/* Logo */}
-                <div className="w-14 h-14 mb-5 bg-gradient-to-br from-blue-600 to-blue-800 rounded-[14px] flex items-center justify-center shadow-[0_8px_32px_rgba(0,102,204,0.4),0_0_60px_rgba(0,102,204,0.2)]">
+                <div className="w-14 h-14 mb-5 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-[14px] flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_60px_rgba(0,0,0,0.2)]">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                         <path d="M12 2v6M4.93 10.93l4.24 4.24M2 18h6M19.07 10.93l-4.24 4.24M22 18h-6M12 22a8 8 0 0 0 8-8M12 22a8 8 0 0 1-8-8" />
                     </svg>
                 </div>
 
-                <h1 className="text-[1.75rem] font-bold text-white mb-1.5 tracking-tight [text-shadow:0_2px_20px_rgba(0,0,0,0.4)]">
+                <h1 className="text-[1.75rem] font-bold text-[var(--theme-text)] mb-1.5 tracking-tight [text-shadow:0_2px_20px_rgba(0,0,0,0.4)]">
                     Σύνδεση
                 </h1>
-                <p className="text-[0.9375rem] text-white/75 mb-6">Συνεχίστε στον λογαριασμό σας</p>
+                <p className="text-[0.9375rem] text-[var(--theme-text-muted)] mb-6">Συνεχίστε στον λογαριασμό σας</p>
 
                 {/* Lockout Warning */}
                 {isLocked && (
@@ -116,7 +116,7 @@ export default function Login() {
                         {/* Google Sign-in Button */}
                         <div className="w-full">
                             <button
-                                className="w-full flex items-center justify-center gap-3 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl py-3.5 px-6 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,102,204,0.5)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full flex items-center justify-center gap-3 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl py-3.5 px-6 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,0,0,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
                                 onClick={handleGoogleAuth}
                                 disabled={isGoogleLoading || authLoading || isLocked}
                             >
@@ -138,16 +138,16 @@ export default function Login() {
 
                         {/* Divider */}
                         <div className="flex items-center w-full my-5 gap-3.5">
-                            <div className="flex-1 h-px bg-white/15" />
-                            <span className="text-white/45 text-[0.8125rem] font-medium">ή</span>
-                            <div className="flex-1 h-px bg-white/15" />
+                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
+                            <span className="text-[var(--theme-text-muted)] text-[0.8125rem] font-medium">ή</span>
+                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
                         </div>
 
                         {/* Email Toggle Button */}
                         <GlassSurface width="100%" height={48} borderRadius={12} brightness={40} opacity={0.8} blur={8} backgroundOpacity={0.05} className="hover:scale-[1.02] transition-transform cursor-pointer">
                             <button
                                 onClick={() => { setShowEmailForm(true); clearErrors(); }}
-                                className="w-full flex items-center justify-center gap-2.5 bg-transparent border-none cursor-pointer text-white/90 text-sm font-semibold p-3.5 transition-colors hover:text-white"
+                                className="w-full flex items-center justify-center gap-2.5 bg-transparent border-none cursor-pointer text-[var(--theme-text)] text-sm font-semibold p-3.5 transition-colors hover:text-[var(--theme-text)]"
                                 disabled={isLocked}
                             >
                                 <Mail size={18} />
@@ -159,7 +159,7 @@ export default function Login() {
                     <>
                         {/* Back to Login */}
                         <button
-                            className="flex items-center gap-1.5 text-white/70 text-sm cursor-pointer bg-transparent border-none mb-5 transition-colors hover:text-white"
+                            className="flex items-center gap-1.5 text-[var(--theme-text-muted)] text-sm cursor-pointer bg-transparent border-none mb-5 transition-colors hover:text-[var(--theme-text)]"
                             onClick={handleBackToLogin}
                             type="button"
                         >
@@ -170,12 +170,12 @@ export default function Login() {
                         {resetSent ? (
                             <div className="flex flex-col items-center gap-4 text-center">
                                 <CheckCircle size={48} className="text-emerald-500" />
-                                <p className="text-white/90 text-[0.9375rem] leading-relaxed">
+                                <p className="text-[var(--theme-text)] text-[0.9375rem] leading-relaxed">
                                     Σας στείλαμε email με οδηγίες επαναφοράς κωδικού στο <strong>{resetEmail}</strong>.
                                 </p>
                                 <button
                                     type="button"
-                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(0,102,204,0.5)]"
+                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(0,0,0,0.3)]"
                                     onClick={handleBackToLogin}
                                 >
                                     Επιστροφή στη σύνδεση
@@ -183,7 +183,7 @@ export default function Login() {
                             </div>
                         ) : (
                             <form onSubmit={handleForgotPassword} className="w-full flex flex-col gap-3" noValidate>
-                                <p className="text-[0.9375rem] text-white/75 mb-4">
+                                <p className="text-[0.9375rem] text-[var(--theme-text-muted)] mb-4">
                                     Εισάγετε το email σας για να λάβετε οδηγίες επαναφοράς κωδικού.
                                 </p>
                                 <AuthInput
@@ -199,7 +199,7 @@ export default function Login() {
                                 />
                                 <button
                                     type="submit"
-                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,102,204,0.5)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,0,0,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
                                     disabled={isResetting}
                                 >
                                     {isResetting && <Loader2 size={20} className="animate-spin" />}
@@ -242,7 +242,7 @@ export default function Login() {
 
                             <button
                                 type="button"
-                                className="text-white/60 text-[0.8125rem] cursor-pointer transition-colors mt-1 inline-block bg-transparent border-none hover:text-blue-400"
+                                className="text-[var(--theme-text-muted)] text-[0.8125rem] cursor-pointer transition-colors mt-1 inline-block bg-transparent border-none hover:text-[var(--theme-accent)]"
                                 onClick={() => { setShowForgotPassword(true); setResetEmail(formData.email); clearErrors(); }}
                             >
                                 Ξεχάσατε τον κωδικό;
@@ -250,7 +250,7 @@ export default function Login() {
 
                             <button
                                 type="submit"
-                                className="w-full py-3.5 px-6 bg-gradient-to-br from-blue-600 to-blue-800 border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,102,204,0.4)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,102,204,0.5)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full py-3.5 px-6 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,0,0,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
                                 disabled={isEmailLoading || authLoading || isLocked}
                             >
                                 {isEmailLoading && <Loader2 size={20} className="animate-spin" />}
@@ -260,16 +260,16 @@ export default function Login() {
 
                         {/* Divider */}
                         <div className="flex items-center w-full my-5 gap-3.5">
-                            <div className="flex-1 h-px bg-white/15" />
-                            <span className="text-white/45 text-[0.8125rem] font-medium">ή</span>
-                            <div className="flex-1 h-px bg-white/15" />
+                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
+                            <span className="text-[var(--theme-text-muted)] text-[0.8125rem] font-medium">ή</span>
+                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
                         </div>
 
                         {/* Google Toggle */}
                         <GlassSurface width="100%" height={48} borderRadius={12} brightness={40} opacity={0.8} blur={8} backgroundOpacity={0.05} className="hover:scale-[1.02] transition-transform cursor-pointer">
                             <button
                                 onClick={() => { setShowEmailForm(false); clearErrors(); }}
-                                className="w-full flex items-center justify-center gap-2.5 bg-transparent border-none cursor-pointer text-white/90 text-sm font-semibold p-3.5 transition-colors hover:text-white"
+                                className="w-full flex items-center justify-center gap-2.5 bg-transparent border-none cursor-pointer text-[var(--theme-text)] text-sm font-semibold p-3.5 transition-colors hover:text-[var(--theme-text)]"
                             >
                                 <svg width="18" height="18" viewBox="0 0 24 24">
                                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -284,9 +284,9 @@ export default function Login() {
                 )}
 
                 {/* Footer */}
-                <div className="mt-5 text-sm text-white/60">
+                <div className="mt-5 text-sm text-[var(--theme-text-muted)]">
                     Νέος χρήστης?
-                    <Link href="/signup" className="text-blue-400 no-underline font-semibold ml-1 transition-colors hover:text-blue-300">
+                    <Link href="/signup" className="text-[var(--theme-accent)] no-underline font-semibold ml-1 transition-colors hover:text-[var(--theme-accent-hover)]">
                         Εγγραφείτε
                     </Link>
                 </div>

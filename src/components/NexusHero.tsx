@@ -2,7 +2,6 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import * as THREE from "three";
-import Link from "next/link";
 import LiquidButton from "./LiquidButton";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import { debounce } from "@/lib/debounce";
@@ -58,7 +57,7 @@ interface ThemePreset {
 const createPresets = (isMobile: boolean): Record<string, ThemePreset> => ({
     // DARK THEME - Deep blue industrial water aesthetic (Holographic style)
     dark: {
-        sphereCount: isMobile ? 4 : 6,
+        sphereCount: isMobile ? 3 : 4,
         ambientIntensity: 0.10,
         diffuseIntensity: 1.0,
         specularIntensity: 0.65,
@@ -77,7 +76,7 @@ const createPresets = (isMobile: boolean): Record<string, ThemePreset> => ({
     },
     // LIGHT THEME - Clean water, bright and professional (Holographic style)
     light: {
-        sphereCount: isMobile ? 3 : 6,
+        sphereCount: isMobile ? 3 : 4,
         ambientIntensity: 0.10,
         diffuseIntensity: 1.0,
         specularIntensity: 0.65,
@@ -96,7 +95,7 @@ const createPresets = (isMobile: boolean): Record<string, ThemePreset> => ({
     },
     // DIM THEME - Purple accent, moody industrial
     dim: {
-        sphereCount: isMobile ? 4 : 6,
+        sphereCount: isMobile ? 3 : 4,
         ambientIntensity: 0.10,
         diffuseIntensity: 1.0,
         specularIntensity: 0.65,
@@ -164,6 +163,8 @@ const createFragmentShader = (isLowPower: boolean, isMobile: boolean, isSafari: 
     uniform float uCursorGlowIntensity;
     uniform float uCursorGlowRadius;
     uniform vec3 uCursorGlowColor;
+    uniform float uShadowStrength;
+    uniform float uAOStrength;
     uniform float uIsSafari;
     uniform float uIsMobile;
     uniform float uIsLowPower;
@@ -312,7 +313,7 @@ const createFragmentShader = (isLowPower: boolean, isMobile: boolean, isSafari: 
         } else {
             float occ = 0.0;
             float weight = 1.0;
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 3; i++) {
                 float dist = 0.01 + 0.015 * float(i * i);
                 float h = sceneSDF(p + n * dist);
                 occ += (dist - h) * weight;
@@ -323,6 +324,9 @@ const createFragmentShader = (isLowPower: boolean, isMobile: boolean, isSafari: 
     }
 
     float softShadow(vec3 ro, vec3 rd, float mint, float maxt, float k) {
+        if (uShadowStrength <= 0.0) {
+            return 1.0;
+        }
         if (uIsLowPower > 0.5) {
             float result = 1.0;
             float t = mint;
@@ -337,7 +341,7 @@ const createFragmentShader = (isLowPower: boolean, isMobile: boolean, isSafari: 
         } else {
             float result = 1.0;
             float t = mint;
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 8; i++) {
                 if (t >= maxt) break;
                 float h = sceneSDF(ro + rd * t);
                 if (h < EPSILON) return 0.0;
@@ -350,9 +354,9 @@ const createFragmentShader = (isLowPower: boolean, isMobile: boolean, isSafari: 
 
     float rayMarch(vec3 ro, vec3 rd) {
         float t = 0.0;
-        int maxSteps = uIsMobile > 0.5 ? 12 : (uIsSafari > 0.5 ? 16 : 32);
+        int maxSteps = uIsMobile > 0.5 ? 10 : (uIsSafari > 0.5 ? 14 : 24);
 
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < 24; i++) {
             if (i >= maxSteps) break;
 
             vec3 p = ro + rd * t;
@@ -373,29 +377,32 @@ const createFragmentShader = (isLowPower: boolean, isMobile: boolean, isSafari: 
         vec3 normal = calcNormal(p);
         vec3 viewDir = -rd;
         vec3 baseColor = uSphereColor;
-        float ao = ambientOcclusion(p, normal);
+        float ao = 1.0;
+        if (uAOStrength > 0.0) {
+            ao = mix(1.0, ambientOcclusion(p, normal), uAOStrength);
+        }
         vec3 ambient = uLightColor * uAmbientIntensity * ao;
         vec3 lightDir = normalize(uLightPosition);
         float diff = max(dot(normal, lightDir), 0.0);
-        float shadow = softShadow(p, lightDir, 0.01, 10.0, 20.0);
-        vec3 diffuse = uLightColor * diff * uDiffuseIntensity * shadow;
+        float shadow = uShadowStrength > 0.0 ? softShadow(p, lightDir, 0.01, 10.0, 20.0) : 1.0;
+        vec3 diffuse = uLightColor * diff * uDiffuseIntensity * mix(1.0, shadow, uShadowStrength);
         vec3 reflectDir = reflect(-lightDir, normal);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), uSpecularPower);
         float fresnel = pow(1.0 - max(dot(viewDir, normal), 0.0), uFresnelPower);
         vec3 specular = uLightColor * spec * uSpecularIntensity * fresnel;
         vec3 fresnelRim = uLightColor * fresnel * 0.4;
 
-        float distToCursor = length(p - uCursorSphere);
-        if (distToCursor < uCursorRadius + 0.4) {
-            float highlight = 1.0 - smoothstep(0.0, uCursorRadius + 0.4, distToCursor);
-            specular += uLightColor * highlight * 0.2;
-            float glow = exp(-distToCursor * 3.0) * 0.15;
-            ambient += uLightColor * glow * 0.5;
-        }
+        // Cursor ball highlight removed for performance/cleaner look
 
         vec3 color = (baseColor + ambient + diffuse + specular + fresnelRim) * ao;
         color = pow(color, vec3(uContrast * 0.9));
         color = color / (color + vec3(0.8));
+
+        // Flatten lighting on cursor sphere to remove any shadowing
+        float distToCursor = length(p - uCursorSphere);
+        if (distToCursor < uCursorRadius) {
+            color = baseColor;
+        }
 
         return color;
     }
@@ -455,7 +462,6 @@ export default function NexusHero() {
 
     const [currentTheme, setCurrentTheme] = useState<"dark" | "light" | "dim">("dark");
     const [isLoaded, setIsLoaded] = useState(false);
-    const [isVisible, setIsVisible] = useState(true);
     const isVisibleRef = useRef(true);
 
     // Watch for theme changes
@@ -479,7 +485,6 @@ export default function NexusHero() {
         const observer = new IntersectionObserver(
             (entries) => {
                 const visible = entries[0]?.isIntersecting ?? true;
-                setIsVisible(visible);
                 isVisibleRef.current = visible;
             },
             { threshold: 0.05 }
@@ -582,12 +587,44 @@ export default function NexusHero() {
         const width = window.innerWidth;
         const height = window.innerHeight;
 
-        // Clamp resolution to prevent excessive GPU load
+        // Clamp resolution to prevent excessive GPU load (preserve aspect ratio)
+        // PERFORMANCE: Significantly reduced resolution - metaballs still look good at lower res
         const MAX_WIDTH = 1920;
         const MAX_HEIGHT = 1080;
-        const clampedPixelRatio = Math.min(device.pixelRatio, 1.5);
-        renderer.setPixelRatio(clampedPixelRatio);
-        renderer.setSize(Math.min(width, MAX_WIDTH), Math.min(height, MAX_HEIGHT));
+        const MAX_PIXEL_RATIO = device.isMobile || device.isLowPower ? 1.0 : 1.25;
+        const FIXED_RENDER_SCALE = device.isMobile || device.isLowPower ? 0.5 : 0.45;
+
+        const getBaseRenderMetrics = (viewportWidth: number, viewportHeight: number) => {
+            const scale = Math.min(1, MAX_WIDTH / viewportWidth, MAX_HEIGHT / viewportHeight);
+            const baseWidth = Math.max(1, Math.round(viewportWidth * scale));
+            const baseHeight = Math.max(1, Math.round(viewportHeight * scale));
+            const pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
+            return { baseWidth, baseHeight, pixelRatio };
+        };
+
+        const applyRenderSize = (viewportWidth: number, viewportHeight: number) => {
+            const { baseWidth, baseHeight, pixelRatio } = getBaseRenderMetrics(viewportWidth, viewportHeight);
+            const renderWidth = Math.max(1, Math.round(baseWidth * FIXED_RENDER_SCALE));
+            const renderHeight = Math.max(1, Math.round(baseHeight * FIXED_RENDER_SCALE));
+
+            renderer.setPixelRatio(pixelRatio);
+            renderer.setSize(renderWidth, renderHeight, false);
+
+            if (materialRef.current) {
+                materialRef.current.uniforms.uResolution.value.set(renderWidth, renderHeight);
+                materialRef.current.uniforms.uActualResolution.value.set(
+                    renderWidth * pixelRatio,
+                    renderHeight * pixelRatio
+                );
+                materialRef.current.uniforms.uPixelRatio.value = pixelRatio;
+            }
+        };
+
+        const { baseWidth, baseHeight, pixelRatio } = getBaseRenderMetrics(width, height);
+        const initialRenderWidth = Math.max(1, Math.round(baseWidth * FIXED_RENDER_SCALE));
+        const initialRenderHeight = Math.max(1, Math.round(baseHeight * FIXED_RENDER_SCALE));
+        renderer.setPixelRatio(pixelRatio);
+        renderer.setSize(initialRenderWidth, initialRenderHeight, false);
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -599,9 +636,9 @@ export default function NexusHero() {
         const material = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                uResolution: { value: new THREE.Vector2(width, height) },
-                uActualResolution: { value: new THREE.Vector2(width * device.pixelRatio, height * device.pixelRatio) },
-                uPixelRatio: { value: device.pixelRatio },
+                uResolution: { value: new THREE.Vector2(initialRenderWidth, initialRenderHeight) },
+                uActualResolution: { value: new THREE.Vector2(initialRenderWidth * pixelRatio, initialRenderHeight * pixelRatio) },
+                uPixelRatio: { value: pixelRatio },
                 uMousePosition: { value: new THREE.Vector2(0.5, 0.5) },
                 uCursorSphere: { value: new THREE.Vector3(0, 0, 0) },
                 uCursorRadius: { value: 0.22 }, // Between 0.20-0.25
@@ -633,6 +670,8 @@ export default function NexusHero() {
                 uCursorGlowIntensity: { value: initialPreset.cursorGlowIntensity },
                 uCursorGlowRadius: { value: initialPreset.cursorGlowRadius },
                 uCursorGlowColor: { value: initialPreset.cursorGlowColor },
+                uShadowStrength: { value: 0.0 },
+                uAOStrength: { value: 0.0 },
                 uIsSafari: { value: device.isSafari ? 1.0 : 0.0 },
                 uIsMobile: { value: device.isMobile ? 1.0 : 0.0 },
                 uIsLowPower: { value: device.isLowPower ? 1.0 : 0.0 },
@@ -651,12 +690,12 @@ export default function NexusHero() {
         // Track if component is mounted for animation loop
         let isMounted = true;
 
-        // Animation loop with mounted check
+        // Animation loop with mounted check (60fps uncapped)
         const animate = () => {
             // CRITICAL: Stop loop if unmounted
             if (!isMounted) return;
 
-            // SKIP rendering when scrolled away (saves 100% GPU when invisible)
+            // SKIP rendering when scrolled away (saves GPU when invisible)
             if (!isVisibleRef.current) {
                 animationFrameRef.current = requestAnimationFrame(animate);
                 return;
@@ -672,6 +711,7 @@ export default function NexusHero() {
             materialRef.current.uniforms.uMousePosition.value = mousePositionRef.current;
 
             rendererRef.current.render(scene, camera);
+
             animationFrameRef.current = requestAnimationFrame(animate);
         };
 
@@ -684,25 +724,11 @@ export default function NexusHero() {
         };
 
         const handleResize = () => {
-            const newWidth = window.innerWidth;
-            const newHeight = window.innerHeight;
-            const currentPixelRatio = Math.min(window.devicePixelRatio || 1, device.isMobile ? 1.5 : 2);
-
-            renderer.setSize(newWidth, newHeight);
-            renderer.setPixelRatio(currentPixelRatio);
+            applyRenderSize(window.innerWidth, window.innerHeight);
 
             // Update cached rect for mouse position calculations
             if (containerRef.current) {
                 cachedRectRef.current = containerRef.current.getBoundingClientRect();
-            }
-
-            if (materialRef.current) {
-                materialRef.current.uniforms.uResolution.value.set(newWidth, newHeight);
-                materialRef.current.uniforms.uActualResolution.value.set(
-                    newWidth * currentPixelRatio,
-                    newHeight * currentPixelRatio
-                );
-                materialRef.current.uniforms.uPixelRatio.value = currentPixelRatio;
             }
         };
 
@@ -805,7 +831,7 @@ export default function NexusHero() {
 
                 {/* Description */}
                 <p className="nexus-hero__description">
-                    Συστήματα Αέρος &amp; Εξοπλισμός επεξεργασίας νερού για επαγγελματίες με 45+ έτη στο χώρο.
+                    Συστήματα αέρος και εξοπλισμός επεξεργασίας νερού για επαγγελματίες, με 45+ χρόνια εμπειρίας.
                 </p>
 
                 {/* Tagline */}
@@ -815,7 +841,7 @@ export default function NexusHero() {
 
                 {/* CTA */}
                 <div className="nexus-hero__cta">
-                    <LiquidButton text="Εξερευνήστε" href="/products" />
+                    <LiquidButton text="Δείτε τα προϊόντα" href="/products" />
                 </div>
             </div>
 
@@ -827,14 +853,14 @@ export default function NexusHero() {
                 </div>
                 <div className="nexus-hero__info-right">
                     <span className="nexus-hero__info-label">Τεχνική κατεύθυνση</span>
-                    <span className="nexus-hero__info-value">& λύσεις εφαρμογής</span>
+                    <span className="nexus-hero__info-value">και λύσεις εφαρμογής</span>
                 </div>
             </div>
 
             {/* Scroll Indicator */}
             <div className={`nexus-hero__scroll ${isLoaded ? "nexus-hero__scroll--visible" : ""}`}>
                 <div className="nexus-hero__scroll-line" />
-                <span className="nexus-hero__scroll-text">Scroll</span>
+                <span className="nexus-hero__scroll-text">Κύλιση</span>
             </div>
 
             <style jsx>{`
@@ -914,7 +940,7 @@ export default function NexusHero() {
                 }
 
                 .nexus-hero__headline {
-                    font-family: var(--font-manrope), system-ui, sans-serif;
+                    font-family: var(--font-sans);
                     font-size: clamp(2.5rem, 7vw, 5rem);
                     font-weight: 800;
                     line-height: 1.05;
@@ -925,7 +951,7 @@ export default function NexusHero() {
                 }
 
                 .nexus-hero__headline--accent {
-                    background: linear-gradient(135deg, var(--theme-accent, #5cb8ff), var(--theme-accent-secondary, #00bae2));
+                    background: linear-gradient(135deg, var(--theme-accent, #5cb8ff), var(--theme-accent-hover, #00bae2));
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                     background-clip: text;

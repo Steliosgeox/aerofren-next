@@ -6,31 +6,31 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[12px] text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5cb8ff] focus-visible:ring-offset-2 focus-visible:ring-offset-[#06101f] disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[12px] text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--theme-accent)_60%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-solid)] disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
     {
         variants: {
             variant: {
                 default:
-                    "bg-[#0066cc] text-white shadow-md hover:bg-[#004999] hover:shadow-lg hover:shadow-blue-500/20 hover:-translate-y-0.5",
+                    "bg-[var(--theme-accent)] text-white shadow-md hover:bg-[var(--theme-accent-hover)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.25)] hover:-translate-y-0.5",
                 destructive:
                     "bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-red-500/20",
                 outline:
-                    "border-2 border-[#0066cc] text-[#0066cc] bg-transparent hover:bg-[#0066cc] hover:text-white hover:shadow-lg hover:shadow-blue-500/20",
+                    "border-2 border-[color-mix(in_srgb,var(--theme-accent)_70%,transparent)] text-[var(--theme-accent)] bg-transparent hover:bg-[var(--theme-accent)] hover:text-white hover:shadow-lg hover:shadow-black/20",
                 secondary:
-                    "bg-slate-100 text-slate-900 border border-slate-200 hover:bg-slate-200 hover:border-slate-300",
+                    "bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] text-[var(--theme-text)] border border-[var(--theme-glass-border)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_95%,transparent)] hover:border-[color-mix(in_srgb,var(--theme-accent)_25%,transparent)]",
                 ghost:
-                    "hover:bg-slate-100 hover:text-slate-900",
+                    "hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] hover:text-[var(--theme-text)]",
                 link:
-                    "text-[#0066cc] underline-offset-4 hover:underline",
+                    "text-[var(--theme-accent)] underline-offset-4 hover:underline",
                 // Glass variants for dark backgrounds
                 "glass-primary":
-                    "bg-white/10 backdrop-blur-md text-white border border-white/20 shadow-lg shadow-black/20 hover:bg-white/15 hover:border-white/30 hover:shadow-xl hover:-translate-y-0.5",
+                    "bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] backdrop-blur-md text-[var(--theme-text)] border border-[var(--theme-glass-border)] shadow-lg shadow-black/20 hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_95%,transparent)] hover:border-[color-mix(in_srgb,var(--theme-accent)_25%,transparent)] hover:shadow-xl hover:-translate-y-0.5",
                 "glass-secondary":
-                    "bg-white/5 backdrop-blur-sm text-white/90 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/20",
+                    "bg-[color-mix(in_srgb,var(--theme-glass-bg)_75%,transparent)] backdrop-blur-sm text-[var(--theme-text)] border border-[var(--theme-glass-border)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_90%,transparent)] hover:text-[var(--theme-text)] hover:border-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]",
                 "glass-accent":
-                    "bg-[#0066cc]/90 backdrop-blur-md text-white border border-[#3399ff]/30 shadow-lg shadow-blue-500/25 hover:bg-[#0066cc] hover:border-[#3399ff]/50 hover:shadow-[0_8px_30px_rgba(0,102,204,0.4)] hover:-translate-y-0.5",
+                    "bg-[color-mix(in_srgb,var(--theme-accent)_90%,transparent)] backdrop-blur-md text-white border border-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)] shadow-lg shadow-black/25 hover:bg-[var(--theme-accent)] hover:border-[color-mix(in_srgb,var(--theme-accent)_60%,transparent)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:-translate-y-0.5",
                 "glass-ghost":
-                    "bg-transparent text-white/80 hover:bg-white/10 hover:text-white",
+                    "bg-transparent text-[var(--theme-text-muted)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_80%,transparent)] hover:text-[var(--theme-text)]",
             },
             size: {
                 default: "h-11 px-6 py-2",

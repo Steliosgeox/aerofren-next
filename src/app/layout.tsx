@@ -1,16 +1,25 @@
 import type { Metadata } from "next"
-import { Inter, Manrope } from "next/font/google"
+import { headers } from "next/headers"
+import Script from "next/script"
+import localFont from "next/font/local"
 import { ThemeProvider } from "next-themes"
 import "./globals.css"
 import StyledComponentsRegistry from "@/lib/registry"
 import { AuthWrapper } from "@/components/AuthWrapper"
 import ErrorBoundary from "@/components/ui/ErrorBoundary"
+import FpsOverlay from "@/components/FpsOverlay"
+import PageVisibilityHandler from "@/components/PageVisibilityHandler"
 
-const inter = Inter({ subsets: ["latin", "greek"] })
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["300", "600", "800"],
-  variable: "--font-manrope"
+const ttNorms = localFont({
+  src: "../fonts/TTNormsProVariable.ttf",
+  variable: "--font-tt-norms",
+  display: "swap",
+})
+
+const ttNormsMono = localFont({
+  src: "../fonts/TTNormsProMonoVariable.ttf",
+  variable: "--font-tt-norms-mono",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -64,14 +73,24 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const nonce = (await headers()).get("x-nonce")
+  const perfNoBlur = process.env.NEXT_PUBLIC_PERF_NO_BLUR === "1"
   return (
     <html lang="el" suppressHydrationWarning>
-      <body className={`${inter.className} ${manrope.variable}`} suppressHydrationWarning>
+      <body
+        className={`${ttNorms.variable} ${ttNormsMono.variable} ${ttNorms.className} ${perfNoBlur ? "perf-no-blur" : ""}`}
+        suppressHydrationWarning
+      >
+        {nonce ? (
+          <Script id="webpack-nonce" strategy="beforeInteractive" nonce={nonce}>
+            {`window.__webpack_nonce__ = ${JSON.stringify(nonce)};`}
+          </Script>
+        ) : null}
         <ThemeProvider
           attribute="data-theme"
           defaultTheme="dark"
@@ -80,8 +99,10 @@ export default function RootLayout({
         >
           <ErrorBoundary>
             <AuthWrapper>
-              <StyledComponentsRegistry>
+              <StyledComponentsRegistry nonce={nonce}>
                 {children}
+                <FpsOverlay />
+                <PageVisibilityHandler />
               </StyledComponentsRegistry>
             </AuthWrapper>
           </ErrorBoundary>
@@ -90,4 +111,3 @@ export default function RootLayout({
     </html>
   )
 }
-

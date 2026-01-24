@@ -148,7 +148,7 @@ export function SocialTooltips({ isIntegrated = false }: { isIntegrated?: boolea
         <li className="icon-content">
           <a
             href="https://twitter.com/"
-            aria-label="Twitter"
+            aria-label="X (Twitter)"
             data-social="twitter"
             className="link"
             target="_blank"
@@ -158,12 +158,12 @@ export function SocialTooltips({ isIntegrated = false }: { isIntegrated?: boolea
               <path d="M53.564 38.947 87.066 0h-7.941L50.033 33.816 26.801 0H0l35.136 51.137L0 91.977h7.941l30.722 -35.712 24.54 35.712H90L53.561 38.947zM42.686 51.588l-3.56 -5.093L10.8 5.977h12.194l22.86 32.699 3.56 5.093 29.714 42.503H66.935L42.686 51.591z" />
             </svg>
           </a>
-          <div className="tooltip">Twitter</div>
+          <div className="tooltip">X</div>
         </li>
         <li className="icon-content">
           <a
             href="mailto:info@aerofren.gr"
-            aria-label="Email"
+            aria-label="E-mail"
             data-social="mail"
             className="link"
           >
@@ -171,7 +171,7 @@ export function SocialTooltips({ isIntegrated = false }: { isIntegrated?: boolea
               <path d="M20 80A12 12 0 0 1 8 68v-40A12 12 0 0 1 20 16h56A12 12 0 0 1 88 28v40A12 12 0 0 1 76 80zm10.5 -47.12a4 4 0 1 0 -5.001 6.24l15.001 12.004a12 12 0 0 0 15.001 0l15.001 -12a4 4 0 1 0 -5.001 -6.247l-15.001 12a4 4 0 0 1 -5.001 0z" />
             </svg>
           </a>
-          <div className="tooltip">Email</div>
+          <div className="tooltip">E-mail</div>
         </li>
       </ul>
     </StyledWrapper>

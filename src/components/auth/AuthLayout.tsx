@@ -2,6 +2,7 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
+import { useTheme } from 'next-themes';
 import GlassSurface from '@/components/ui/GlassSurface';
 
 // Load Silk dynamically
@@ -22,6 +23,13 @@ interface AuthLayoutProps {
  * Mobile: Single column, value panel hidden
  */
 export function AuthLayout({ children, valuePanel }: AuthLayoutProps) {
+    const { resolvedTheme } = useTheme();
+    const silkColor = resolvedTheme === 'light'
+        ? '#0066cc'
+        : resolvedTheme === 'dim'
+            ? '#ff48a9'
+            : '#00bae2';
+
     return (
         <main className="auth-layout">
             <style jsx>{`
@@ -32,7 +40,7 @@ export function AuthLayout({ children, valuePanel }: AuthLayoutProps) {
                     justify-content: center;
                     padding: 24px;
                     padding-top: 100px;
-                    background: #000;
+                    background: var(--theme-bg-solid);
                     position: relative;
                     overflow: hidden;
                 }
@@ -116,9 +124,9 @@ export function AuthLayout({ children, valuePanel }: AuthLayoutProps) {
                     background: linear-gradient(
                         180deg,
                         transparent 0%,
-                        rgba(255, 255, 255, 0.15) 20%,
-                        rgba(255, 255, 255, 0.25) 50%,
-                        rgba(255, 255, 255, 0.15) 80%,
+                        color-mix(in srgb, var(--theme-glass-border) 60%, transparent) 20%,
+                        color-mix(in srgb, var(--theme-accent) 30%, transparent) 50%,
+                        color-mix(in srgb, var(--theme-glass-border) 60%, transparent) 80%,
                         transparent 100%
                     );
                 }
@@ -139,7 +147,7 @@ export function AuthLayout({ children, valuePanel }: AuthLayoutProps) {
 
             {/* Silk Background */}
             <div className="silk-wrapper">
-                <Silk color="#4400ff" speed={5} scale={1} noiseIntensity={1.5} rotation={0} />
+                <Silk color={silkColor} speed={5} scale={1} noiseIntensity={1.5} rotation={0} />
             </div>
 
             <div className="unified-card-wrapper">

@@ -32,18 +32,19 @@ export function FeatureList() {
                 :global(.feature-icon) {
                     width: 34px;
                     height: 34px;
-                    background: rgba(255, 255, 255, 0.06);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    background: color-mix(in srgb, var(--theme-glass-bg) 85%, transparent);
+                    border: 1px solid var(--theme-glass-border);
                     border-radius: 9px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     flex-shrink: 0;
+                    color: var(--theme-accent);
                 }
 
                 .feature-label {
                     font-size: 0.875rem;
-                    color: rgba(255, 255, 255, 0.85);
+                    color: var(--theme-text);
                     font-weight: 500;
                 }
             `}</style>
@@ -51,7 +52,7 @@ export function FeatureList() {
             {features.map((feature, idx) => (
                 <div key={idx} className="feature-item">
                     <div className="feature-icon">
-                        <feature.icon size={17} color="rgba(255,255,255,0.7)" strokeWidth={1.5} />
+                        <feature.icon size={17} color="currentColor" strokeWidth={1.5} />
                     </div>
                     <span className="feature-label">{feature.label}</span>
                 </div>

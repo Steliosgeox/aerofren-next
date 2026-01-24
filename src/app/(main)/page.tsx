@@ -1,12 +1,23 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { gsap, useGSAP, EASE, SCRAMBLE_CHARS } from "@/lib/gsap";
-import NexusHero from "@/components/NexusHero";
-import HorizontalGallery from "@/components/HorizontalGallery";
-import ScrollAnimation from "@/components/ScrollAnimation";
 import { Button } from "@/components/ui/button";
+
+const NexusHero = dynamic(() => import("@/components/NexusHero"), {
+  ssr: false,
+  loading: () => <div className="min-h-[70vh] w-full bg-[var(--theme-bg-solid)]" />,
+});
+const HorizontalGallery = dynamic(() => import("@/components/HorizontalGallery"), {
+  ssr: false,
+  loading: () => <div className="min-h-[40vh] w-full bg-[var(--theme-bg-solid)]" />,
+});
+const ScrollAnimation = dynamic(() => import("@/components/ScrollAnimation"), {
+  ssr: false,
+  loading: () => <div className="min-h-[30vh] w-full bg-[var(--theme-bg-solid)]" />,
+});
 
 /**
  * AEROFREN Homepage - Premium Cinematic Scroll
@@ -22,16 +33,100 @@ import { Button } from "@/components/ui/button";
 export default function HomePage() {
   const statsRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
+  const [statsInView, setStatsInView] = useState(false);
+  const [contactInView, setContactInView] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [lowEndDevice, setLowEndDevice] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotion = () => setReduceMotion(media.matches);
+    updateMotion();
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", updateMotion);
+    } else {
+      media.addListener(updateMotion);
+    }
+
+    const deviceMemory =
+      (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
+    const cpuCores = navigator.hardwareConcurrency ?? 4;
+    setLowEndDevice(deviceMemory <= 4 || cpuCores <= 4);
+
+    return () => {
+      if (typeof media.addEventListener === "function") {
+        media.removeEventListener("change", updateMotion);
+      } else {
+        media.removeListener(updateMotion);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!reduceMotion) return;
+
+    const statsEl = statsRef.current;
+    if (statsEl) {
+      const items = statsEl.querySelectorAll("[data-stat-item]");
+      const heading = statsEl.querySelector("[data-section-heading]");
+      if (heading) gsap.set(heading, { clearProps: "all" });
+      items.forEach((item) => gsap.set(item, { clearProps: "all" }));
+    }
+
+    const contactCard = contactRef.current?.querySelector("[data-contact-card]");
+    if (contactCard) {
+      gsap.set(contactCard, { clearProps: "all" });
+    }
+  }, [reduceMotion]);
+
+  useEffect(() => {
+    const statsEl = statsRef.current;
+    if (!statsEl || statsInView) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setStatsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px 0px" }
+    );
+
+    observer.observe(statsEl);
+    return () => observer.disconnect();
+  }, [statsInView]);
+
+  useEffect(() => {
+    const contactEl = contactRef.current;
+    if (!contactEl || contactInView) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setContactInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px 0px" }
+    );
+
+    observer.observe(contactEl);
+    return () => observer.disconnect();
+  }, [contactInView]);
 
   // ============================================
   // STATS: Enter from right with stagger
   // ============================================
   useGSAP(() => {
+    if (!statsInView || reduceMotion) return;
     const stats = statsRef.current;
     if (!stats) return;
 
     const items = stats.querySelectorAll("[data-stat-item]");
     const heading = stats.querySelector("[data-section-heading]");
+    const scrubValue = lowEndDevice ? false : 1;
 
     // Heading slides from left
     if (heading) {
@@ -45,7 +140,7 @@ export default function HomePage() {
             trigger: heading,
             start: "top 85%",
             end: "top 60%",
-            scrub: 1,
+            scrub: scrubValue,
           },
         }
       );
@@ -66,6 +161,7 @@ export default function HomePage() {
           trigger: stats,
           start: "top 75%",
           toggleActions: "play none none reverse", // Play on enter, reverse on leave-back
+          scrub: scrubValue,
         },
         onComplete: function () {
           // After cards enter, scramble the stat values
@@ -87,7 +183,7 @@ export default function HomePage() {
       }
     );
 
-  }, { scope: statsRef });
+  }, { scope: statsRef, dependencies: [statsInView, reduceMotion, lowEndDevice] });
 
 
 
@@ -95,10 +191,12 @@ export default function HomePage() {
   // CONTACT: Scale entrance from center
   // ============================================
   useGSAP(() => {
+    if (!contactInView || reduceMotion) return;
     const contact = contactRef.current;
     if (!contact) return;
 
     const card = contact.querySelector("[data-contact-card]");
+    const scrubValue = lowEndDevice ? false : 1;
 
     if (card) {
       gsap.fromTo(card,
@@ -112,13 +210,13 @@ export default function HomePage() {
             trigger: contact,
             start: "top 80%",
             end: "top 50%",
-            scrub: 1,
+            scrub: scrubValue,
           },
         }
       );
     }
 
-  }, { scope: contactRef });
+  }, { scope: contactRef, dependencies: [contactInView, reduceMotion, lowEndDevice] });
 
   const stats = [
     { value: "35+", label: "Χρόνια Εμπειρίας" },
@@ -211,7 +309,7 @@ export default function HomePage() {
         .stats__heading {
           font-size: 32px;
           font-weight: 700;
-          background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 50%, #94a3b8 100%);
+          background: linear-gradient(135deg, var(--theme-text) 0%, var(--theme-accent) 50%, var(--theme-text-muted) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -228,13 +326,13 @@ export default function HomePage() {
         .stats__item {
           text-align: center;
           padding: 32px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+          background: var(--theme-glass-bg);
           backdrop-filter: blur(12px);
           border-radius: 16px;
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid var(--theme-glass-border);
           box-shadow:
             0 4px 16px rgba(0,0,0,0.15),
-            inset 0 1px 0 rgba(255,255,255,0.05);
+            inset 0 1px 0 var(--theme-glass-inset-light);
           will-change: transform, opacity;
           position: relative;
           overflow: hidden;
@@ -249,17 +347,17 @@ export default function HomePage() {
           transform: translateX(-50%);
           width: 100px;
           height: 2px;
-          background: linear-gradient(90deg, transparent, rgba(0, 102, 204, 0.5), transparent);
+          background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-accent) 60%, transparent), transparent);
           opacity: 0;
           transition: opacity 0.3s ease;
         }
 
         .stats__item:hover {
-          border-color: rgba(0, 102, 204, 0.3);
+          border-color: color-mix(in srgb, var(--theme-accent) 35%, transparent);
           box-shadow:
-            0 8px 32px rgba(0, 102, 204, 0.15),
+            0 8px 32px color-mix(in srgb, var(--theme-accent) 25%, transparent),
             0 4px 16px rgba(0,0,0,0.2),
-            inset 0 1px 0 rgba(255,255,255,0.08);
+            inset 0 1px 0 var(--theme-glass-inset-light);
           transform: translateY(-4px);
         }
 
@@ -271,18 +369,18 @@ export default function HomePage() {
           display: block;
           font-size: 44px;
           font-weight: 800;
-          background: linear-gradient(135deg, #5cb8ff 0%, #0066cc 100%);
+          background: linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent-hover) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
           letter-spacing: -0.02em;
           margin-bottom: 8px;
-          filter: drop-shadow(0 2px 8px rgba(0, 102, 204, 0.3));
+          filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--theme-accent) 35%, transparent));
         }
 
         .stats__label {
           font-size: 14px;
-          color: rgba(255,255,255,0.7);
+          color: var(--theme-text-muted);
           font-weight: 500;
           letter-spacing: 0.01em;
         }
@@ -292,17 +390,17 @@ export default function HomePage() {
           align-items: center;
           padding: 14px 28px;
           background: transparent;
-          color: #0066cc;
+          color: var(--theme-accent);
           font-size: 15px;
           font-weight: 600;
           border-radius: 10px;
-          border: 2px solid #0066cc;
+          border: 2px solid color-mix(in srgb, var(--theme-accent) 70%, transparent);
           transition: all 0.25s ease;
         }
 
         .btn-outline:hover {
-          background: #0066cc;
-          color: white;
+          background: var(--theme-accent);
+          color: #ffffff;
         }
 
         /* ==== WHY ==== */
@@ -325,7 +423,9 @@ export default function HomePage() {
         .why__image {
           position: relative;
           aspect-ratio: 1;
-          background: linear-gradient(145deg, #e2e8f0 0%, #cbd5e1 100%);
+          background: linear-gradient(145deg,
+            color-mix(in srgb, var(--theme-glass-bg) 70%, transparent) 0%,
+            color-mix(in srgb, var(--theme-bg-solid) 60%, transparent) 100%);
           border-radius: 20px;
           will-change: transform, opacity;
         }
@@ -333,7 +433,7 @@ export default function HomePage() {
         .why__heading {
           font-size: 32px;
           font-weight: 700;
-          background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 50%, #5cb8ff 100%);
+          background: linear-gradient(135deg, var(--theme-text) 0%, var(--theme-accent) 70%, var(--theme-accent-hover) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -351,25 +451,25 @@ export default function HomePage() {
           display: flex;
           gap: 20px;
           padding: 24px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+          background: var(--theme-glass-bg);
           backdrop-filter: blur(12px);
           border-radius: 16px;
-          border: 1px solid rgba(255,255,255,0.08);
+          border: 1px solid var(--theme-glass-border);
           box-shadow:
             0 4px 16px rgba(0,0,0,0.12),
-            inset 0 1px 0 rgba(255,255,255,0.04);
+            inset 0 1px 0 var(--theme-glass-inset-light);
           will-change: transform, opacity;
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: default;
         }
 
         .why__feature:hover {
-          background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-          border-color: rgba(0, 102, 204, 0.25);
+          background: var(--theme-glass-bg);
+          border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
           box-shadow:
-            0 12px 32px rgba(0, 102, 204, 0.12),
+            0 12px 32px color-mix(in srgb, var(--theme-accent) 20%, transparent),
             0 4px 16px rgba(0,0,0,0.15),
-            inset 0 1px 0 rgba(255,255,255,0.06);
+            inset 0 1px 0 var(--theme-glass-inset-light);
           transform: translateX(8px);
         }
 
@@ -380,35 +480,35 @@ export default function HomePage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(0, 102, 204, 0.2), rgba(92, 184, 255, 0.1));
+          background: linear-gradient(135deg, color-mix(in srgb, var(--theme-accent) 25%, transparent), color-mix(in srgb, var(--theme-accent) 10%, transparent));
           border-radius: 12px;
-          border: 1px solid rgba(92, 184, 255, 0.2);
-          color: #5cb8ff;
+          border: 1px solid color-mix(in srgb, var(--theme-accent) 25%, transparent);
+          color: var(--theme-accent);
           box-shadow:
-            0 4px 12px rgba(0, 102, 204, 0.15),
-            inset 0 1px 0 rgba(255,255,255,0.05);
+            0 4px 12px color-mix(in srgb, var(--theme-accent) 20%, transparent),
+            inset 0 1px 0 var(--theme-glass-inset-light);
           transition: all 0.3s ease;
         }
 
         .why__feature:hover .why__feature-icon {
-          background: linear-gradient(135deg, rgba(0, 102, 204, 0.3), rgba(92, 184, 255, 0.2));
-          border-color: rgba(92, 184, 255, 0.4);
+          background: linear-gradient(135deg, color-mix(in srgb, var(--theme-accent) 35%, transparent), color-mix(in srgb, var(--theme-accent) 20%, transparent));
+          border-color: color-mix(in srgb, var(--theme-accent) 45%, transparent);
           box-shadow:
-            0 8px 20px rgba(0, 102, 204, 0.25),
-            inset 0 1px 0 rgba(255,255,255,0.08);
+            0 8px 20px color-mix(in srgb, var(--theme-accent) 30%, transparent),
+            inset 0 1px 0 var(--theme-glass-inset-light);
           transform: scale(1.05);
         }
 
         .why__feature-title {
           font-size: 18px;
           font-weight: 600;
-          color: white;
+          color: var(--theme-text);
           margin-bottom: 4px;
         }
 
         .why__feature-desc {
           font-size: 14px;
-          color: #94a3b8;
+          color: var(--theme-text-muted);
           line-height: 1.5;
         }
 
@@ -426,7 +526,7 @@ export default function HomePage() {
         .contact__card {
           text-align: center;
           padding: 64px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+          background: var(--theme-glass-bg);
           backdrop-filter: blur(20px);
           border-radius: 24px;
           border: 1px solid transparent;
@@ -441,7 +541,7 @@ export default function HomePage() {
           inset: 0;
           border-radius: 24px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4));
+          background: linear-gradient(135deg, color-mix(in srgb, var(--theme-accent) 40%, transparent), color-mix(in srgb, var(--theme-accent) 20%, transparent), color-mix(in srgb, var(--theme-accent) 40%, transparent));
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
@@ -457,16 +557,16 @@ export default function HomePage() {
           transform: translateX(-50%);
           width: 200px;
           height: 3px;
-          background: linear-gradient(90deg, transparent, rgba(92, 184, 255, 0.6), transparent);
+          background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-accent) 60%, transparent), transparent);
           animation: contact-shimmer 3s ease-in-out infinite;
         }
 
         @keyframes border-rotate {
-          0% { background: linear-gradient(0deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
-          25% { background: linear-gradient(90deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
-          50% { background: linear-gradient(180deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
-          75% { background: linear-gradient(270deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
-          100% { background: linear-gradient(360deg, rgba(0, 102, 204, 0.4), rgba(92, 184, 255, 0.2), rgba(0, 102, 204, 0.4)); }
+          0% { background: linear-gradient(0deg, color-mix(in srgb, var(--theme-accent) 45%, transparent), color-mix(in srgb, var(--theme-accent-hover) 25%, transparent), color-mix(in srgb, var(--theme-accent) 45%, transparent)); }
+          25% { background: linear-gradient(90deg, color-mix(in srgb, var(--theme-accent) 45%, transparent), color-mix(in srgb, var(--theme-accent-hover) 25%, transparent), color-mix(in srgb, var(--theme-accent) 45%, transparent)); }
+          50% { background: linear-gradient(180deg, color-mix(in srgb, var(--theme-accent) 45%, transparent), color-mix(in srgb, var(--theme-accent-hover) 25%, transparent), color-mix(in srgb, var(--theme-accent) 45%, transparent)); }
+          75% { background: linear-gradient(270deg, color-mix(in srgb, var(--theme-accent) 45%, transparent), color-mix(in srgb, var(--theme-accent-hover) 25%, transparent), color-mix(in srgb, var(--theme-accent) 45%, transparent)); }
+          100% { background: linear-gradient(360deg, color-mix(in srgb, var(--theme-accent) 45%, transparent), color-mix(in srgb, var(--theme-accent-hover) 25%, transparent), color-mix(in srgb, var(--theme-accent) 45%, transparent)); }
         }
 
         @keyframes contact-shimmer {
@@ -477,7 +577,7 @@ export default function HomePage() {
         .contact__heading {
           font-size: 36px;
           font-weight: 700;
-          background: linear-gradient(135deg, #ffffff 0%, #5cb8ff 100%);
+          background: linear-gradient(135deg, var(--theme-text) 0%, var(--theme-accent) 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -487,7 +587,7 @@ export default function HomePage() {
 
         .contact__text {
           font-size: 18px;
-          color: rgba(255,255,255,0.65);
+          color: var(--theme-text-muted);
           margin-bottom: 32px;
         }
 

@@ -27,7 +27,7 @@ import ReactMarkdown from 'react-markdown';
 import { v4 as uuidv4 } from 'uuid';
 import { gsap } from '@/lib/gsap/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveChatMessage, escalateChat } from '@/lib/firebase';
+import { persistChatMessage, requestEscalation } from '@/services/chat';
 import Link from 'next/link';
 import './Chatbot.scss';
 
@@ -52,6 +52,32 @@ type MarkdownComponents = {
   p: React.ComponentType<{ children?: React.ReactNode }>;
   ul: React.ComponentType<{ children?: React.ReactNode }>;
 };
+
+const ALLOWED_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:']);
+
+function sanitizeLinkUri(uri: string): string {
+  if (!uri) return '#';
+  if (
+    uri.startsWith('/') ||
+    uri.startsWith('./') ||
+    uri.startsWith('../') ||
+    uri.startsWith('#')
+  ) {
+    return uri;
+  }
+
+  try {
+    const parsed = new URL(uri);
+    return ALLOWED_PROTOCOLS.has(parsed.protocol) ? uri : '#';
+  } catch {
+    try {
+      const parsed = new URL(uri, 'https://aerofren.gr');
+      return ALLOWED_PROTOCOLS.has(parsed.protocol) ? uri : '#';
+    } catch {
+      return '#';
+    }
+  }
+}
 
 // Memoized Markdown components to prevent re-renders
 const AIChatText: MarkdownComponents = {
@@ -83,7 +109,7 @@ const ChatMessage = memo(function ChatMessage({
         </div>
       )}
       <div className="chatbot__message-content">
-        <ReactMarkdown components={AIChatText}>
+        <ReactMarkdown components={AIChatText} urlTransform={sanitizeLinkUri}>
           {message.content}
         </ReactMarkdown>
         {message.type === 'user' && (
@@ -123,16 +149,16 @@ export function Chatbot() {
   };
 
   // Placeholder and suggestions
-  const placeholder = 'Ρωτήστε οτιδήποτε...';
+  const placeholder = 'Ρωτήστε μας ό,τι χρειάζεστε...';
   const welcomeSuggestions: string[] = [
-    'Τι προϊόντα έχετε;',
-    'Πληροφορίες επικοινωνίας',
-    'Κάνετε αποστολές;',
+    'Ποια προϊόντα διαθέτετε;',
+    'Στοιχεία επικοινωνίας',
+    'Αποστέλλετε παραγγελίες;',
   ];
   const conversationSuggestions: string[] = [
-    'Ρακόρ πνευματικά',
+    'Πνευματικά ρακόρ',
     'Φίλτρα νερού',
-    'Τιμές',
+    'Τιμές & διαθεσιμότητα',
   ];
 
   // Initialize session
@@ -173,7 +199,7 @@ export function Chatbot() {
     setInput('');
 
     // Save user message to Firestore
-    saveChatMessage(sessionId, 'user', messageText, user).catch(console.error);
+    persistChatMessage(sessionId, 'user', messageText, user).catch(console.error);
 
     try {
       const history = messages.slice(-10).map((msg) => ({
@@ -189,7 +215,7 @@ export function Chatbot() {
 
       const data: ChatResponse = await response.json();
 
-      const aiContent = data.response || 'Λυπάμαι, δεν μπόρεσα να απαντήσω. Παρακαλώ δοκιμάστε ξανά.';
+      const aiContent = data.response || 'Λυπούμαστε, δεν μπορέσαμε να απαντήσουμε. Παρακαλούμε δοκιμάστε ξανά.';
 
       const aiMessage: Message = {
         id: randomID(),
@@ -200,10 +226,10 @@ export function Chatbot() {
       setMessages((prev) => [...prev, aiMessage]);
 
       // Save AI response to Firestore
-      saveChatMessage(sessionId, 'assistant', aiContent, user).catch(console.error);
+      persistChatMessage(sessionId, 'assistant', aiContent, user).catch(console.error);
     } catch (error) {
       console.error('Chat error:', error);
-      const errorContent = 'Αντιμετώπισα ένα πρόβλημα. Παρακαλώ δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.';
+      const errorContent = 'Παρουσιάστηκε πρόβλημα. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.';
       const errorMessage: Message = {
         id: randomID(),
         type: 'ai',
@@ -212,7 +238,7 @@ export function Chatbot() {
       setMessages((prev) => [...prev, errorMessage]);
 
       // Save error message to Firestore too
-      saveChatMessage(sessionId, 'assistant', errorContent, user).catch(console.error);
+      persistChatMessage(sessionId, 'assistant', errorContent, user).catch(console.error);
     } finally {
       setIsLoading(false);
     }
@@ -242,9 +268,9 @@ export function Chatbot() {
     setEscalationStatus('loading');
 
     try {
-      const success = await escalateChat(sessionId, user);
+      const result = await requestEscalation(user, sessionId);
 
-      if (success) {
+      if (result.success) {
         setIsEscalated(true);
         setEscalationStatus('success');
 
@@ -252,10 +278,10 @@ export function Chatbot() {
         const confirmationMessage: Message = {
           id: randomID(),
           type: 'ai',
-          content: `✅ **Το αίτημά σας καταχωρήθηκε!**\n\nΈνας εκπρόσωπός μας θα επικοινωνήσει μαζί σας σύντομα στο email **${user.email}**.\n\nΜπορείτε επίσης να μας καλέσετε απευθείας στο **210 3461645**.`,
+          content: `✅ **Το αίτημά σας καταχωρήθηκε.**\n\nΈνας εκπρόσωπός μας θα επικοινωνήσει σύντομα στο **${user.email}**.\n\nΕναλλακτικά, καλέστε μας στο **210 3461645**.`,
         };
         setMessages((prev) => [...prev, confirmationMessage]);
-        saveChatMessage(sessionId, 'assistant', confirmationMessage.content, user).catch(console.error);
+        persistChatMessage(sessionId, 'assistant', confirmationMessage.content, user).catch(console.error);
       } else {
         setEscalationStatus('error');
       }
@@ -331,7 +357,7 @@ export function Chatbot() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`chatbot-toggle ${isOpen ? 'chatbot-toggle--open' : ''}`}
-        aria-label={isOpen ? 'Κλείσιμο chat' : 'Άνοιγμα chat'}
+        aria-label={isOpen ? 'Κλείσιμο συνομιλίας' : 'Άνοιγμα συνομιλίας'}
       >
         {isOpen ? <X /> : <MessageCircle />}
       </button>
@@ -347,7 +373,7 @@ export function Chatbot() {
               </div>
               <div className="chatbot__header-text">
                 <h3 className="chatbot__header-title">Βοηθός AEROFREN</h3>
-                <span className="chatbot__header-status">Online • AI Powered</span>
+                <span className="chatbot__header-status">Online • AI υποστήριξη</span>
               </div>
             </div>
             <button
@@ -367,11 +393,11 @@ export function Chatbot() {
             </button>
             <button className="chatbot__quick-action" onClick={() => window.location.href = 'tel:+302103461645'}>
               <Phone className="chatbot__quick-action-icon" />
-              <span>Κλήση</span>
+              <span>Τηλέφωνο</span>
             </button>
             <button className="chatbot__quick-action" onClick={() => window.location.href = 'mailto:info@aerofren.gr'}>
               <Mail className="chatbot__quick-action-icon" />
-              <span>Email</span>
+              <span>E-mail</span>
             </button>
             <button
               className={`chatbot__quick-action ${isEscalated ? 'chatbot__quick-action--success' : ''} ${escalationStatus === 'loading' ? 'chatbot__quick-action--loading' : ''}`}
@@ -404,9 +430,9 @@ export function Chatbot() {
                 <div className="chatbot__login-modal-icon">
                   <LogIn className="w-8 h-8" />
                 </div>
-                <h3 className="chatbot__login-modal-title">Απαιτείται Σύνδεση</h3>
+                <h3 className="chatbot__login-modal-title">Απαιτείται σύνδεση</h3>
                 <p className="chatbot__login-modal-text">
-                  Για να μιλήσετε με εκπρόσωπο, παρακαλώ συνδεθείτε πρώτα στον λογαριασμό σας.
+                  Για να μιλήσετε με εκπρόσωπο, συνδεθείτε πρώτα στον λογαριασμό σας.
                 </p>
                 <div className="chatbot__login-modal-actions">
                   <Link
@@ -441,7 +467,7 @@ export function Chatbot() {
                     <Sparkles className="chatbot__icon-svg" strokeWidth={1.5} />
                   </div>
                 </div>
-                <h1 className="chatbot__title">Πώς μπορώ να βοηθήσω;</h1>
+                <h1 className="chatbot__title">Πώς μπορούμε να βοηθήσουμε;</h1>
                 <div className="chatbot__suggestions-box">
                   {welcomeSuggestions.map((suggestion, i) => (
                     <button
@@ -454,7 +480,7 @@ export function Chatbot() {
                   ))}
                   <div className="chatbot__input-wrapper">
                     <label className="chatbot__label" htmlFor="chat-input">
-                      Ερώτηση
+                      Ερώτημα
                     </label>
                     <input
                       id="chat-input"

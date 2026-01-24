@@ -53,9 +53,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" style={{ background: "var(--theme-bg-solid)" }}>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 pt-28 overflow-hidden">
+      <section className="relative bg-[var(--theme-bg-solid)] text-[var(--theme-text)] py-16 pt-28 overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 z-0 opacity-20">
           <Image
@@ -64,7 +64,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             fill
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-900/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--theme-bg-solid)] to-[color-mix(in_srgb,var(--theme-bg-solid)_60%,transparent)]" />
         </div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -78,7 +78,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           <div className="mt-6 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
               <div
-                className={`inline-flex items-center justify-center w-16 h-16 ${category.color} rounded-2xl shadow-lg mb-4`}
+                className="inline-flex items-center justify-center w-16 h-16 bg-[var(--theme-accent)] rounded-2xl shadow-lg mb-4"
               >
                 <span className="text-white text-2xl font-bold">
                   {category.nameEl.charAt(0)}
@@ -89,15 +89,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 {category.nameEl}
               </h1>
 
-              <p className="text-lg text-slate-300 max-w-2xl">
+              <p className="text-lg text-[var(--theme-text-muted)] max-w-2xl">
                 {category.descriptionEl}
               </p>
 
               <div className="flex items-center gap-4 mt-6">
-                <span className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-sm font-semibold">
+                <span className="px-4 py-2 rounded-full bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] backdrop-blur-sm text-sm font-semibold">
                   {category.productCount.toLocaleString("el-GR")} προϊόντα
                 </span>
-                <span className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-sm font-semibold">
+                <span className="px-4 py-2 rounded-full bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] backdrop-blur-sm text-sm font-semibold">
                   {category.subcategories.length} υποκατηγορίες
                 </span>
               </div>
@@ -106,10 +106,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <div className="flex gap-3">
               <Button
                 size="lg"
-                className="bg-white text-slate-900 hover:bg-slate-100"
+                className="bg-[var(--theme-accent)] text-white hover:bg-[var(--theme-accent-hover)]"
               >
                 <Phone className="w-4 h-4 mr-2" />
-                Ζητήστε Τιμή
+                Ζητήστε τιμή
               </Button>
             </div>
           </div>
@@ -130,10 +130,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               {/* Section Header */}
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">
+                  <h2 className="text-2xl font-bold text-[var(--theme-text)]">
                     Υποκατηγορίες
                   </h2>
-                  <p className="text-slate-500">
+                  <p className="text-[var(--theme-text-muted)]">
                     Επιλέξτε υποκατηγορία για να δείτε τα προϊόντα
                   </p>
                 </div>
@@ -152,8 +152,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
               {/* Empty State */}
               {category.subcategories.length === 0 && (
-                <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
-                  <p className="text-slate-500 mb-4">
+                <div className="text-center py-16 bg-[var(--theme-glass-bg)] rounded-2xl border border-[var(--theme-glass-border)]">
+                  <p className="text-[var(--theme-text-muted)] mb-4">
                     Δεν υπάρχουν διαθέσιμες υποκατηγορίες.
                   </p>
                   <Button asChild>
@@ -166,11 +166,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               )}
 
               {/* CTA Box */}
-              <div className="mt-12 bg-gradient-to-r from-[#0066cc] to-blue-700 rounded-2xl p-8 text-white">
+              <div className="mt-12 bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-2xl p-8 text-white">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
                     <h3 className="text-2xl font-bold mb-2">
-                      Χρειάζεστε Προσφορά;
+                      Χρειάζεστε προσφορά;
                     </h3>
                     <p className="text-white/80">
                       Στείλτε μας τη λίστα σας και λάβετε προσφορά εντός 24 ωρών.
@@ -179,16 +179,16 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                   <div className="flex gap-3">
                     <a
                       href="tel:2103461645"
-                      className="inline-flex items-center justify-center h-12 px-6 bg-white text-[#0066cc] font-bold rounded-xl hover:bg-slate-100 transition-colors"
+                      className="inline-flex items-center justify-center h-12 px-6 bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] text-white font-bold rounded-xl border border-[color-mix(in_srgb,var(--theme-accent)_35%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_95%,transparent)] transition-colors"
                     >
                       <Phone className="w-4 h-4 mr-2" />
                       210 3461645
                     </a>
                     <a
                       href="/contact"
-                      className="inline-flex items-center justify-center h-12 px-6 bg-white/10 backdrop-blur-sm text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
+                      className="inline-flex items-center justify-center h-12 px-6 bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] backdrop-blur-sm text-white font-bold rounded-xl border border-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_95%,transparent)] transition-colors"
                     >
-                      Φόρμα Επικοινωνίας
+                      Φόρμα επικοινωνίας
                     </a>
                   </div>
                 </div>

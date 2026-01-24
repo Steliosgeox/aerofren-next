@@ -13,8 +13,8 @@ export function CategorySidebar({ currentCategory }: CategorySidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="bg-white rounded-2xl border border-slate-200 p-6 sticky top-28">
-      <h3 className="font-bold text-slate-900 text-lg mb-4 flex items-center gap-2">
+    <aside className="bg-[var(--theme-glass-bg)] rounded-2xl border border-[var(--theme-glass-border)] p-6 sticky top-28">
+      <h3 className="font-bold text-[var(--theme-text)] text-lg mb-4 flex items-center gap-2">
         <span className="w-1 h-6 bg-[#0066cc] rounded-full" />
         Κατηγορίες
       </h3>
@@ -23,11 +23,11 @@ export function CategorySidebar({ currentCategory }: CategorySidebarProps) {
         <Link
           href="/products"
           className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${pathname === "/products"
-              ? "bg-[#0066cc]/10 text-[#0066cc]"
-              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              ? "bg-[var(--theme-accent)]/10 text-[var(--theme-accent)]"
+              : "text-[var(--theme-text-muted)] hover:bg-[var(--theme-glass-bg)] hover:text-[var(--theme-text)]"
             }`}
         >
-          Όλες οι Κατηγορίες
+          Όλες οι κατηγορίες
         </Link>
 
         {categories.map((category) => {
@@ -40,8 +40,8 @@ export function CategorySidebar({ currentCategory }: CategorySidebarProps) {
               <Link
                 href={categoryPath}
                 className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive || isInCategory
-                    ? "bg-[#0066cc]/10 text-[#0066cc]"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-[var(--theme-accent)]/10 text-[var(--theme-accent)]"
+                    : "text-[var(--theme-text-muted)] hover:bg-[var(--theme-glass-bg)] hover:text-[var(--theme-text)]"
                   }`}
               >
                 <span className="truncate">{category.nameEl}</span>
@@ -53,7 +53,7 @@ export function CategorySidebar({ currentCategory }: CategorySidebarProps) {
 
               {/* Subcategories - show when in this category */}
               {isInCategory && category.subcategories.length > 0 && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-slate-100 pl-3">
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-[var(--theme-glass-border)] pl-3">
                   {category.subcategories.map((sub) => {
                     const subPath = `/products/${category.slug}/${sub.slug}`;
                     const isSubActive = pathname === subPath;
@@ -63,8 +63,8 @@ export function CategorySidebar({ currentCategory }: CategorySidebarProps) {
                         key={sub.id}
                         href={subPath}
                         className={`block px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${isSubActive
-                            ? "bg-[#0066cc]/10 text-[#0066cc]"
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                            ? "bg-[var(--theme-accent)]/10 text-[var(--theme-accent)]"
+                            : "text-[var(--theme-text-muted)] hover:bg-[var(--theme-glass-bg)] hover:text-[var(--theme-text)]"
                           }`}
                       >
                         {sub.nameEl}
@@ -79,11 +79,11 @@ export function CategorySidebar({ currentCategory }: CategorySidebarProps) {
       </nav>
 
       {/* Quick Contact */}
-      <div className="mt-6 pt-6 border-t border-slate-200">
-        <p className="text-sm text-slate-500 mb-2">Χρειάζεστε βοήθεια;</p>
+      <div className="mt-6 pt-6 border-t border-[var(--theme-glass-border)]">
+        <p className="text-sm text-[var(--theme-text-muted)] mb-2">Χρειάζεστε βοήθεια;</p>
         <a
           href="tel:2103461645"
-          className="flex items-center gap-2 text-[#0066cc] font-bold hover:underline"
+          className="flex items-center gap-2 text-[var(--theme-accent)] font-bold hover:underline"
         >
           210 3461645
         </a>

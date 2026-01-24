@@ -20,8 +20,8 @@ export function AIPreviewCard() {
             <style jsx>{`
                 .ai-preview {
                     padding: 18px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    background: color-mix(in srgb, var(--theme-glass-bg) 85%, transparent);
+                    border: 1px solid var(--theme-glass-border);
                     border-radius: 14px;
                     width: 100%;
                     height: 148px;
@@ -41,12 +41,12 @@ export function AIPreviewCard() {
                 .ai-avatar {
                     width: 40px;
                     height: 40px;
-                    background: linear-gradient(135deg, #0066cc, #0052a3);
+                    background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover));
                     border-radius: 11px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    box-shadow: 0 4px 16px rgba(0, 102, 204, 0.3);
+                    box-shadow: 0 4px 16px color-mix(in srgb, var(--theme-accent) 35%, transparent);
                     flex-shrink: 0;
                 }
 
@@ -59,7 +59,7 @@ export function AIPreviewCard() {
                 .ai-name {
                     font-weight: 700;
                     font-size: 0.875rem;
-                    color: #ffffff;
+                    color: var(--theme-text);
                     letter-spacing: -0.01em;
                 }
 
@@ -68,7 +68,7 @@ export function AIPreviewCard() {
                     align-items: center;
                     gap: 6px;
                     font-size: 0.75rem;
-                    color: rgba(255, 255, 255, 0.55);
+                    color: var(--theme-text-muted);
                 }
 
                 .status-dot {
@@ -86,16 +86,16 @@ export function AIPreviewCard() {
 
                 .ai-message {
                     padding: 12px 14px;
-                    background: rgba(255, 255, 255, 0.06);
+                    background: color-mix(in srgb, var(--theme-glass-bg) 90%, transparent);
                     border-radius: 11px;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border: 1px solid var(--theme-glass-border);
                     height: 50px;
                     display: flex;
                     align-items: center;
                     overflow: hidden;
                     font-size: 0.875rem;
                     line-height: 1.4;
-                    color: rgba(255, 255, 255, 0.9);
+                    color: var(--theme-text);
                 }
             `}</style>
 

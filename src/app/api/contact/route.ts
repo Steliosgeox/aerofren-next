@@ -11,7 +11,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
-import { saveContactSubmission } from '@/lib/firebase';
+import { getAdminFirestore } from '@/lib/firebase-admin';
+import { Timestamp } from 'firebase-admin/firestore';
 
 /**
  * Contact form validation schema
@@ -21,9 +22,12 @@ const contactSchema = z.object({
     email: z.string().email('Μη έγκυρο email'),
     phone: z.string().optional(),
     company: z.string().optional(),
+    subject: z.string().max(200).optional(),
     message: z.string().min(10, 'Το μήνυμα πρέπει να έχει τουλάχιστον 10 χαρακτήρες').max(5000),
     honeypot: z.string().max(0).optional(), // Bot detection
 });
+
+const CONTACTS_COLLECTION = 'contactSubmissions';
 
 /**
  * POST /api/contact
@@ -48,6 +52,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const contentType = request.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            return NextResponse.json(
+                { error: 'Unsupported content type' },
+                { status: 415 }
+            );
+        }
+
         const body = await request.json();
 
         // Validate with Zod
@@ -64,17 +76,32 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true });
         }
 
-        const { name, email, phone, company, message } = validation.data;
+        const { name, email, phone, company, subject, message } = validation.data;
 
-        // Save to Firestore
-        const submissionId = await saveContactSubmission({
+        const db = getAdminFirestore();
+        if (!db) {
+            console.error('Firebase Admin not configured - contact submission failed');
+            return NextResponse.json(
+                { error: 'Αποτυχία αποθήκευσης. Παρακαλώ δοκιμάστε ξανά.' },
+                { status: 503 }
+            );
+        }
+
+        // Save to Firestore with admin privileges
+        const submission = {
             name,
             email,
-            phone,
-            company,
             message,
-            ipAddress: clientIP !== 'anonymous' ? clientIP : undefined,
-        });
+            submittedAt: Timestamp.now(),
+            status: 'new',
+            ...(phone ? { phone } : {}),
+            ...(company ? { company } : {}),
+            ...(subject ? { subject } : {}),
+            ...(clientIP !== 'anonymous' ? { ipAddress: clientIP } : {}),
+        };
+
+        const docRef = await db.collection(CONTACTS_COLLECTION).add(submission);
+        const submissionId = docRef.id;
 
         if (!submissionId) {
             // Firestore save failed - log for debugging but don't expose to user

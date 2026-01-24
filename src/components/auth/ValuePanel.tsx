@@ -28,20 +28,20 @@ export function ValuePanel() {
                 .slogan-title {
                     font-size: 1.0625rem;
                     font-weight: 700;
-                    color: #ffffff;
+                    color: var(--theme-text);
                     margin-bottom: 6px;
                     letter-spacing: -0.01em;
-                    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+                    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.25);
                 }
 
                 .slogan-subtitle {
                     font-size: 0.8125rem;
-                    color: rgba(255, 255, 255, 0.6);
+                    color: var(--theme-text-muted);
                     font-weight: 500;
                 }
 
                 .slogan-brand {
-                    color: #60a5fa;
+                    color: var(--theme-accent);
                     font-weight: 600;
                 }
             `}</style>
@@ -59,7 +59,7 @@ export function ValuePanel() {
                     της βιομηχανίας σας
                 </div>
                 <div className="slogan-subtitle">
-                    <span className="slogan-brand">AEROFREN</span> • Εξαρτήματα Νερού & Αέρα
+                    <span className="slogan-brand">AEROFREN</span> • Εξαρτήματα Νερού και Αέρα
                 </div>
             </div>
         </div>

@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Mistral } from '@mistralai/mistralai';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 import { AEROFREN_SYSTEM_PROMPT, FALLBACK_RESPONSES } from '@/lib/chatbot/prompts';
+import { z } from 'zod';
 
 // Initialize Mistral client (lazy - only when needed)
 let mistralClient: Mistral | null = null;
@@ -33,6 +34,20 @@ interface ConversationMessage {
     role: 'user' | 'assistant';
     content: string;
 }
+
+const chatSchema = z.object({
+    message: z.string().min(1, 'Message is required').max(5000),
+    sessionId: z.string().max(100).optional(),
+    history: z
+        .array(
+            z.object({
+                role: z.enum(['user', 'assistant']),
+                content: z.string().max(5000),
+            })
+        )
+        .max(20)
+        .optional(),
+});
 
 /**
  * POST /api/chat
@@ -57,23 +72,24 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const contentType = request.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            return NextResponse.json(
+                { error: 'Unsupported content type' },
+                { status: 415 }
+            );
+        }
+
         const body = await request.json();
-        const { message, sessionId, history } = body;
-
-        if (!message || typeof message !== 'string') {
+        const validation = chatSchema.safeParse(body);
+        if (!validation.success) {
             return NextResponse.json(
-                { error: 'Message is required' },
+                { error: validation.error.issues[0]?.message || 'Validation failed' },
                 { status: 400 }
             );
         }
 
-        // Validate message length (prevent abuse)
-        if (message.length > 5000) {
-            return NextResponse.json(
-                { error: 'Το μήνυμα είναι πολύ μεγάλο (μέγιστο 5000 χαρακτήρες)' },
-                { status: 400 }
-            );
-        }
+        const { message, sessionId, history } = validation.data;
 
         // Get Mistral client
         const client = getMistralClient();

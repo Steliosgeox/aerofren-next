@@ -22,86 +22,74 @@ import { debounce } from "@/lib/debounce";
 const galleryCategories = [
   {
     src: "/images/categories/pneumatic-valves.jpg",
-    alt: "Πνευματικές Βαλβίδες",
-    label: "Πνευματικές Βαλβίδες",
-    labelEn: "Pneumatic Valves",
+    alt: "Πνευματικές βαλβίδες",
+    label: "Πνευματικές βαλβίδες",
     href: "/products?category=pneumatic-valves"
   },
   {
     src: "/images/categories/push-in-fittings.jpg",
-    alt: "Ρακόρ Ταχυσυνδέσεις",
-    label: "Ρακόρ Ταχυσυνδέσεις",
-    labelEn: "Push-In Fittings",
+    alt: "Ρακόρ ταχυσύνδεσης",
+    label: "Ρακόρ ταχυσύνδεσης",
     href: "/products?category=push-in-fittings"
   },
   {
     src: "/images/categories/thread-fittings.jpg",
-    alt: "Σπειρωτά Εξαρτήματα",
-    label: "Σπειρωτά Εξαρτήματα",
-    labelEn: "Thread Fittings",
+    alt: "Σπειρωτά εξαρτήματα",
+    label: "Σπειρωτά εξαρτήματα",
     href: "/products?category=thread-fittings"
   },
   {
     src: "/images/categories/cylinders-sensors.jpg",
-    alt: "Κύλινδροι & Αισθητήρες",
-    label: "Κύλινδροι & Αισθητήρες",
-    labelEn: "Cylinders & Sensors",
+    alt: "Κύλινδροι & αισθητήρες",
+    label: "Κύλινδροι & αισθητήρες",
     href: "/products?category=cylinders-sensors"
   },
   {
     src: "/images/categories/hoses-pipes.jpg",
-    alt: "Σωλήνες & Σπιράλ",
-    label: "Σωλήνες & Σπιράλ",
-    labelEn: "Hoses & Pipes",
+    alt: "Σωλήνες & σπιράλ",
+    label: "Σωλήνες & σπιράλ",
     href: "/products?category=hoses-pipes"
   },
   {
     src: "/images/categories/ball-valves.jpg",
-    alt: "Βάνες Σφαιρικές",
-    label: "Βάνες Σφαιρικές",
-    labelEn: "Ball Valves",
+    alt: "Σφαιρικές βάνες",
+    label: "Σφαιρικές βάνες",
     href: "/products?category=ball-valves"
   },
   {
     src: "/images/categories/pressure-regulators.jpg",
-    alt: "Ρυθμιστές Πίεσης",
-    label: "Ρυθμιστές Πίεσης",
-    labelEn: "Pressure Regulators",
+    alt: "Ρυθμιστές πίεσης",
+    label: "Ρυθμιστές πίεσης",
     href: "/products?category=pressure-regulators"
   },
   {
     src: "/images/categories/air-tools.jpg",
     alt: "Αεροεργαλεία",
     label: "Αεροεργαλεία",
-    labelEn: "Air Tools",
     href: "/products?category=air-tools"
   },
   {
     src: "/images/categories/couplings.jpg",
-    alt: "Ζεύκτες Αέρος",
-    label: "Ζεύκτες Αέρος",
-    labelEn: "Couplings",
+    alt: "Ζεύκτες αέρος",
+    label: "Ζεύκτες αέρος",
     href: "/products?category=couplings"
   },
   {
     src: "/images/categories/water-filtration.jpg",
-    alt: "Φίλτρα & Λιπαντήρες",
-    label: "Φίλτρα & Λιπαντήρες",
-    labelEn: "Water Filtration",
+    alt: "Φίλτρα & λιπαντήρες",
+    label: "Φίλτρα & λιπαντήρες",
     href: "/products?category=water-filtration"
   },
   {
     src: "/images/categories/industrial-supplies.jpg",
-    alt: "Βιομηχανικά Αναλώσιμα",
-    label: "Βιομηχανικά Αναλώσιμα",
-    labelEn: "Industrial Supplies",
+    alt: "Βιομηχανικά αναλώσιμα",
+    label: "Βιομηχανικά αναλώσιμα",
     href: "/products?category=industrial-supplies"
   },
   {
     src: "/images/categories/installation-accessories.jpg",
-    alt: "Βοηθητικά Εξαρτήματα",
-    label: "Βοηθητικά Εξαρτήματα",
-    labelEn: "Accessories",
+    alt: "Βοηθητικά εξαρτήματα",
+    label: "Βοηθητικά εξαρτήματα",
     href: "/products?category=installation-accessories"
   },
 ];
@@ -392,17 +380,6 @@ export default function HorizontalGallery() {
           z-index: 2;
         }
 
-        .product-card-label-en {
-          display: block;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #5cb8ff;
-          margin-bottom: 4px;
-          opacity: 0.9;
-        }
-
         .product-card-label-el {
           display: block;
           font-size: 16px;
@@ -591,10 +568,6 @@ export default function HorizontalGallery() {
             font-size: 13px;
           }
 
-          .product-card-label-en {
-            font-size: 9px;
-          }
-
           .product-card-content {
             padding: 0.875rem;
           }
@@ -641,7 +614,7 @@ export default function HorizontalGallery() {
           <div className="gallery-header">
             <span className="gallery-label">ΚΑΤΗΓΟΡΙΕΣ ΠΡΟΪΟΝΤΩΝ</span>
             <h2 className="gallery-heading">Ανακαλύψτε τα Προϊόντα μας</h2>
-            <p className="gallery-subheading">Σύρετε για να εξερευνήσετε τις κατηγορίες</p>
+            <p className="gallery-subheading">Σύρετε για να περιηγηθείτε στις κατηγορίες</p>
           </div>
 
           {/* Gallery */}
@@ -669,7 +642,6 @@ export default function HorizontalGallery() {
 
                     {/* Content */}
                     <div className="product-card-content">
-                      <span className="product-card-label-en">{item.labelEn}</span>
                       <span className="product-card-label-el">{item.label}</span>
                     </div>
                   </Link>
@@ -683,7 +655,7 @@ export default function HorizontalGallery() {
                     <span className="cta-number">12</span>
                     <span className="cta-text">Κατηγορίες</span>
                     <span className="cta-action">
-                      Δες Όλες
+                      Δείτε όλες
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M5 12h14M12 5l7 7-7 7" />
                       </svg>

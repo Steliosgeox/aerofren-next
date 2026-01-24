@@ -65,11 +65,11 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
     return (
       <Link
         href={`/products/${category.slug}`}
-        className="group flex items-center gap-3 p-3 bg-white transition-colors hover:bg-blue-50"
+        className="group flex items-center gap-3 p-3 bg-[var(--theme-glass-bg)] transition-colors hover:bg-[var(--theme-glass-bg)]"
         style={{ borderRadius: "var(--radius-md)" }}
       >
         <div
-          className="w-10 h-10 overflow-hidden bg-slate-100 shrink-0"
+          className="w-10 h-10 overflow-hidden bg-[var(--theme-glass-bg)] shrink-0"
           style={{ borderRadius: "var(--radius-sm)" }}
         >
           <Image
@@ -81,11 +81,11 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
           />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-slate-800 text-sm group-hover:text-[#0066cc] transition-colors truncate">
+          <h3 className="font-medium text-[var(--theme-text)] text-sm group-hover:text-[var(--theme-accent)] transition-colors truncate">
             {category.nameEl}
           </h3>
-          <p className="text-xs text-slate-400">
-            {category.productCount.toLocaleString("el-GR")} items
+          <p className="text-xs text-[var(--theme-text-muted)]">
+            {category.productCount.toLocaleString("el-GR")} προϊόντα
           </p>
         </div>
       </Link>
@@ -97,14 +97,14 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
     return (
       <Link
         href={`/products/${category.slug}`}
-        className="group flex gap-4 p-4 bg-white border border-slate-200 hover:border-[#0066cc] transition-all"
+        className="group flex gap-4 p-4 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] hover:border-[var(--theme-accent)] transition-all"
         style={{
           borderRadius: "var(--radius-lg)",
           boxShadow: "var(--shadow-sm)",
         }}
       >
         <div
-          className="w-20 h-20 overflow-hidden bg-slate-50 shrink-0"
+          className="w-20 h-20 overflow-hidden bg-[var(--theme-glass-bg)] shrink-0"
           style={{ borderRadius: "var(--radius-md)" }}
         >
           <Image
@@ -116,14 +116,14 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
           />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-[#0066cc] mb-1 group-hover:underline">
+          <h3 className="font-semibold text-[var(--theme-accent)] mb-1 group-hover:underline">
             {category.nameEl}
           </h3>
-          <p className="text-sm text-slate-600 line-clamp-2 mb-2">
+          <p className="text-sm text-[var(--theme-text-muted)] line-clamp-2 mb-2">
             {category.descriptionEl}
           </p>
-          <p className="text-xs text-slate-400">
-            {category.productCount.toLocaleString("el-GR")} items
+          <p className="text-xs text-[var(--theme-text-muted)]">
+            {category.productCount.toLocaleString("el-GR")} προϊόντα
           </p>
         </div>
       </Link>
@@ -135,20 +135,20 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
     <Link
       ref={cardRef}
       href={`/products/${category.slug}`}
-      className="group block bg-white overflow-hidden transition-all duration-300"
+      className="group block bg-[var(--theme-glass-bg)] overflow-hidden transition-all duration-300"
       style={{
         borderRadius: "var(--radius-lg)",
-        border: "1px solid rgba(0, 40, 100, 0.08)",
+        border: "1px solid var(--theme-glass-border)",
         boxShadow: "var(--shadow-sm)",
       }}
     >
       {/* Title section */}
       <div
         className="px-4 pt-4 pb-3"
-        style={{ borderBottom: "1px solid rgba(0, 0, 0, 0.04)" }}
+        style={{ borderBottom: "1px solid var(--theme-glass-border)" }}
       >
         <h3
-          className="font-semibold text-[#0066cc] leading-snug group-hover:text-[#004999] transition-colors"
+          className="font-semibold text-[var(--theme-accent)] leading-snug group-hover:text-[var(--theme-accent-hover)] transition-colors"
           style={{
             fontSize: "15px",
             letterSpacing: "-0.01em",
@@ -158,7 +158,7 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
         </h3>
         {category.descriptionEl && (
           <p
-            className="text-slate-500 mt-1 line-clamp-2"
+            className="text-[var(--theme-text-muted)] mt-1 line-clamp-2"
             style={{ fontSize: "12px", lineHeight: "1.5" }}
           >
             {category.descriptionEl}
@@ -171,7 +171,8 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
         ref={imageRef}
         className="relative aspect-[4/3] overflow-hidden"
         style={{
-          background: "linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%)",
+          background:
+            "linear-gradient(145deg, color-mix(in srgb, var(--theme-glass-bg) 75%, transparent) 0%, color-mix(in srgb, var(--theme-bg-solid) 70%, transparent) 100%)",
           willChange: "transform",
         }}
       >
@@ -179,7 +180,8 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
         <div
           className="absolute inset-x-0 top-0 h-16 pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse 80% 100% at 50% 0%, rgba(255,255,255,0.8) 0%, transparent 70%)",
+            background:
+              "radial-gradient(ellipse 80% 100% at 50% 0%, color-mix(in srgb, var(--theme-glass-bg) 70%, transparent) 0%, transparent 70%)",
           }}
         />
 
@@ -196,18 +198,18 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
       <div
         className="px-4 py-3 flex items-center justify-between"
         style={{
-          background: "rgba(248, 250, 252, 0.8)",
-          borderTop: "1px solid rgba(0, 0, 0, 0.03)",
+          background: "var(--theme-glass-bg)",
+          borderTop: "1px solid var(--theme-glass-border)",
         }}
       >
         <p
-          className="text-slate-400"
+          className="text-[var(--theme-text-muted)]"
           style={{ fontSize: "13px" }}
         >
-          {category.productCount.toLocaleString("el-GR")} items
+          {category.productCount.toLocaleString("el-GR")} προϊόντα
         </p>
         <span
-          className="text-[#0066cc] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+          className="text-[var(--theme-accent)] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ fontSize: "13px" }}
         >
           Δείτε όλα →
@@ -218,7 +220,7 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
       <style jsx>{`
         a:hover {
           box-shadow: var(--shadow-lg) !important;
-          border-color: rgba(0, 102, 204, 0.15) !important;
+          border-color: color-mix(in srgb, var(--theme-accent) 35%, transparent) !important;
           transform: translateY(-4px);
         }
       `}</style>
@@ -274,17 +276,17 @@ export function FeaturedCategoryCard({ category }: { category: Category }) {
     <Link
       ref={cardRef}
       href={`/products/${category.slug}`}
-      className="group block bg-white overflow-hidden transition-all duration-300"
+      className="group block bg-[var(--theme-glass-bg)] overflow-hidden transition-all duration-300"
       style={{
         borderRadius: "var(--radius-xl)",
-        border: "1px solid rgba(0, 40, 100, 0.06)",
+        border: "1px solid var(--theme-glass-border)",
         boxShadow: "var(--shadow-md)",
       }}
     >
       {/* Title section */}
       <div className="px-5 pt-5 pb-4">
         <h3
-          className="font-bold text-[#0066cc] leading-tight group-hover:text-[#004999] transition-colors"
+          className="font-bold text-[var(--theme-accent)] leading-tight group-hover:text-[var(--theme-accent-hover)] transition-colors"
           style={{
             fontSize: "18px",
             letterSpacing: "-0.015em",
@@ -293,7 +295,7 @@ export function FeaturedCategoryCard({ category }: { category: Category }) {
           {category.nameEl}
         </h3>
         <p
-          className="text-slate-500 mt-2 line-clamp-2"
+          className="text-[var(--theme-text-muted)] mt-2 line-clamp-2"
           style={{ fontSize: "14px", lineHeight: "1.5" }}
         >
           {category.descriptionEl}
@@ -306,7 +308,8 @@ export function FeaturedCategoryCard({ category }: { category: Category }) {
         className="relative aspect-square mx-4 overflow-hidden"
         style={{
           borderRadius: "var(--radius-lg)",
-          background: "linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%)",
+          background:
+            "linear-gradient(145deg, color-mix(in srgb, var(--theme-glass-bg) 75%, transparent) 0%, color-mix(in srgb, var(--theme-bg-solid) 70%, transparent) 100%)",
           willChange: "transform",
         }}
       >
@@ -314,7 +317,8 @@ export function FeaturedCategoryCard({ category }: { category: Category }) {
         <div
           className="absolute inset-x-0 top-0 h-24 pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse 80% 100% at 50% 0%, rgba(255,255,255,0.9) 0%, transparent 70%)",
+            background:
+              "radial-gradient(ellipse 80% 100% at 50% 0%, color-mix(in srgb, var(--theme-glass-bg) 75%, transparent) 0%, transparent 70%)",
           }}
         />
 
@@ -330,13 +334,13 @@ export function FeaturedCategoryCard({ category }: { category: Category }) {
       {/* Footer */}
       <div className="px-5 py-4 flex items-center justify-between">
         <p
-          className="text-slate-400"
+          className="text-[var(--theme-text-muted)]"
           style={{ fontSize: "14px" }}
         >
-          {category.productCount.toLocaleString("el-GR")} items
+          {category.productCount.toLocaleString("el-GR")} προϊόντα
         </p>
         <span
-          className="text-[#0066cc] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+          className="text-[var(--theme-accent)] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ fontSize: "14px" }}
         >
           Δείτε όλα →
@@ -347,7 +351,7 @@ export function FeaturedCategoryCard({ category }: { category: Category }) {
       <style jsx>{`
         a:hover {
           box-shadow: var(--shadow-xl) !important;
-          border-color: rgba(0, 102, 204, 0.12) !important;
+          border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent) !important;
           transform: translateY(-6px);
         }
       `}</style>

@@ -1,9 +1,7 @@
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
-import { Chatbot } from "@/components/Chatbot"
-import { BackToTop } from "@/components/BackToTop"
-import SmoothScrollProvider from "@/components/SmoothScrollProvider"
-import ScrollFrameAnimation from "@/components/ScrollFrameAnimation"
+import { RouteEffects } from "@/components/RouteEffects"
+import { RouteScrollShell } from "@/components/RouteScrollShell"
 
 export default function MainLayout({
   children,
@@ -20,23 +18,20 @@ export default function MainLayout({
       {/* Global waves background (z-index: -1) */}
       <div className="waves-background" aria-hidden="true" />
 
-      {/* Scroll-controlled frame animation (z-index: 0) */}
-      <ScrollFrameAnimation />
+      {/* Route-scoped fixed effects (z-index handled by components) */}
+      <RouteEffects />
+
+      {/* Portal Target for Page-Specific Fixed Backgrounds (z-index: 0) */}
+      <div id="page-background-portal" className="fixed inset-0 z-0 pointer-events-none" />
 
       {/* Header - Fixed for accessibility */}
       <Header />
 
       {/* ScrollSmoother wrapper for buttery smooth scrolling */}
-      <SmoothScrollProvider>
+      <RouteScrollShell>
         <main className="min-h-screen">{children}</main>
         <Footer />
-      </SmoothScrollProvider>
-
-      {/* Chatbot - Fixed position, outside smooth scroll */}
-      <Chatbot />
-
-      {/* Back to Top - Fixed position, centered, outside smooth scroll */}
-      <BackToTop />
+      </RouteScrollShell>
     </>
   )
 }
