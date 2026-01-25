@@ -588,11 +588,11 @@ export default function NexusHero() {
         const height = window.innerHeight;
 
         // Clamp resolution to prevent excessive GPU load (preserve aspect ratio)
-        // PERFORMANCE: Significantly reduced resolution - metaballs still look good at lower res
+        // Higher values = sharper metaballs but more GPU load
         const MAX_WIDTH = 1920;
         const MAX_HEIGHT = 1080;
-        const MAX_PIXEL_RATIO = device.isMobile || device.isLowPower ? 1.0 : 1.25;
-        const FIXED_RENDER_SCALE = device.isMobile || device.isLowPower ? 0.5 : 0.45;
+        const MAX_PIXEL_RATIO = device.isMobile ? 1.5 : (device.isLowPower ? 1.75 : 2.0);
+        const FIXED_RENDER_SCALE = device.isMobile ? 0.65 : (device.isLowPower ? 0.8 : 1.0);
 
         const getBaseRenderMetrics = (viewportWidth: number, viewportHeight: number) => {
             const scale = Math.min(1, MAX_WIDTH / viewportWidth, MAX_HEIGHT / viewportHeight);
@@ -872,7 +872,7 @@ export default function NexusHero() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    overflow: hidden;
+                    overflow: visible; /* Changed from hidden to allow LiquidButton blobs to show */
                     background: transparent; /* Let ScrollFrameAnimation show through */
                 }
 
@@ -977,6 +977,9 @@ export default function NexusHero() {
                 .nexus-hero__cta {
                     display: flex;
                     justify-content: center;
+                    overflow: visible;
+                    position: relative;
+                    z-index: 11;
                 }
 
                 /* Bottom Info */
