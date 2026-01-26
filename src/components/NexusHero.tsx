@@ -463,6 +463,7 @@ export default function NexusHero() {
     const [currentTheme, setCurrentTheme] = useState<"dark" | "light" | "dim">("dark");
     const [isLoaded, setIsLoaded] = useState(false);
     const isVisibleRef = useRef(true);
+    const animateRef = useRef<(() => void) | null>(null); // Store animate function for restart
 
     // Watch for theme changes
     useEffect(() => {
@@ -479,13 +480,36 @@ export default function NexusHero() {
         return () => observer.disconnect();
     }, []);
 
-    // Visibility detection - skip GPU work when scrolled away
+    // Visibility detection - FULLY pause WebGL when scrolled away
+    // This saves significant GPU/CPU by stopping the animation loop entirely
     useEffect(() => {
         if (!containerRef.current) return;
         const observer = new IntersectionObserver(
             (entries) => {
                 const visible = entries[0]?.isIntersecting ?? true;
+                const wasVisible = isVisibleRef.current;
                 isVisibleRef.current = visible;
+
+                if (!visible && wasVisible) {
+                    // PAUSING: Stop clock to prevent time accumulation
+                    if (clockRef.current) {
+                        clockRef.current.stop();
+                    }
+                    // Cancel any pending animation frame
+                    if (animationFrameRef.current) {
+                        cancelAnimationFrame(animationFrameRef.current);
+                        animationFrameRef.current = 0;
+                    }
+                } else if (visible && !wasVisible) {
+                    // RESUMING: Restart clock and animation loop
+                    if (clockRef.current) {
+                        clockRef.current.start();
+                    }
+                    // Restart animation loop if we have the animate function
+                    if (animateRef.current) {
+                        animateRef.current();
+                    }
+                }
             },
             { threshold: 0.05 }
         );
@@ -691,15 +715,10 @@ export default function NexusHero() {
         let isMounted = true;
 
         // Animation loop with mounted check (60fps uncapped)
+        // The loop is FULLY PAUSED by visibility observer when off-screen
         const animate = () => {
-            // CRITICAL: Stop loop if unmounted
-            if (!isMounted) return;
-
-            // SKIP rendering when scrolled away (saves GPU when invisible)
-            if (!isVisibleRef.current) {
-                animationFrameRef.current = requestAnimationFrame(animate);
-                return;
-            }
+            // CRITICAL: Stop loop if unmounted or not visible
+            if (!isMounted || !isVisibleRef.current) return;
 
             if (!clockRef.current || !materialRef.current || !rendererRef.current) return;
 
@@ -714,6 +733,9 @@ export default function NexusHero() {
 
             animationFrameRef.current = requestAnimationFrame(animate);
         };
+
+        // Store animate function so visibility observer can restart it
+        animateRef.current = animate;
 
         // Event handlers
         const handleMouseMove = (e: MouseEvent) => handlePointerMove(e.clientX, e.clientY);
@@ -807,6 +829,7 @@ export default function NexusHero() {
             // FIFTH: Clear refs
             canvasRef.current = null;
             clockRef.current = null;
+            animateRef.current = null;
         };
     }, [handlePointerMove]);
 

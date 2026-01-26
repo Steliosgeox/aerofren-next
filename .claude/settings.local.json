@@ -14,7 +14,11 @@
       "Bash(powershell -Command:*)",
       "Bash(dir \"C:\\\\Users\\\\Stelios\\\\.gemini\\\\antigravity\\\\playground\\\\fiery-meteoroid\\\\aerofren-next\\\\public\\\\gallery\")",
       "Bash(npm install:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nperf: add NexusHero visibility observer \\(safe restore point\\)\n\nBefore aggressive GPU optimizations - revert to this if needed.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
