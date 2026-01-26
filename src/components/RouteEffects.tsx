@@ -28,7 +28,8 @@ export function RouteEffects() {
         return null;
     }
 
-    const showScrollFrame = pathname === '/';
+    // PERF TEST: ScrollFrameAnimation disabled - testing if it's the GPU culprit
+    const showScrollFrame = false; // was: pathname === '/';
     const showChatbot = shouldRender(pathname, CHATBOT_ROUTE_PREFIXES);
     const showBackToTop = shouldRender(pathname, BACK_TO_TOP_ROUTE_PREFIXES);
 

@@ -463,6 +463,7 @@ export default function NexusHero() {
     const [currentTheme, setCurrentTheme] = useState<"dark" | "light" | "dim">("dark");
     const [isLoaded, setIsLoaded] = useState(false);
     const isVisibleRef = useRef(true);
+    const fadeProgressRef = useRef(0); // 0 = fully visible, 1 = fully faded
     const animateRef = useRef<(() => void) | null>(null); // Store animate function for restart
 
     // Watch for theme changes
@@ -480,36 +481,14 @@ export default function NexusHero() {
         return () => observer.disconnect();
     }, []);
 
-    // Visibility detection - FULLY pause WebGL when scrolled away
-    // This saves significant GPU/CPU by stopping the animation loop entirely
+    // Visibility detection - THROTTLE (not stop) WebGL when scrolled away
+    // Keeps GPU "warm" to avoid cold-start stutter when scrolling back
     useEffect(() => {
         if (!containerRef.current) return;
         const observer = new IntersectionObserver(
             (entries) => {
-                const visible = entries[0]?.isIntersecting ?? true;
-                const wasVisible = isVisibleRef.current;
-                isVisibleRef.current = visible;
-
-                if (!visible && wasVisible) {
-                    // PAUSING: Stop clock to prevent time accumulation
-                    if (clockRef.current) {
-                        clockRef.current.stop();
-                    }
-                    // Cancel any pending animation frame
-                    if (animationFrameRef.current) {
-                        cancelAnimationFrame(animationFrameRef.current);
-                        animationFrameRef.current = 0;
-                    }
-                } else if (visible && !wasVisible) {
-                    // RESUMING: Restart clock and animation loop
-                    if (clockRef.current) {
-                        clockRef.current.start();
-                    }
-                    // Restart animation loop if we have the animate function
-                    if (animateRef.current) {
-                        animateRef.current();
-                    }
-                }
+                isVisibleRef.current = entries[0]?.isIntersecting ?? true;
+                // Animation loop keeps running but throttles when not visible
             },
             { threshold: 0.05 }
         );
@@ -713,14 +692,22 @@ export default function NexusHero() {
 
         // Track if component is mounted for animation loop
         let isMounted = true;
+        let throttleTimeout: ReturnType<typeof setTimeout> | null = null;
 
-        // Animation loop with mounted check (60fps uncapped)
-        // The loop is FULLY PAUSED by visibility observer when off-screen
+        // Animation loop - THROTTLES based on fade opacity (not just intersection)
+        // This prevents GPU from rendering invisible pixels at 60fps
         const animate = () => {
-            // CRITICAL: Stop loop if unmounted or not visible
-            if (!isMounted || !isVisibleRef.current) return;
-
+            if (!isMounted) return;
             if (!clockRef.current || !materialRef.current || !rendererRef.current) return;
+
+            const fadeProgress = fadeProgressRef.current;
+
+            // SKIP RENDER entirely when fully faded (>95% progress)
+            // Just schedule next check at low frequency
+            if (fadeProgress > 0.95) {
+                throttleTimeout = setTimeout(animate, 500); // 2fps heartbeat
+                return;
+            }
 
             // Smooth mouse movement (0.20 smoothness factor)
             mousePositionRef.current.x += (targetMousePositionRef.current.x - mousePositionRef.current.x) * 0.20;
@@ -731,10 +718,20 @@ export default function NexusHero() {
 
             rendererRef.current.render(scene, camera);
 
-            animationFrameRef.current = requestAnimationFrame(animate);
+            // Throttle based on fade progress:
+            // 0-50% faded: full 60fps
+            // 50-95% faded: throttled (lower fps as more faded)
+            // 95%+: skip render entirely (handled above)
+            if (fadeProgress < 0.5) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+                // Interpolate delay: 50% faded = 33ms (30fps), 95% faded = 200ms (5fps)
+                const delay = Math.round(33 + (fadeProgress - 0.5) * 370);
+                throttleTimeout = setTimeout(animate, delay);
+            }
         };
 
-        // Store animate function so visibility observer can restart it
+        // Store animate function for reference
         animateRef.current = animate;
 
         // Event handlers
@@ -774,6 +771,7 @@ export default function NexusHero() {
 
         // Add GSAP ScrollTrigger for canvas fade-out
         // This allows the ScrollFrameAnimation beneath to show through
+        // ALSO tracks progress to throttle WebGL when faded
         const fadeAnimation = gsap.fromTo(containerRef.current,
             { opacity: 1 },
             {
@@ -784,6 +782,9 @@ export default function NexusHero() {
                     start: "top top",
                     end: "+=30vh", // Fade over 30vh of scroll
                     scrub: 0.2,
+                    onUpdate: (self) => {
+                        fadeProgressRef.current = self.progress;
+                    },
                 },
             }
         );
@@ -795,6 +796,7 @@ export default function NexusHero() {
             isMounted = false;
             cancelAnimationFrame(animationFrameRef.current);
             animationFrameRef.current = 0;
+            if (throttleTimeout) clearTimeout(throttleTimeout);
 
             // SECOND: Remove all event listeners and cancel debounced handler
             window.removeEventListener("mousemove", handleMouseMove);

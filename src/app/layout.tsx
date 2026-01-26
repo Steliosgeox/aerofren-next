@@ -79,7 +79,8 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const nonce = (await headers()).get("x-nonce")
-  const perfNoBlur = process.env.NEXT_PUBLIC_PERF_NO_BLUR === "1"
+  // GPU PERF: Disable backdrop-filter globally (set to false to re-enable blur)
+  const perfNoBlur = process.env.NEXT_PUBLIC_PERF_NO_BLUR !== "0" // Default ON for performance
   return (
     <html lang="el" suppressHydrationWarning>
       <body

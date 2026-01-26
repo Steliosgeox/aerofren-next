@@ -180,15 +180,27 @@ export default function ScrollFrameAnimation() {
 
         const vh = window.innerHeight;
 
-        // Single consolidated timeline - reduces 4 ScrollTriggers to 1
+        // Single consolidated timeline - GPU optimized
         const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: "body",
                 start: "top top",
                 end: `+=${vh}`,
-                scrub: 0.5, // Higher = fewer updates (was 0.2)
+                scrub: 1.5, // Higher = smoother, fewer GPU updates
                 onUpdate: (self) => {
-                    const frame = Math.round(self.progress * (FRAME_COUNT - 1));
+                    // GPU optimization: completely hide when scrolled past
+                    const shouldHide = self.progress >= 0.99;
+                    if (shouldHide !== (container.style.visibility === "hidden")) {
+                        container.style.visibility = shouldHide ? "hidden" : "visible";
+                    }
+
+                    // Don't update frames if hidden
+                    if (shouldHide) return;
+
+                    // Skip every other frame for GPU relief (60 -> 30 effective frames)
+                    const rawFrame = Math.round(self.progress * (FRAME_COUNT - 1));
+                    const frame = Math.round(rawFrame / 2) * 2; // Snap to even frames
+
                     if (frame !== currentFrameRef.current) {
                         currentFrameRef.current = frame;
                         pendingFrameRef.current = frame;
@@ -233,10 +245,9 @@ export default function ScrollFrameAnimation() {
                 className="scroll-frame-container"
                 aria-hidden="true"
             >
-                {/* Premium static background - shows initially */}
+                {/* Static background - shows initially */}
                 <div ref={staticBgRef} className="scroll-frame-static">
                     <div className="scroll-frame-static-gradient" />
-                    <div className="scroll-frame-static-pattern" />
                 </div>
 
                 {/* Canvas wrapper - fades in when splash arrives */}
@@ -244,13 +255,7 @@ export default function ScrollFrameAnimation() {
                     <canvas ref={canvasRef} className="scroll-frame-canvas" />
                 </div>
 
-                {/* Theme-responsive overlay for light theme */}
-                <div className="scroll-frame-theme-overlay" />
-
-                {/* Vignette for depth */}
-                <div className="scroll-frame-vignette" />
-
-                {/* Loading indicator */}
+                {/* Loading indicator - simplified */}
                 {!isLoaded && (
                     <div className="scroll-frame-loading">
                         <div className="scroll-frame-loading-track">
@@ -259,26 +264,25 @@ export default function ScrollFrameAnimation() {
                                 style={{ width: `${loadProgress}%` }}
                             />
                         </div>
-                        <span className="scroll-frame-loading-text">Φόρτωση εμπειρίας...</span>
                     </div>
                 )}
             </div>
 
             <style jsx global>{`
-        /* Container */
+        /* Container - GPU optimized */
         .scroll-frame-container {
           position: fixed;
           inset: 0;
           z-index: 0;
           pointer-events: none;
           overflow: hidden;
+          contain: strict; /* GPU: Isolate compositing */
         }
 
-        /* Premium Static Background */
+        /* Static Background - single layer */
         .scroll-frame-static {
           position: absolute;
           inset: 0;
-          z-index: 1;
         }
 
         .scroll-frame-static-gradient {
@@ -290,33 +294,18 @@ export default function ScrollFrameAnimation() {
           background-repeat: no-repeat;
         }
 
-        .scroll-frame-static-pattern {
-          position: absolute;
-          inset: 0;
-          background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-          opacity: 0.5;
-        }
-
-        /* Light theme background */
         [data-theme="light"] .scroll-frame-static-gradient {
           background-image: url('/images/BackgroundLight.webp');
         }
 
-        /* Dim theme background */
         [data-theme="dim"] .scroll-frame-static-gradient {
           background-image: url('/images/BackgroundDim.webp');
-        }
-
-        [data-theme="light"] .scroll-frame-static-pattern {
-          background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230066cc' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-          opacity: 0.8;
         }
 
         /* Canvas wrapper */
         .scroll-frame-canvas-wrapper {
           position: absolute;
           inset: 0;
-          z-index: 2;
           opacity: 0;
         }
 
@@ -326,85 +315,27 @@ export default function ScrollFrameAnimation() {
           display: block;
         }
 
-        /* Theme-responsive overlay for light mode visibility */
-        .scroll-frame-theme-overlay {
-          position: absolute;
-          inset: 0;
-          z-index: 3;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.4s ease;
-        }
-
-        [data-theme="light"] .scroll-frame-theme-overlay {
-          opacity: 1;
-          background: linear-gradient(
-            135deg,
-            rgba(6, 16, 31, 0.25) 0%,
-            rgba(0, 40, 80, 0.2) 50%,
-            rgba(6, 16, 31, 0.3) 100%
-          );
-        }
-
-        /* Vignette for depth */
-        .scroll-frame-vignette {
-          position: absolute;
-          inset: 0;
-          z-index: 4;
-          background: radial-gradient(
-            ellipse 80% 80% at center,
-            transparent 0%,
-            transparent 40%,
-            rgba(0, 0, 0, 0.4) 100%
-          );
-          pointer-events: none;
-        }
-
-        /* Premium loading indicator */
+        /* Simple loading indicator - no blur */
         .scroll-frame-loading {
           position: absolute;
           bottom: 40px;
           left: 50%;
           transform: translateX(-50%);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
           z-index: 10;
         }
 
         .scroll-frame-loading-track {
           width: 200px;
           height: 3px;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.15);
           border-radius: 2px;
           overflow: hidden;
-          backdrop-filter: blur(4px);
         }
 
         .scroll-frame-loading-bar {
           height: 100%;
-          background: linear-gradient(90deg, #0066cc, #00bae2, #0066cc);
-          background-size: 200% 100%;
-          animation: loading-shimmer 1.5s ease infinite;
+          background: var(--theme-accent, #00bae2);
           border-radius: 2px;
-        }
-
-        @keyframes loading-shimmer {
-          0% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        .scroll-frame-loading-text {
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.6);
-        }
-
-        [data-theme="light"] .scroll-frame-loading-text {
-          color: rgba(0, 40, 80, 0.6);
         }
 
         /* Reduced motion */
