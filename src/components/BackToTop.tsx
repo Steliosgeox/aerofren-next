@@ -74,7 +74,7 @@ export function BackToTop() {
 
     return (
         <div
-            className="fixed bottom-6 md:bottom-5 left-1/2 -translate-x-1/2 z-[9999]"
+            className="back-to-top fixed left-1/2 -translate-x-1/2 z-[9999]"
             style={{ pointerEvents: isVisible ? "auto" : "none" }}
         >
             <button

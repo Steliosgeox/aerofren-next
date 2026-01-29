@@ -167,12 +167,33 @@ const Silk: React.FC<SilkProps> = ({ speed = 5, scale = 1, color = '#7B7481', no
             uRotation: { value: rotation },
             uTime: { value: 0 }
         }),
-        [speed, scale, noiseIntensity, color, rotation]
+        []
     );
+
+    useEffect(() => {
+        uniforms.uSpeed.value = speed;
+    }, [speed, uniforms]);
+
+    useEffect(() => {
+        uniforms.uScale.value = scale;
+    }, [scale, uniforms]);
+
+    useEffect(() => {
+        uniforms.uNoiseIntensity.value = noiseIntensity;
+    }, [noiseIntensity, uniforms]);
+
+    useEffect(() => {
+        const [r, g, b] = hexToNormalizedRGB(color);
+        uniforms.uColor.value.setRGB(r, g, b);
+    }, [color, uniforms]);
+
+    useEffect(() => {
+        uniforms.uRotation.value = rotation;
+    }, [rotation, uniforms]);
 
     return (
         <Canvas
-            dpr={[1, 2]}
+            dpr={[1, 1.5]}
             frameloop={isVisible ? 'always' : 'demand'}
             gl={{
                 powerPreference: 'high-performance',

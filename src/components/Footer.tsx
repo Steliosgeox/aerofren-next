@@ -84,37 +84,20 @@ const CONTACT_INFO = {
 // SUB-COMPONENTS
 // =============================================================================
 
-const NoiseOverlay = memo(function NoiseOverlay() {
-  // PERFORMANCE: Replaced GPU-intensive SVG feTurbulence filter with static CSS noise
-  // The visual difference is negligible at 0.03 opacity, but GPU savings are significant
+// REMOVED: NoiseOverlay - SVG feTurbulence is GPU-intensive
+// REMOVED: FluidBackground - blur-[150px]+ blobs are GPU killers on 4K
+
+// Simple gradient replacement for visual interest (no blur, no animation)
+const SimpleGradientBg = memo(function SimpleGradientBg() {
   return (
     <div
-      className="absolute inset-0 opacity-[0.03] pointer-events-none z-20 mix-blend-overlay"
+      className="absolute inset-0 z-0 pointer-events-none opacity-30"
       aria-hidden="true"
       style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        backgroundSize: '256px 256px',
+        background: `radial-gradient(ellipse 80% 50% at 20% 20%, color-mix(in srgb, var(--theme-accent) 15%, transparent), transparent),
+                     radial-gradient(ellipse 60% 40% at 80% 80%, color-mix(in srgb, var(--theme-accent) 10%, transparent), transparent)`
       }}
     />
-  );
-});
-
-const FluidBackground = memo(function FluidBackground() {
-  return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
-      <div
-        className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full animate-blob mix-blend-screen"
-        style={{ background: "color-mix(in srgb, var(--theme-accent) 20%, transparent)" }}
-      />
-      <div
-        className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] blur-[180px] rounded-full animate-blob animation-delay-2000 mix-blend-screen"
-        style={{ background: "color-mix(in srgb, var(--theme-accent) 12%, transparent)" }}
-      />
-      <div
-        className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] blur-[160px] rounded-full animate-blob animation-delay-4000 mix-blend-screen"
-        style={{ background: "color-mix(in srgb, var(--theme-accent) 18%, transparent)" }}
-      />
-    </div>
   );
 });
 
@@ -303,14 +286,14 @@ export function Footer() {
       role="contentinfo"
       aria-label="Υποσέλιδο"
     >
-      <NoiseOverlay />
-      <FluidBackground />
+      <SimpleGradientBg />
       <WatermarkText />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-24">
+        {/* PERF: Disabled spotlight - getBoundingClientRect on every mouse move kills 4K */}
         <MagicBento
-          enableSpotlight={true}
-          spotlightRadius={600}
+          enableSpotlight={false}
+          disableAnimations={true}
           glowColor={glowColor}
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
@@ -382,8 +365,10 @@ export function Footer() {
 
             {/* RIGHT COLUMN */}
             <div className="lg:col-span-4 pl-0 lg:pl-12">
+              {/* PERF: Disabled particles and glow for 4K performance */}
               <ParticleCard
-                enableBorderGlow={true}
+                enableBorderGlow={false}
+                disableAnimations={true}
                 glowColor={glowColor}
                 className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[color-mix(in_srgb,var(--theme-glass-bg)_90%,transparent)] to-transparent border border-[var(--theme-glass-border)] p-1"
               >
@@ -460,25 +445,7 @@ export function Footer() {
         </div>
       </div>
 
-      <style jsx global>{`
-        /* PERFORMANCE: Slowed blob animation from 10s to 25s to reduce GPU cycles */
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.05); }
-          66% { transform: translate(-20px, 20px) scale(0.95); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 25s infinite ease-in-out;
-          will-change: transform;
-        }
-        .animation-delay-2000 {
-          animation-delay: 5s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 10s;
-        }
-      `}</style>
+      {/* REMOVED: Blob animation CSS - FluidBackground removed for 4K performance */}
     </footer>
   );
 }

@@ -5,17 +5,16 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { categories } from "@/data/categories";
-import { SocialTooltips } from "./SocialTooltips";
 import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
+import GlassSurface from "./ui/GlassSurface";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 // Import from centralized GSAP config - plugins are pre-registered there
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import {
   Phone,
-  Menu,
-  X,
+  Home,
   ArrowRight,
   Plug,
   Wrench,
@@ -30,6 +29,7 @@ import {
   Droplet,
   Hammer,
   User,
+  LogIn,
   LogOut,
   Shield,
 } from "lucide-react";
@@ -118,7 +118,6 @@ function HeaderComponent() {
   const router = useRouter();
   const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
@@ -203,6 +202,42 @@ function HeaderComponent() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const isActivePath = useCallback(
+    (path: string) => {
+      if (!pathname) return false;
+      if (path === "/") return pathname === "/";
+      return pathname.startsWith(path);
+    },
+    [pathname]
+  );
+
+  const mobileDockItems = useMemo(() => {
+    const baseItems = [
+      { label: "Αρχική", path: "/", Icon: Home },
+      { label: "Προϊόντα", path: "/products", Icon: Package },
+      { label: "Επικοινωνία", path: "/contact", Icon: Phone },
+    ];
+
+    const authItem = user
+      ? {
+          label: isAdmin ? "Admin" : "Λογαριασμός",
+          path: isAdmin ? "/admin" : "/login",
+          Icon: User,
+        }
+      : {
+          label: "Σύνδεση",
+          path: "/login",
+          Icon: LogIn,
+        };
+
+    return [...baseItems, authItem];
+  }, [user, isAdmin]);
+
+  const dockIconProps = {
+    className: "mobile-dock-icon",
+    strokeWidth: 1.6,
+  } as const;
 
   // Close mega menu when clicking outside
   useEffect(() => {
@@ -289,6 +324,94 @@ function HeaderComponent() {
         }
         .logo-hover:active {
           transform: scale(0.98);
+        }
+
+        .mobile-dock-wrapper {
+          position: fixed;
+          left: 50%;
+          bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+          transform: translateX(-50%);
+          z-index: 70;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+        }
+
+        .mobile-dock-wrapper > * {
+          pointer-events: auto;
+        }
+
+        .mobile-dock-surface {
+          width: min(360px, calc(100vw - 56px));
+          height: 64px;
+        }
+
+        .mobile-dock-inner {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 10px;
+        }
+
+        .mobile-dock-items {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          width: 100%;
+          height: 100%;
+        }
+
+        .mobile-dock-item {
+          position: relative;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 8px 6px;
+          border-radius: 999px;
+          color: var(--theme-text-muted);
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          transition: color 200ms ease, transform 200ms ease;
+        }
+
+        .mobile-dock-item::before {
+          content: "";
+          position: absolute;
+          inset: 6px;
+          border-radius: 999px;
+          background: color-mix(in srgb, var(--theme-glass-bg) 55%, transparent);
+          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-glass-border) 80%, transparent);
+          opacity: 0;
+          transition: opacity 200ms ease;
+          z-index: -1;
+        }
+
+        .mobile-dock-item.is-active {
+          color: var(--theme-text);
+          transform: translateY(-1px);
+        }
+
+        .mobile-dock-item.is-active::before {
+          opacity: 1;
+        }
+
+        .mobile-dock-icon {
+          width: 20px;
+          height: 20px;
+        }
+
+        @media (min-width: 1024px) {
+          .mobile-dock-wrapper {
+            display: none;
+          }
         }
       `}</style>
 
@@ -479,94 +602,47 @@ function HeaderComponent() {
                 )}
               </div>
             </div>
-
-            {/* Mobile Menu Button - Z-indexed to be clickable */}
-            <button
-              className="xl:hidden col-start-3 justify-self-end p-2 hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_80%,transparent)] rounded-lg transition-colors text-[var(--theme-text)] z-20"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Εναλλαγή μενού πλοήγησης"
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div
-            className="xl:hidden absolute top-full left-0 right-0 max-h-[calc(100vh-6rem)] overflow-auto"
-            style={{
-              background: "var(--theme-mega-bg)",
-              backdropFilter: "blur(20px)",
-              borderTop: "1px solid var(--theme-glass-border)",
-            }}
-          >
-            <nav className="p-6 space-y-2">
-              {navItems.map((item) => (
-                <div key={item.path}>
-                  <Link
-                    href={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`block px-4 py-3 rounded-xl text-lg font-bold transition-colors ${pathname === item.path
-                      ? "text-[var(--theme-accent)] bg-[var(--theme-glass-bg)]"
-                      : "text-[var(--theme-text)] hover:bg-[var(--theme-glass-bg)]"
-                      }`}
-                  >
-                    {item.name}
-                  </Link>
-
-                  {/* Mobile Subcategories for Products */}
-                  {item.hasDropdown && (
-                    <div className="ml-4 mt-2 space-y-1 border-l-2 border-[var(--theme-glass-border)] pl-4">
-                      {categories.slice(0, 6).map((category) => (
-                        <Link
-                          key={category.id}
-                          href={`/products/${category.slug}`}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="block px-3 py-2 text-sm text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors"
-                        >
-                          {category.nameEl}
-                        </Link>
-                      ))}
-                      <Link
-                        href="/products"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm font-semibold text-[var(--theme-accent)]"
-                      >
-                        Δείτε όλα →
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              <div className="pt-4 border-t border-[var(--theme-glass-border)] space-y-3">
-                {/* Theme Switcher for Mobile */}
-                <div className="flex justify-center pb-2">
-                  <LiquidGlassSwitcher />
-                </div>
-                <div className="flex justify-center text-[var(--theme-text)]">
-                  <SocialTooltips />
-                </div>
-                <a
-                  href="tel:2103461645"
-                  className="flex items-center justify-center gap-2 w-full h-12 border border-[var(--theme-glass-border)] rounded-xl font-bold text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors"
-                >
-                  <Phone className="w-5 h-5" />
-                  210 3461645
-                </a>
-              </div>
-            </nav>
-          </div>
-        )}
       </header>
+
+      <div className="mobile-dock-wrapper">
+        <GlassSurface
+          className="mobile-dock-surface"
+          width="min(360px, calc(100vw - 56px))"
+          height={64}
+          borderRadius={999}
+          blur={12}
+          displace={0.5}
+          distortionScale={-180}
+          redOffset={0}
+          greenOffset={10}
+          blueOffset={20}
+          brightness={49}
+          opacity={0.93}
+          mixBlendMode="screen"
+          backgroundOpacity={0.16}
+          saturation={1.4}
+        >
+          <div className="mobile-dock-inner">
+            <div className="mobile-dock-items" aria-label="Mobile primary navigation">
+              {mobileDockItems.map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`mobile-dock-item ${isActivePath(item.path) ? "is-active" : ""}`}
+                  aria-current={isActivePath(item.path) ? "page" : undefined}
+                >
+                  <item.Icon {...dockIconProps} aria-hidden="true" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </GlassSurface>
+      </div>
     </>
   );
 }
-
 // Memoize to prevent unnecessary re-renders
 export const Header = memo(HeaderComponent);

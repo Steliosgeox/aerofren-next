@@ -171,6 +171,7 @@
   --theme-tooltip-bg: #ffffff;
   --theme-tooltip-text: #000000;
   --theme-transition: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --silk-color: #0d2a45;
 
   /* Liquid Glass System (iOS 26 style) */
   --c-glass: #bbbbbc;
@@ -200,6 +201,7 @@
   --theme-glass-inset-dark: rgba(26, 54, 93, 0.12);
   --theme-tooltip-bg: #1a1a2e;
   --theme-tooltip-text: #ffffff;
+  --silk-color: #7ad7ff;
 
   /* Liquid Glass - Light Mode */
   --c-glass: #bbbbbc;
@@ -229,6 +231,7 @@
   --theme-glass-inset-dark: rgba(32, 0, 27, 0.2);
   --theme-tooltip-bg: #ffffff;
   --theme-tooltip-text: #152433;
+  --silk-color: #5b2ea6;
 
   /* Liquid Glass - Dim Mode */
   --c-glass: hsl(335 250% 74% / 1);
@@ -937,5 +940,16 @@ body.perf-no-blur *::after {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Back-to-top offset for mobile dock */
+.back-to-top {
+  bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .back-to-top {
+    bottom: calc(1.5rem + 72px + env(safe-area-inset-bottom, 0px));
   }
 }

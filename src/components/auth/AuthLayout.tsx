@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useTheme } from 'next-themes';
 import GlassSurface from '@/components/ui/GlassSurface';
 
 // Load Silk dynamically
@@ -23,12 +22,43 @@ interface AuthLayoutProps {
  * Mobile: Single column, value panel hidden
  */
 export function AuthLayout({ children, valuePanel }: AuthLayoutProps) {
-    const { resolvedTheme } = useTheme();
-    const silkColor = resolvedTheme === 'light'
-        ? '#0066cc'
-        : resolvedTheme === 'dim'
-            ? '#ff48a9'
-            : '#00bae2';
+    const [silkColor, setSilkColor] = useState('#0d2a45');
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const html = document.documentElement;
+        let frame = 0;
+
+        const readSilkColor = () => {
+            const value = getComputedStyle(html)
+                .getPropertyValue('--silk-color')
+                .trim();
+            if (value) {
+                setSilkColor(value);
+            }
+        };
+
+        const scheduleRead = () => {
+            if (frame) cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(readSilkColor);
+        };
+
+        // Initial read + react to data-theme changes
+        scheduleRead();
+        const observer = new MutationObserver(scheduleRead);
+        observer.observe(html, { attributes: true, attributeFilter: ['data-theme'] });
+
+        return () => {
+            observer.disconnect();
+            if (frame) cancelAnimationFrame(frame);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        }
+    }, []);
 
     return (
         <main className="auth-layout">
@@ -147,7 +177,7 @@ export function AuthLayout({ children, valuePanel }: AuthLayoutProps) {
 
             {/* Silk Background */}
             <div className="silk-wrapper">
-                <Silk color={silkColor} speed={5} scale={1} noiseIntensity={1.5} rotation={0} />
+                <Silk color={silkColor} speed={4} scale={1} noiseIntensity={0} rotation={0} />
             </div>
 
             <div className="unified-card-wrapper">

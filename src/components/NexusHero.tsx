@@ -590,42 +590,48 @@ export default function NexusHero() {
         const width = window.innerWidth;
         const height = window.innerHeight;
 
-        // Clamp resolution to prevent excessive GPU load (preserve aspect ratio)
-        // Higher values = sharper metaballs but more GPU load
-        const MAX_WIDTH = 1920;
-        const MAX_HEIGHT = 1080;
-        const MAX_PIXEL_RATIO = device.isMobile ? 1.5 : (device.isLowPower ? 1.75 : 2.0);
-        const FIXED_RENDER_SCALE = device.isMobile ? 0.65 : (device.isLowPower ? 0.8 : 1.0);
+        // Clamp ACTUAL render resolution to prevent excessive GPU load
+        // This is the max pixels the shader will process (after pixelRatio)
+        // Reduced for 4K support: 1.3M max = ~1480x880 effective resolution
+        const MAX_RENDER_PIXELS = device.isMobile ? 1280 * 720 : 1440 * 900; // ~920K mobile, ~1.3M desktop
+        const RENDER_SCALE = device.isMobile ? 0.65 : (device.isLowPower ? 0.7 : 0.75);
 
-        const getBaseRenderMetrics = (viewportWidth: number, viewportHeight: number) => {
-            const scale = Math.min(1, MAX_WIDTH / viewportWidth, MAX_HEIGHT / viewportHeight);
-            const baseWidth = Math.max(1, Math.round(viewportWidth * scale));
-            const baseHeight = Math.max(1, Math.round(viewportHeight * scale));
-            const pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
-            return { baseWidth, baseHeight, pixelRatio };
+        const getRenderMetrics = (viewportWidth: number, viewportHeight: number) => {
+            const dpr = window.devicePixelRatio || 1;
+
+            // Calculate what actual pixels would be at full resolution
+            const fullWidth = viewportWidth * dpr;
+            const fullHeight = viewportHeight * dpr;
+            const fullPixels = fullWidth * fullHeight;
+
+            // Scale down if exceeding max pixels (preserves aspect ratio)
+            let scale = RENDER_SCALE;
+            if (fullPixels * scale * scale > MAX_RENDER_PIXELS) {
+                scale = Math.sqrt(MAX_RENDER_PIXELS / fullPixels);
+            }
+
+            const renderWidth = Math.max(1, Math.round(viewportWidth * scale));
+            const renderHeight = Math.max(1, Math.round(viewportHeight * scale));
+            const actualWidth = Math.round(renderWidth * dpr);
+            const actualHeight = Math.round(renderHeight * dpr);
+
+            return { renderWidth, renderHeight, actualWidth, actualHeight, pixelRatio: dpr };
         };
 
         const applyRenderSize = (viewportWidth: number, viewportHeight: number) => {
-            const { baseWidth, baseHeight, pixelRatio } = getBaseRenderMetrics(viewportWidth, viewportHeight);
-            const renderWidth = Math.max(1, Math.round(baseWidth * FIXED_RENDER_SCALE));
-            const renderHeight = Math.max(1, Math.round(baseHeight * FIXED_RENDER_SCALE));
+            const { renderWidth, renderHeight, actualWidth, actualHeight, pixelRatio } = getRenderMetrics(viewportWidth, viewportHeight);
 
             renderer.setPixelRatio(pixelRatio);
             renderer.setSize(renderWidth, renderHeight, false);
 
             if (materialRef.current) {
                 materialRef.current.uniforms.uResolution.value.set(renderWidth, renderHeight);
-                materialRef.current.uniforms.uActualResolution.value.set(
-                    renderWidth * pixelRatio,
-                    renderHeight * pixelRatio
-                );
+                materialRef.current.uniforms.uActualResolution.value.set(actualWidth, actualHeight);
                 materialRef.current.uniforms.uPixelRatio.value = pixelRatio;
             }
         };
 
-        const { baseWidth, baseHeight, pixelRatio } = getBaseRenderMetrics(width, height);
-        const initialRenderWidth = Math.max(1, Math.round(baseWidth * FIXED_RENDER_SCALE));
-        const initialRenderHeight = Math.max(1, Math.round(baseHeight * FIXED_RENDER_SCALE));
+        const { renderWidth: initialRenderWidth, renderHeight: initialRenderHeight, actualWidth, actualHeight, pixelRatio } = getRenderMetrics(width, height);
         renderer.setPixelRatio(pixelRatio);
         renderer.setSize(initialRenderWidth, initialRenderHeight, false);
         renderer.setClearColor(0x000000, 0);
@@ -640,18 +646,19 @@ export default function NexusHero() {
             uniforms: {
                 uTime: { value: 0 },
                 uResolution: { value: new THREE.Vector2(initialRenderWidth, initialRenderHeight) },
-                uActualResolution: { value: new THREE.Vector2(initialRenderWidth * pixelRatio, initialRenderHeight * pixelRatio) },
+                uActualResolution: { value: new THREE.Vector2(actualWidth, actualHeight) },
                 uPixelRatio: { value: pixelRatio },
                 uMousePosition: { value: new THREE.Vector2(0.5, 0.5) },
                 uCursorSphere: { value: new THREE.Vector3(0, 0, 0) },
                 uCursorRadius: { value: 0.22 }, // Between 0.20-0.25
                 uSphereCount: { value: initialPreset.sphereCount },
+                // Ball radii - mobile removes bottom-left corner entirely for cleaner look
                 uFixedTopLeftRadius: { value: 0.90 },
                 uFixedBottomRightRadius: { value: 0.90 },
-                uFixedBottomLeftRadius: { value: 0.85 },
+                uFixedBottomLeftRadius: { value: device.isMobile ? 0 : 0.85 }, // Hidden on mobile
                 uSmallTopLeftRadius: { value: 0.30 },
                 uSmallBottomRightRadius: { value: 0.35 },
-                uSmallBottomLeftRadius: { value: 0.28 },
+                uSmallBottomLeftRadius: { value: device.isMobile ? 0 : 0.28 }, // Hidden on mobile
                 uMergeDistance: { value: 1.5 },
                 uSmoothness: { value: initialPreset.smoothness },
                 uAmbientIntensity: { value: initialPreset.ambientIntensity },
