@@ -49,8 +49,8 @@ export function FeatureList() {
                 }
             `}</style>
 
-            {features.map((feature, idx) => (
-                <div key={idx} className="feature-item">
+            {features.map((feature) => (
+                <div key={feature.label} className="feature-item">
                     <div className="feature-icon">
                         <feature.icon size={17} color="currentColor" strokeWidth={1.5} />
                     </div>

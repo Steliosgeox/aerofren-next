@@ -5,6 +5,22 @@ const nextConfig: NextConfig = {
     styledComponents: true,
   },
 
+  // Allow external images (Firebase user avatars)
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        pathname: "/**",
+      },
+    ],
+  },
+
   // Security headers
   async headers() {
     return [

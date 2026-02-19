@@ -26,6 +26,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { HttpError } from "@/services/http";
@@ -172,7 +173,7 @@ export default function AdminPage() {
           className="w-full max-w-md rounded-xl p-8 text-center"
           style={{
             background: "var(--theme-glass-bg)",
-            backdropFilter: "blur(20px)",
+            backdropFilter: "blur(8px)",
             border: "1px solid var(--theme-glass-border)",
           }}
         >
@@ -239,7 +240,7 @@ export default function AdminPage() {
           }`}
         style={{
           background: "var(--theme-glass-bg)",
-          backdropFilter: "blur(20px)",
+          backdropFilter: "blur(8px)",
           borderRight: "1px solid var(--theme-glass-border)",
         }}
       >
@@ -258,7 +259,7 @@ export default function AdminPage() {
           <div className="mb-6 p-3 rounded-xl" style={{ background: "var(--theme-glass-bg)" }}>
             <div className="flex items-center gap-2">
               {user.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full" />
+                <Image src={user.photoURL} alt="" width={32} height={32} className="w-8 h-8 rounded-full" />
               ) : (
                 <UserCircle className="w-8 h-8 text-[var(--theme-text-muted)]" />
               )}
@@ -276,9 +277,9 @@ export default function AdminPage() {
               { label: "Αιτήματα", icon: <MessageCircle className="w-5 h-5" />, href: "#" },
               { label: "Χρήστες", icon: <Users className="w-5 h-5" />, href: "#" },
               { label: "Ρυθμίσεις", icon: <Settings className="w-5 h-5" />, href: "#" },
-            ].map((item, i) => (
+            ].map((item) => (
               <Link
-                key={i}
+                key={item.label}
                 href={item.href}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${item.active
                   ? "bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-hover)] text-white"
@@ -358,7 +359,7 @@ export default function AdminPage() {
             // Skeleton loaders
             [...Array(4)].map((_, i) => (
               <div
-                key={i}
+                key={`skeleton-${i}`}
                 className="rounded-xl p-6 animate-pulse"
                 style={{
                   background: "var(--theme-glass-bg)",
@@ -371,13 +372,13 @@ export default function AdminPage() {
               </div>
             ))
           ) : (
-            statsCards.map((stat, i) => (
+            statsCards.map((stat) => (
               <div
-                key={i}
+                key={stat.label}
                 className="rounded-xl p-6"
                 style={{
                   background: "var(--theme-glass-bg)",
-                  backdropFilter: "blur(20px)",
+                  backdropFilter: "blur(8px)",
                   border: "1px solid var(--theme-glass-border)",
                 }}
               >
@@ -398,7 +399,7 @@ export default function AdminPage() {
           className="rounded-xl overflow-hidden"
           style={{
             background: "var(--theme-glass-bg)",
-            backdropFilter: "blur(20px)",
+            backdropFilter: "blur(8px)",
             border: "1px solid var(--theme-glass-border)",
           }}
         >

@@ -418,7 +418,7 @@ export function Chatbot() {
           {/* Login Prompt Modal */}
           {showLoginPrompt && (
             <div className="chatbot__login-modal">
-              <div className="chatbot__login-modal-backdrop" onClick={() => setShowLoginPrompt(false)} />
+              <div className="chatbot__login-modal-backdrop" role="button" tabIndex={0} aria-label="Κλείσιμο modal" onClick={() => setShowLoginPrompt(false)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowLoginPrompt(false); }} />
               <div className="chatbot__login-modal-content">
                 <button
                   className="chatbot__login-modal-close"

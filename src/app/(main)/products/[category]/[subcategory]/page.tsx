@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { categories, getSubcategoryBySlug } from "@/data/categories";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
 import { CategorySidebar } from "@/components/catalog/CategorySidebar";
@@ -41,9 +42,9 @@ export default function SubcategoryPage() {
           <h1 className="text-2xl font-bold text-[var(--theme-text)] mb-4">
             Η υποκατηγορία δεν βρέθηκε
           </h1>
-          <a href="/products" className="text-[var(--theme-accent)] hover:underline">
+          <Link href="/products" className="text-[var(--theme-accent)] hover:underline">
             Επιστροφή στον κατάλογο
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -61,6 +62,7 @@ export default function SubcategoryPage() {
             src={subcategory.image}
             alt={subcategory.nameEl}
             fill
+            sizes="100vw"
             className="object-cover"
           />
         </div>
@@ -126,6 +128,7 @@ export default function SubcategoryPage() {
                         src={product.image}
                         alt={product.name}
                         fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

@@ -292,7 +292,7 @@ function AdminChatsPageContent() {
           className="w-full max-w-md rounded-xl p-8 text-center"
           style={{
             background: "var(--theme-glass-bg)",
-            backdropFilter: "blur(20px)",
+            backdropFilter: "blur(8px)",
             border: "1px solid var(--theme-glass-border)",
           }}
         >
@@ -344,7 +344,7 @@ function AdminChatsPageContent() {
         className="sticky top-0 z-10"
         style={{
           background: "var(--theme-glass-bg)",
-          backdropFilter: "blur(20px)",
+          backdropFilter: "blur(8px)",
           borderBottom: "1px solid var(--theme-glass-border)",
         }}
       >
@@ -422,7 +422,7 @@ function AdminChatsPageContent() {
               className="rounded-xl overflow-hidden"
               style={{
                 background: "var(--theme-glass-bg)",
-                backdropFilter: "blur(20px)",
+                backdropFilter: "blur(8px)",
                 border: "1px solid var(--theme-glass-border)",
               }}
             >
@@ -545,7 +545,7 @@ function AdminChatsPageContent() {
               className="h-[70vh] flex flex-col rounded-xl overflow-hidden"
               style={{
                 background: "var(--theme-glass-bg)",
-                backdropFilter: "blur(20px)",
+                backdropFilter: "blur(8px)",
                 border: "1px solid var(--theme-glass-border)",
               }}
             >

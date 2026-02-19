@@ -8,6 +8,7 @@ import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -62,6 +63,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             src={category.image}
             alt={category.nameEl}
             fill
+            sizes="100vw"
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--theme-bg-solid)] to-[color-mix(in_srgb,var(--theme-bg-solid)_60%,transparent)]" />
@@ -157,10 +159,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     Δεν υπάρχουν διαθέσιμες υποκατηγορίες.
                   </p>
                   <Button asChild>
-                    <a href="/contact">
+                    <Link href="/contact">
                       Επικοινωνήστε μαζί μας
                       <ArrowRight className="w-4 h-4 ml-2" />
-                    </a>
+                    </Link>
                   </Button>
                 </div>
               )}
@@ -184,12 +186,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                       <Phone className="w-4 h-4 mr-2" />
                       210 3461645
                     </a>
-                    <a
+                    <Link
                       href="/contact"
                       className="inline-flex items-center justify-center h-12 px-6 bg-[color-mix(in_srgb,var(--theme-glass-bg)_85%,transparent)] backdrop-blur-sm text-white font-bold rounded-xl border border-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_95%,transparent)] transition-colors"
                     >
                       Φόρμα επικοινωνίας
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

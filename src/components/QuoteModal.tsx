@@ -65,7 +65,11 @@ export function QuoteModal({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-[color-mix(in_srgb,var(--theme-bg-solid)_70%,transparent)] backdrop-blur-sm"
+        role="button"
+        tabIndex={0}
+        aria-label="Κλείσιμο modal"
         onClick={onClose}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
       />
 
       {/* Modal */}

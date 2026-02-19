@@ -243,8 +243,8 @@ export default function HomePage() {
             Αριθμοί που μιλούν
           </h2>
           <div className="stats__grid">
-            {stats.map((stat, i) => (
-              <div key={i} data-stat-item className="stats__item">
+            {stats.map((stat) => (
+              <div key={stat.label} data-stat-item className="stats__item">
                 <span
                   data-stat-value
                   data-value={stat.value}

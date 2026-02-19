@@ -20,7 +20,10 @@ import { Timestamp } from 'firebase-admin/firestore';
 const contactSchema = z.object({
     name: z.string().min(2, 'Το όνομα πρέπει να έχει τουλάχιστον 2 χαρακτήρες').max(100),
     email: z.string().email('Μη έγκυρο email'),
-    phone: z.string().optional(),
+    phone: z.string()
+        .regex(/^[\d\s\-+().]{6,20}$/, 'Μη έγκυρος αριθμός τηλεφώνου')
+        .optional()
+        .or(z.literal('')),
     company: z.string().optional(),
     subject: z.string().max(200).optional(),
     message: z.string().min(10, 'Το μήνυμα πρέπει να έχει τουλάχιστον 10 χαρακτήρες').max(5000),

@@ -76,6 +76,8 @@ const useDarkMode = () => {
   return isDark;
 };
 
+const EMPTY_STYLE: React.CSSProperties = {};
+
 const GlassSurface: React.FC<GlassSurfaceProps> = ({
   children,
   width = 200,
@@ -96,7 +98,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   yChannel = "G",
   mixBlendMode = "difference",
   className = "",
-  style = {},
+  style = EMPTY_STYLE,
 }) => {
   const uniqueId = useId().replace(/:/g, "-");
   const filterId = `glass-filter-${uniqueId}`;

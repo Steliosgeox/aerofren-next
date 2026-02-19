@@ -375,7 +375,7 @@ export function LiquidGlassSwitcher() {
       <fieldset className="switcher" ref={switcherRef}>
         <legend className="switcher__legend">Choose theme</legend>
 
-        <label className="switcher__option">
+        <label className="switcher__option" aria-label="Light theme">
           <input
             className="switcher__input"
             type="radio"
@@ -404,7 +404,7 @@ export function LiquidGlassSwitcher() {
           </svg>
         </label>
 
-        <label className="switcher__option">
+        <label className="switcher__option" aria-label="Dark theme">
           <input
             className="switcher__input"
             type="radio"
@@ -427,7 +427,7 @@ export function LiquidGlassSwitcher() {
           </svg>
         </label>
 
-        <label className="switcher__option">
+        <label className="switcher__option" aria-label="Dim theme">
           <input
             className="switcher__input"
             type="radio"

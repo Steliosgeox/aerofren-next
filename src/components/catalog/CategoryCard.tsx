@@ -173,7 +173,6 @@ export function CategoryCard({ category, variant = "default" }: CategoryCardProp
         style={{
           background:
             "linear-gradient(145deg, color-mix(in srgb, var(--theme-glass-bg) 75%, transparent) 0%, color-mix(in srgb, var(--theme-bg-solid) 70%, transparent) 100%)",
-          willChange: "transform",
         }}
       >
         {/* Subtle top highlight */}
@@ -310,7 +309,6 @@ export function FeaturedCategoryCard({ category }: { category: Category }) {
           borderRadius: "var(--radius-lg)",
           background:
             "linear-gradient(145deg, color-mix(in srgb, var(--theme-glass-bg) 75%, transparent) 0%, color-mix(in srgb, var(--theme-bg-solid) 70%, transparent) 100%)",
-          willChange: "transform",
         }}
       >
         {/* Top highlight */}

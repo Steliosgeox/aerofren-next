@@ -190,6 +190,12 @@ export default function HorizontalGallery() {
       if (initTimer) clearTimeout(initTimer);
       if (resizeTimeout) clearTimeout(resizeTimeout);
       if (resizeHandler) window.removeEventListener("resize", resizeHandler);
+      // Kill ScrollTrigger on dependency change (e.g., isDesktop toggle)
+      // to prevent orphaned instances when useEffect re-runs
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.kill();
+        scrollTriggerRef.current = null;
+      }
     };
   }, [isMounted, isDesktop]);
 
@@ -620,8 +626,8 @@ export default function HorizontalGallery() {
           {/* Gallery */}
           <div className="horiz-gallery-wrapper">
             <div ref={stripRef} className="horiz-gallery-strip">
-              {galleryCategories.map((item, i) => (
-                <div key={i} className="product-card-wrap">
+              {galleryCategories.map((item) => (
+                <div key={item.href} className="product-card-wrap">
                   <Link href={item.href} className="product-card">
                     {/* Image */}
                     <div className="product-card-image-wrap">

@@ -7,14 +7,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { User } from 'firebase/auth';
-
-// Admin email whitelist - add authorized admin emails here
-const ADMIN_EMAILS = [
-    'info@aerofren.gr',
-    'admin@aerofren.gr',
-    'gamerspcexperts@gmail.com',
-    // Add more admin emails as needed
-];
+import { isAdminEmail } from '@/lib/admin-emails';
 
 interface AuthContextType {
     user: User | null;
@@ -38,8 +31,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [loading, setLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
 
-    // Check if user is admin
-    const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
+    // Check if user is admin (uses shared utility)
+    const isAdmin = isAdminEmail(user?.email);
 
     // Only run on client
     useEffect(() => {
@@ -76,11 +69,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
 
         let unsubscribe: (() => void) | undefined;
+        let cancelled = false;
         initAuth().then((unsub) => {
+            if (cancelled) {
+                // Component unmounted before async init resolved — clean up immediately
+                unsub();
+                return;
+            }
             unsubscribe = unsub;
         });
 
         return () => {
+            cancelled = true;
             if (unsubscribe) unsubscribe();
         };
     }, [mounted]);

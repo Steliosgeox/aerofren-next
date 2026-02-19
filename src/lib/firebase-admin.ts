@@ -13,6 +13,7 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getAuth, DecodedIdToken } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
+import { isAdminEmail } from '@/lib/admin-emails';
 
 // Singleton instance
 let adminApp: App | null = null;
@@ -108,13 +109,7 @@ export async function isUserAdmin(decodedToken: DecodedIdToken): Promise<boolean
 
     // Fallback to email whitelist for backwards compatibility
     // This should be migrated to custom claims
-    const ADMIN_EMAILS = [
-        'info@aerofren.gr',
-        'admin@aerofren.gr',
-        'gamerspcexperts@gmail.com',
-    ];
-
-    return decodedToken.email ? ADMIN_EMAILS.includes(decodedToken.email) : false;
+    return isAdminEmail(decodedToken.email);
 }
 
 /**

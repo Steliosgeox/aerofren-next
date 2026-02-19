@@ -67,9 +67,9 @@ export function StatsBar({ variant = "default" }: StatsBarProps) {
     <section className={`py-12 ${bgClass[variant]}`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
+          {stats.map((stat) => (
             <div
-              key={index}
+              key={stat.label}
               className="flex items-center gap-4 group"
             >
               <div

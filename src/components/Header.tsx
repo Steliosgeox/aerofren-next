@@ -536,9 +536,11 @@ function HeaderComponent() {
                       className="flex items-center gap-2 p-1 rounded-full transition-all hover:ring-2 hover:ring-[color-mix(in_srgb,var(--theme-accent)_30%,transparent)]"
                     >
                       {user.photoURL ? (
-                        <img
+                        <Image
                           src={user.photoURL}
                           alt=""
+                          width={36}
+                          height={36}
                           className="w-9 h-9 rounded-full ring-2 ring-[color-mix(in_srgb,var(--theme-accent)_25%,transparent)]"
                         />
                       ) : (

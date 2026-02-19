@@ -808,7 +808,7 @@ export default function NexusHero() {
             // SECOND: Remove all event listeners and cancel debounced handler
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("touchmove", handleTouchMove);
-            debouncedResize.cancel();
+            debouncedResize?.cancel?.();
             window.removeEventListener("resize", debouncedResize);
 
             // THIRD: Kill ScrollTrigger BEFORE disposing renderer

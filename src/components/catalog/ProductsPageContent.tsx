@@ -7,6 +7,7 @@ import { CategoryCard } from "@/components/catalog/CategoryCard";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { Search } from "lucide-react";
+import Link from "next/link";
 
 /**
  * Animated Products Page
@@ -132,12 +133,12 @@ export function ProductsPageContent({ totalProducts }: { totalProducts: number }
                         >
                             📞 210 3461645
                         </a>
-                        <a
+                        <Link
                             href="/contact"
                             className="inline-flex items-center justify-center h-11 px-6 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] text-[var(--theme-text)] font-medium rounded-xl hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors"
                         >
                             Στείλτε μήνυμα
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </section>

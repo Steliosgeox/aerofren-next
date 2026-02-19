@@ -241,6 +241,14 @@ const ContactRow = memo(function ContactRow({
   return <div className={className}>{content}</div>;
 });
 
+const ADDRESS_VALUE = (
+  <>
+    {CONTACT_INFO.address.street}
+    <br />
+    <span className="text-[var(--theme-text-muted)]">{CONTACT_INFO.address.city}</span>
+  </>
+);
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
@@ -409,13 +417,7 @@ export function Footer() {
                     />
                     <ContactRow
                       label="Διεύθυνση"
-                      value={
-                        <>
-                          {CONTACT_INFO.address.street}
-                          <br />
-                          <span className="text-[var(--theme-text-muted)]">{CONTACT_INFO.address.city}</span>
-                        </>
-                      }
+                      value={ADDRESS_VALUE}
                       multiline
                     />
                   </address>

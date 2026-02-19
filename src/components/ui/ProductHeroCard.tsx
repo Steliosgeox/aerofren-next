@@ -134,7 +134,7 @@ export function ProductHeroCard({
           relative w-full h-full flex items-center justify-center
           ${isHero ? "p-8" : "p-6"}
         `}
-                style={{ willChange: "transform" }}
+                style={{} /* willChange applied dynamically during animation */}
             >
                 <div className="relative w-full h-full flex items-center justify-center">
                     <Image
