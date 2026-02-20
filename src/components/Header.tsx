@@ -113,6 +113,29 @@ const glassHeaderStyles = {
   `,
 };
 
+// Module-level style constants — CSS custom properties resolve at paint time,
+// so these don't need to be inside the component or in useMemo
+const MEGA_MENU_STYLES: React.CSSProperties = {
+  background: "var(--theme-mega-bg)",
+  backdropFilter: "blur(20px)",
+  boxShadow: `inset 1px 1px 0 var(--theme-glass-inset-light), 0 20px 50px rgba(0, 0, 0, 0.5)`,
+  border: "1px solid var(--theme-glass-border)",
+  transition: "all var(--theme-transition)",
+};
+
+const USER_DROPDOWN_STYLES: React.CSSProperties = {
+  background: "var(--theme-mega-bg)",
+  backdropFilter: "blur(20px)",
+  border: "1px solid var(--theme-glass-border)",
+  boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
+};
+
+const LOGIN_BUTTON_STYLES: React.CSSProperties = {
+  background: "rgba(255, 255, 255, 0.1)",
+  color: "var(--theme-text)",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+};
+
 function HeaderComponent() {
   const pathname = usePathname();
   const router = useRouter();
@@ -279,27 +302,6 @@ function HeaderComponent() {
     }
   }, [handleMegaMenuEnter, handleMegaMenuLeave]);
 
-  // Memoized style objects to prevent recreation on every render
-  const megaMenuStyles = useMemo(() => ({
-    background: "var(--theme-mega-bg)",
-    backdropFilter: "blur(20px)",
-    boxShadow: `inset 1px 1px 0 var(--theme-glass-inset-light), 0 20px 50px rgba(0, 0, 0, 0.5)`,
-    border: "1px solid var(--theme-glass-border)",
-    transition: "all var(--theme-transition)",
-  }), []);
-
-  const userDropdownStyles = useMemo(() => ({
-    background: "var(--theme-mega-bg)",
-    backdropFilter: "blur(20px)",
-    border: "1px solid var(--theme-glass-border)",
-    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4)",
-  }), []);
-
-  const loginButtonStyles = useMemo(() => ({
-    background: "rgba(255, 255, 255, 0.1)",
-    color: "var(--theme-text)",
-    border: "1px solid rgba(255, 255, 255, 0.15)",
-  }), []);
 
   return (
     <>
@@ -439,13 +441,16 @@ function HeaderComponent() {
                 <UnifiedHeaderMenu
                   navItems={navItems}
                   onDropdownHover={handleNavDropdownHover}
+                  dropdownOpen={megaMenuOpen}
                 />
 
                 {/* Mega Menu for Products */}
                 {megaMenuOpen && (
                   <div
                     className="absolute top-full left-1/2 -translate-x-1/2 mt-3 max-w-[800px] w-[90vw] xl:w-[800px] rounded-2xl overflow-hidden"
-                    style={megaMenuStyles}
+                    role="menu"
+                    aria-label="Κατηγορίες προϊόντων"
+                    style={MEGA_MENU_STYLES}
                     onMouseEnter={handleMegaMenuEnter}
                     onMouseLeave={handleMegaMenuLeave}
                   >
@@ -471,6 +476,7 @@ function HeaderComponent() {
                           <Link
                             key={category.id}
                             href={`/products/${category.slug}`}
+                            role="menuitem"
                             className="flex items-center gap-3 p-3 rounded-xl transition-colors group"
                             style={{ ['--hover-bg' as string]: 'var(--theme-glass-bg)' }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-glass-bg)')}
@@ -554,7 +560,7 @@ function HeaderComponent() {
                     {userMenuOpen && (
                       <div
                         className="absolute right-0 top-full mt-2 w-56 rounded-xl overflow-hidden z-50"
-                        style={userDropdownStyles}
+                        style={USER_DROPDOWN_STYLES}
                       >
                         <div className="p-3" style={{ borderBottom: "1px solid var(--theme-glass-border)" }}>
                           <p className="text-sm font-medium truncate" style={{ color: "var(--theme-text)" }}>
@@ -596,7 +602,7 @@ function HeaderComponent() {
                   <Link
                     href="/login"
                     className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-                    style={loginButtonStyles}
+                    style={LOGIN_BUTTON_STYLES}
                   >
                     <User className="w-4 h-4" />
                     Σύνδεση

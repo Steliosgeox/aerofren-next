@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
                 headers: {
                     'X-RateLimit-Remaining': String(rateLimit.remaining),
                     'X-Cache': 'HIT',
+                    'Cache-Control': 'private, max-age=30',
                 },
             });
         }
@@ -128,6 +129,7 @@ export async function GET(request: NextRequest) {
             headers: {
                 'X-RateLimit-Remaining': String(rateLimit.remaining),
                 'X-Cache': 'MISS',
+                'Cache-Control': 'private, max-age=30',
             },
         });
     } catch (error) {

@@ -100,6 +100,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ sessions, nextCursor }, {
             headers: {
                 'X-RateLimit-Remaining': String(rateLimit.remaining),
+                'Cache-Control': 'private, no-cache, no-store, must-revalidate',
             },
         });
     } catch (error) {

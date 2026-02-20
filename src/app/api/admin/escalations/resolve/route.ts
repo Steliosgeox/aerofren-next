@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
             {
                 headers: {
                     'X-RateLimit-Remaining': String(rateLimit.remaining),
+                    'Cache-Control': 'no-store',
                 },
             }
         );

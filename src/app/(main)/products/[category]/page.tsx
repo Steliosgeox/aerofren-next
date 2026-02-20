@@ -22,6 +22,9 @@ export async function generateStaticParams() {
   }));
 }
 
+// All categories are statically known — reject unknown slugs at routing layer
+export const dynamicParams = false;
+
 export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {

@@ -21,9 +21,13 @@ import {
   User,
   LogIn,
   CheckCircle,
-  AlertTriangle
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import dynamic from 'next/dynamic';
+
+const ReactMarkdown = dynamic(
+  () => import('react-markdown').then(mod => mod.default),
+  { ssr: false, loading: () => <span>...</span> }
+);
 import { v4 as uuidv4 } from 'uuid';
 import { gsap } from '@/lib/gsap/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,14 +61,10 @@ const ALLOWED_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 
 function sanitizeLinkUri(uri: string): string {
   if (!uri) return '#';
-  if (
-    uri.startsWith('/') ||
-    uri.startsWith('./') ||
-    uri.startsWith('../') ||
-    uri.startsWith('#')
-  ) {
-    return uri;
-  }
+  // Allow anchor links
+  if (uri.startsWith('#')) return uri;
+  // Allow absolute paths but block protocol-relative URLs (//)
+  if (uri.startsWith('/') && !uri.startsWith('//')) return uri;
 
   try {
     const parsed = new URL(uri);
@@ -317,18 +317,22 @@ export function Chatbot() {
     prevMessageCountRef.current = newCount;
   }, [messages.length]);  // Only depend on length, not entire array
 
-  // Calculate scrollbar width
+  // Scrollbar width only changes on layout transition (welcome→conversation) or resize
+  const hasMessages = messages.length > 0;
   useLayoutEffect(() => {
     const calculateWidth = () => {
       const scrollerWidth = chatScrollerRef.current?.offsetWidth || 0;
       const messagesWidth = chatMessagesRef.current?.offsetWidth || 0;
-      const width = scrollerWidth - messagesWidth;
-      setScrollbarWidth(width);
+      setScrollbarWidth(scrollerWidth - messagesWidth);
     };
 
     const frameId = requestAnimationFrame(calculateWidth);
-    return () => cancelAnimationFrame(frameId);
-  }, [messages]);
+    window.addEventListener('resize', calculateWidth);
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', calculateWidth);
+    };
+  }, [hasMessages]);
 
   // Simple scroll handling - normalizeScroll is now disabled in SmoothScrollProvider
   // so we only need to stop propagation, not intercept all events

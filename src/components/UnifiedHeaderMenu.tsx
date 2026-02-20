@@ -39,15 +39,17 @@ interface NavItem {
 interface UnifiedHeaderMenuProps {
     navItems: NavItem[];
     onDropdownHover: (item: NavItem, isHovering: boolean) => void;
+    dropdownOpen?: boolean;
 }
 
-export function UnifiedHeaderMenu({ navItems, onDropdownHover }: UnifiedHeaderMenuProps) {
+export function UnifiedHeaderMenu({ navItems, onDropdownHover, dropdownOpen }: UnifiedHeaderMenuProps) {
     return (
         <MasterPill>
             <GlassNavigation
                 items={navItems}
                 onDropdownHover={onDropdownHover}
                 isIntegrated={true}
+                dropdownOpen={dropdownOpen}
             />
             <Divider />
             <SocialTooltips isIntegrated={true} />

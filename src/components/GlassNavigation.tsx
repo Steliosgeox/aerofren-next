@@ -16,6 +16,7 @@ interface GlassNavigationProps {
   onItemClick?: (item: NavItem) => void;
   onDropdownHover?: (item: NavItem, isHovering: boolean) => void;
   isIntegrated?: boolean;
+  dropdownOpen?: boolean;
 }
 
 const StyledWrapper = styled.div<{ $isIntegrated?: boolean }>`
@@ -111,6 +112,7 @@ export function GlassNavigation({
   onItemClick,
   onDropdownHover,
   isIntegrated = false,
+  dropdownOpen = false,
 }: GlassNavigationProps) {
   const pathname = usePathname();
   const id = useId(); // Unique ID to prevent radio name collision with multiple instances
@@ -148,6 +150,7 @@ export function GlassNavigation({
               onMouseLeave={() =>
                 item.hasDropdown && onDropdownHover?.(item, false)
               }
+              {...(item.hasDropdown ? { 'aria-haspopup': 'true', 'aria-expanded': dropdownOpen } : {})}
             >
               <Link
                 href={item.path}
