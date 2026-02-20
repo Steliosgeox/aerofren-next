@@ -163,12 +163,17 @@ export function Chatbot() {
 
   // Initialize session
   useEffect(() => {
-    let storedSession = localStorage.getItem(STORAGE_KEY);
-    if (!storedSession) {
-      storedSession = uuidv4();
-      localStorage.setItem(STORAGE_KEY, storedSession);
+    try {
+      let storedSession = localStorage.getItem(STORAGE_KEY);
+      if (!storedSession) {
+        storedSession = uuidv4();
+        localStorage.setItem(STORAGE_KEY, storedSession);
+      }
+      setSessionId(storedSession);
+    } catch (error) {
+      console.warn('Failed to access localStorage for chat session', error);
+      setSessionId(uuidv4());
     }
-    setSessionId(storedSession);
   }, []);
 
   // Generate random ID

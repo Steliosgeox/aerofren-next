@@ -85,11 +85,14 @@ export function useAuthForm(mode: 'login' | 'signup') {
 
         setFormData(prev => ({ ...prev, [field]: value.slice(0, limit) }));
 
-        // Clear field error when user types
-        if (fieldErrors[field]) {
-            setFieldErrors(prev => ({ ...prev, [field]: '' }));
-        }
-    }, [fieldErrors]);
+        // Clear field error when user types without depending on fieldErrors state
+        setFieldErrors(prev => {
+            if (prev[field]) {
+                return { ...prev, [field]: '' };
+            }
+            return prev;
+        });
+    }, []);
 
     /**
      * Handle Google authentication

@@ -33,62 +33,101 @@ const getFramePath = (index: number): string => {
 // GLOBAL IMAGE CACHE - Persists across navigations
 // This prevents reloading 118 images on every route change
 // ============================================
+const INITIAL_BATCH = 15;
+const BATCH_SIZE = 20;
+
 interface FrameCache {
-    images: HTMLImageElement[];
-    loaded: boolean;
+    images: (HTMLImageElement | null)[];
     loadedCount: number;
+    initialLoaded: boolean;
+    loadingBatches: Set<number>;
+    subscribers: ((progress: number) => void)[];
 }
 
 const globalFrameCache: FrameCache = {
-    images: [],
-    loaded: false,
+    images: new Array(FRAME_COUNT).fill(null),
     loadedCount: 0,
+    initialLoaded: false,
+    loadingBatches: new Set(),
+    subscribers: [],
 };
 
-// Preload frames once globally
-function preloadFramesGlobally(onProgress: (progress: number) => void, onComplete: () => void) {
+// Start fresh load
+function loadFrameBatch(startIndex: number, endIndex: number, onComplete?: () => void) {
+    let loadedInBatch = 0;
+    const totalToLoad = endIndex - startIndex;
+    let anyNew = false;
+
+    for (let i = startIndex; i < endIndex; i++) {
+        if (i >= FRAME_COUNT || globalFrameCache.images[i] !== null) {
+            loadedInBatch++;
+            if (loadedInBatch === totalToLoad && onComplete) onComplete();
+            continue;
+        }
+
+        anyNew = true;
+        const img = new Image();
+        img.src = getFramePath(i);
+
+        const handleLoad = () => {
+            globalFrameCache.loadedCount++;
+            loadedInBatch++;
+
+            const progress = (globalFrameCache.loadedCount / FRAME_COUNT) * 100;
+            globalFrameCache.subscribers.forEach(sub => sub(progress));
+
+            if (loadedInBatch === totalToLoad && onComplete) {
+                onComplete();
+            }
+        };
+
+        img.onload = handleLoad;
+        img.onerror = () => {
+            console.warn(`Failed to load frame ${i}`);
+            handleLoad();
+        };
+
+        globalFrameCache.images[i] = img;
+    }
+
+    if (!anyNew && onComplete) {
+        onComplete();
+    }
+}
+
+// Preload first batch once globally
+function preloadInitialFrames(onProgress: (progress: number) => void, onComplete: () => void) {
+    if (!globalFrameCache.subscribers.includes(onProgress)) {
+        globalFrameCache.subscribers.push(onProgress);
+    }
+
     // If already loaded, call complete immediately
-    if (globalFrameCache.loaded) {
-        onProgress(100);
+    if (globalFrameCache.initialLoaded) {
+        onProgress((globalFrameCache.loadedCount / FRAME_COUNT) * 100);
         onComplete();
         return;
     }
 
-    // If already loading, just update callbacks
-    if (globalFrameCache.images.length > 0) {
-        onProgress((globalFrameCache.loadedCount / FRAME_COUNT) * 100);
-        if (globalFrameCache.loadedCount === FRAME_COUNT) {
-            globalFrameCache.loaded = true;
-            onComplete();
+    loadFrameBatch(0, INITIAL_BATCH, () => {
+        globalFrameCache.initialLoaded = true;
+        onComplete();
+    });
+}
+
+function triggerBatchForFrame(frameIndex: number) {
+    const targetFrame = frameIndex + 30; // Buffer frames ahead
+    if (targetFrame < INITIAL_BATCH) return;
+
+    const maxTarget = Math.min(targetFrame, FRAME_COUNT);
+
+    for (let current = INITIAL_BATCH; current < maxTarget; current += BATCH_SIZE) {
+        const batchIndex = Math.floor((current - INITIAL_BATCH) / BATCH_SIZE);
+        if (!globalFrameCache.loadingBatches.has(batchIndex)) {
+            globalFrameCache.loadingBatches.add(batchIndex);
+            const start = INITIAL_BATCH + batchIndex * BATCH_SIZE;
+            const end = Math.min(start + BATCH_SIZE, FRAME_COUNT);
+            loadFrameBatch(start, end);
         }
-        return;
-    }
-
-    // Start fresh load
-    for (let i = 0; i < FRAME_COUNT; i++) {
-        const img = new Image();
-        img.src = getFramePath(i);
-
-        img.onload = () => {
-            globalFrameCache.loadedCount++;
-            onProgress((globalFrameCache.loadedCount / FRAME_COUNT) * 100);
-            if (globalFrameCache.loadedCount === FRAME_COUNT) {
-                globalFrameCache.loaded = true;
-                onComplete();
-            }
-        };
-
-        img.onerror = () => {
-            console.warn(`Failed to load frame ${i}`);
-            globalFrameCache.loadedCount++;
-            onProgress((globalFrameCache.loadedCount / FRAME_COUNT) * 100);
-            if (globalFrameCache.loadedCount === FRAME_COUNT) {
-                globalFrameCache.loaded = true;
-                onComplete();
-            }
-        };
-
-        globalFrameCache.images.push(img);
     }
 }
 
@@ -97,8 +136,8 @@ export default function ScrollFrameAnimation() {
     const containerRef = useRef<HTMLDivElement>(null);
     const staticBgRef = useRef<HTMLDivElement>(null);
     const canvasWrapperRef = useRef<HTMLDivElement>(null);
-    const [isLoaded, setIsLoaded] = useState(globalFrameCache.loaded);
-    const [loadProgress, setLoadProgress] = useState(globalFrameCache.loaded ? 100 : 0);
+    const [isLoaded, setIsLoaded] = useState(globalFrameCache.initialLoaded);
+    const [loadProgress, setLoadProgress] = useState(globalFrameCache.initialLoaded ? 100 : 0);
     const currentFrameRef = useRef(0);
     const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
     const rafDrawRef = useRef<number>(0);
@@ -106,10 +145,15 @@ export default function ScrollFrameAnimation() {
 
     // Use global cache for frames - only loads once across all navigations
     useEffect(() => {
-        preloadFramesGlobally(
+        preloadInitialFrames(
             (progress) => setLoadProgress(progress),
             () => setIsLoaded(true)
         );
+
+        return () => {
+            // Cleanup subscriber on unmount
+            globalFrameCache.subscribers = globalFrameCache.subscribers.filter(sub => sub !== setLoadProgress);
+        };
     }, []);
 
     // Draw frame to canvas with cover-fit (uses global cache)
@@ -199,6 +243,10 @@ export default function ScrollFrameAnimation() {
 
                     // Skip every other frame for GPU relief (60 -> 30 effective frames)
                     const rawFrame = Math.round(self.progress * (FRAME_COUNT - 1));
+
+                    // Lazy load upcoming batches of frames ahead of current scroll
+                    triggerBatchForFrame(rawFrame);
+
                     const frame = Math.round(rawFrame / 2) * 2; // Snap to even frames
 
                     if (frame !== currentFrameRef.current) {

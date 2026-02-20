@@ -148,11 +148,15 @@ function HeaderComponent() {
   const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close user menu when clicking outside
+  // Unified click-outside listener for both menus
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (userMenuRef.current && !userMenuRef.current.contains(target)) {
         setUserMenuOpen(false);
+      }
+      if (megaMenuRef.current && !megaMenuRef.current.contains(target)) {
+        setMegaMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -170,9 +174,13 @@ function HeaderComponent() {
   }, []);
 
   const handleSignOut = useCallback(async () => {
-    await signOut();
-    setUserMenuOpen(false);
-    router.push('/');
+    try {
+      await signOut();
+      setUserMenuOpen(false);
+      router.push('/');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   }, [signOut, router]);
 
   // GSAP scroll animation
@@ -210,11 +218,13 @@ function HeaderComponent() {
   useEffect(() => {
     let ticking = false;
     let lastY = 0;
+    let rafId: number;
+
     const handleScroll = () => {
       const y = window.scrollY;
       if (Math.abs(y - lastY) < 10) return; // Ignore < 10px changes
       if (!ticking) {
-        requestAnimationFrame(() => {
+        rafId = requestAnimationFrame(() => {
           setIsScrolled(y > 20);
           lastY = y;
           ticking = false;
@@ -222,8 +232,12 @@ function HeaderComponent() {
         ticking = true;
       }
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const isActivePath = useCallback(
@@ -244,15 +258,15 @@ function HeaderComponent() {
 
     const authItem = user
       ? {
-          label: isAdmin ? "Admin" : "Λογαριασμός",
-          path: isAdmin ? "/admin" : "/login",
-          Icon: User,
-        }
+        label: isAdmin ? "Admin" : "Λογαριασμός",
+        path: isAdmin ? "/admin" : "/login",
+        Icon: User,
+      }
       : {
-          label: "Σύνδεση",
-          path: "/login",
-          Icon: LogIn,
-        };
+        label: "Σύνδεση",
+        path: "/login",
+        Icon: LogIn,
+      };
 
     return [...baseItems, authItem];
   }, [user, isAdmin]);
@@ -262,19 +276,7 @@ function HeaderComponent() {
     strokeWidth: 1.6,
   } as const;
 
-  // Close mega menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        megaMenuRef.current &&
-        !megaMenuRef.current.contains(event.target as Node)
-      ) {
-        setMegaMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
 
   const handleMegaMenuEnter = useCallback(() => {
     if (megaMenuTimeoutRef.current) {

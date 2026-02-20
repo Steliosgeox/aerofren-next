@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Send, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,28 +36,42 @@ export function QuoteModal({
 
   if (!isOpen) return null;
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Simulate form submission
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setIsSubmitted(true);
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      onClose();
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        message: "",
-      });
-    }, 3000);
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setIsSubmitted(false);
+        onClose();
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          company: "",
+          message: "",
+        });
+      }, 3000);
+    } catch (error) {
+      console.error("Failed to submit quote:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -193,7 +207,7 @@ export function QuoteModal({
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                      <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-[color-mix(in_srgb,var(--theme-text)_30%,transparent)] border-t-white rounded-full animate-spin" />
                       Αποστολή...
                     </span>
