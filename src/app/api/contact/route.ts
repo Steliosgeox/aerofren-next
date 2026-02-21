@@ -27,7 +27,7 @@ const contactSchema = z.object({
     company: z.string().optional(),
     subject: z.string().max(200).optional(),
     message: z.string().min(10, 'Το μήνυμα πρέπει να έχει τουλάχιστον 10 χαρακτήρες').max(5000),
-    honeypot: z.string().max(0).optional(), // Bot detection
+    honeypot: z.string().optional(), // Bot detection: Must allow strings to catch bots silently
 });
 
 const CONTACTS_COLLECTION = 'contactSubmissions';

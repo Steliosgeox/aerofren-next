@@ -21,8 +21,8 @@ export default function MainLayout({
       {/* Route-scoped fixed effects (z-index handled by components) */}
       <RouteEffects />
 
-      {/* Portal Target for Page-Specific Fixed Backgrounds (z-index: 0) */}
-      <div id="page-background-portal" className="fixed inset-0 z-0 pointer-events-none" />
+      {/* Portal Target for page-specific fixed backgrounds */}
+      <div id="page-background-portal" className="fixed inset-0 z-0 pointer-events-none" aria-hidden="true" />
 
       {/* Header - Fixed for accessibility */}
       <Header />

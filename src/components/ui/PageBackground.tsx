@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 interface PageBackgroundProps {
     children: React.ReactNode;
-    className?: string;
+    layer?: "base" | "overlay";
 }
 
 /**
@@ -21,9 +21,10 @@ interface PageBackgroundProps {
  *   <DarkVeil ... />
  * </PageBackground>
  */
-export const PageBackground = ({ children, className = "" }: PageBackgroundProps) => {
+export const PageBackground = ({ children, layer = "base" }: PageBackgroundProps) => {
     const [mounted, setMounted] = useState(false);
     const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
+    const layerClass = layer === "overlay" ? "page-background-layer page-background-layer--overlay" : "page-background-layer page-background-layer--base";
 
     useEffect(() => {
         setMounted(true);
@@ -42,7 +43,7 @@ export const PageBackground = ({ children, className = "" }: PageBackgroundProps
     if (!mounted || !portalElement) return null;
 
     return createPortal(
-        <div className={`absolute inset-0 w-full h-full ${className}`}>
+        <div className={layerClass} aria-hidden="true">
             {children}
         </div>,
         portalElement

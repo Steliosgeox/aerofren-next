@@ -1,0 +1,43 @@
+
+[2m[0.22ms][22m [@tailwindcss/postcss] src\app\ttnormsmono_adfde7dd.module.css
+[2m[0.21ms][22m  [2m ↳ [22mQuick bail check
+
+
+[2m[0.14ms][22m [@tailwindcss/postcss] src\components\Chatbot.scss.css
+[2m[0.13ms][22m  [2m ↳ [22mQuick bail check
+
+
+[2m[0.03ms][22m [@tailwindcss/postcss] src\components\ScrollAnimation.module.css
+[2m[0.02ms][22m  [2m ↳ [22mQuick bail check
+
+
+[2m[229.65ms][22m [@tailwindcss/postcss] src\app\globals.css
+[2m[  0.00ms][22m  [2m ↳ [22mQuick bail check
+[2m[ 26.40ms][22m  [2m ↳ [22mSetup compiler
+[2m[  0.86ms][22m    [2m ↳ [22mPostCSS AST -> Tailwind CSS AST
+[2m[ 25.51ms][22m    [2m ↳ [22mCreate compiler
+[2m[  0.13ms][22m  [2m ↳ [22mRegister full rebuild paths
+[2m[  1.34ms][22m  [2m ↳ [22mSetup scanner
+[2m[ 61.14ms][22m  [2m ↳ [22mScan for candidates
+[2m[ 66.65ms][22m  [2m ↳ [22mRegister dependency messages
+[2m[ 57.50ms][22m  [2m ↳ [22mBuild utilities
+[2m[ 11.87ms][22m  [2m ↳ [22mTransform Tailwind CSS AST into PostCSS AST
+[2m[  4.23ms][22m  [2m ↳ [22mUpdate PostCSS AST
+
+
+[2m[0.62ms][22m [@tailwindcss/postcss] src\app\ttnorms_98a6729.module.css
+[2m[0.57ms][22m  [2m ↳ [22mQuick bail check
+
+
+[2m[0.06ms][22m [@tailwindcss/postcss] src\components\DarkVeil.module.css
+[2m[0.06ms][22m  [2m ↳ [22mQuick bail check
+
+
+[2m[47.18ms][22m [@tailwindcss/postcss] src\app\globals.css
+[2m[ 0.01ms][22m  [2m ↳ [22mQuick bail check
+[2m[ 0.15ms][22m  [2m ↳ [22mRegister full rebuild paths
+[2m[22.94ms][22m  [2m ↳ [22mScan for candidates
+[2m[19.20ms][22m  [2m ↳ [22mRegister dependency messages
+[2m[ 1.23ms][22m  [2m ↳ [22mBuild utilities
+[2m[ 3.25ms][22m  [2m ↳ [22mUpdate PostCSS AST
+
