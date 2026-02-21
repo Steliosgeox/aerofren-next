@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
 import { MagicBento, ParticleCard } from "@/components/MagicBento";
+import DarkVeil from "@/components/DarkVeil";
 import { PageBackground } from "@/components/ui/PageBackground";
 import {
   Phone,
@@ -22,8 +22,6 @@ import {
   AlertCircle,
   type LucideIcon,
 } from "lucide-react";
-
-const DarkVeil = dynamic(() => import("@/components/DarkVeil"), { ssr: false });
 
 type ContactFormState = {
   name: string;
@@ -162,8 +160,8 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen text-[var(--contact-text)]">
-      <PageBackground layer="base">
-        <DarkVeil variant="contact" intensity="low" animated />
+      <PageBackground layer="overlay">
+        <DarkVeil variant="contact" intensity="medium" animated={false} />
       </PageBackground>
 
       <section className="relative pt-24 pb-4 overflow-hidden z-10">
@@ -211,7 +209,7 @@ export default function ContactPage() {
                         enableMagnetism={false}
                         particleCount={5}
                       >
-                        <div className="p-4 bg-[var(--contact-surface)] backdrop-blur-sm border border-[var(--contact-border)] rounded-lg h-full flex items-center">
+                        <div className="p-4 bg-[var(--contact-surface)] border border-[var(--contact-border)] rounded-lg h-full flex items-center">
                           {card.href ? (
                             <a
                               href={card.href}
