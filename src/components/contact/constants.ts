@@ -1,6 +1,16 @@
 import { Building2, Clock, Mail, MapPin, Phone } from "lucide-react";
 import type { ContactCardConfig, ContactFormState } from "@/components/contact/types";
 
+export const CONTACT_ADDRESS_LINE_1 = "Χρυσοστόμου Σμύρνης 26";
+export const CONTACT_ADDRESS_LINE_2 = "Μοσχάτο 18344, Αθήνα";
+const CONTACT_MAP_QUERY = encodeURIComponent(
+  `${CONTACT_ADDRESS_LINE_1}, ${CONTACT_ADDRESS_LINE_2}`
+);
+
+export const CONTACT_MAP_URL = `https://www.google.com/maps/search/?api=1&query=${CONTACT_MAP_QUERY}`;
+export const CONTACT_MAP_EMBED_URL = `https://www.google.com/maps?output=embed&q=${CONTACT_MAP_QUERY}`;
+export const CONTACT_MAP_DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${CONTACT_MAP_QUERY}`;
+
 export const INITIAL_FORM_DATA: ContactFormState = {
   name: "",
   email: "",
@@ -29,9 +39,9 @@ export const CONTACT_CARDS: ContactCardConfig[] = [
   {
     icon: MapPin,
     title: "Διεύθυνση",
-    primary: "Χρυσοστόμου Σμύρνης 26",
-    secondary: "Μοσχάτο 18344, Αθήνα",
-    href: "https://maps.google.com/?q=Χρυσοστόμου+Σμύρνης+26+Μοσχάτο",
+    primary: CONTACT_ADDRESS_LINE_1,
+    secondary: CONTACT_ADDRESS_LINE_2,
+    href: CONTACT_MAP_URL,
   },
   {
     icon: Clock,
@@ -50,6 +60,3 @@ export const CONTACT_CARDS: ContactCardConfig[] = [
 
 export const CONTACT_ICON_BG =
   "from-[color-mix(in_srgb,var(--theme-accent)_25%,transparent)] to-[color-mix(in_srgb,var(--theme-accent)_10%,transparent)]";
-
-export const CONTACT_MAP_URL =
-  "https://maps.google.com/?q=Χρυσοστόμου+Σμύρνης+26+Μοσχάτο";
