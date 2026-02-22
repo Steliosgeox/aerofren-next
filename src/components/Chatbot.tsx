@@ -7,7 +7,7 @@
 
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, memo, useMemo } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, memo } from 'react';
 import {
   ArrowRight,
   Headset,
@@ -31,6 +31,7 @@ const ReactMarkdown = dynamic(
 import { v4 as uuidv4 } from 'uuid';
 import { gsap } from '@/lib/gsap/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCookieConsent } from '@/components/cookies/CookieConsentProvider';
 import { persistChatMessage, requestEscalation } from '@/services/chat';
 import Link from 'next/link';
 import './Chatbot.scss';
@@ -79,14 +80,18 @@ function sanitizeLinkUri(uri: string): string {
   }
 }
 
+const MarkdownParagraph = memo(function MarkdownParagraph({ children }: { children?: React.ReactNode }) {
+  return <p className="chatbot__message-text">{children}</p>;
+});
+
+const MarkdownList = memo(function MarkdownList({ children }: { children?: React.ReactNode }) {
+  return <ul className="chatbot__message-text">{children}</ul>;
+});
+
 // Memoized Markdown components to prevent re-renders
 const AIChatText: MarkdownComponents = {
-  p: memo(({ children }: { children?: React.ReactNode }) => (
-    <p className="chatbot__message-text">{children}</p>
-  )),
-  ul: memo(({ children }: { children?: React.ReactNode }) => (
-    <ul className="chatbot__message-text">{children}</ul>
-  )),
+  p: MarkdownParagraph,
+  ul: MarkdownList,
 };
 
 // Memoized message component to prevent unnecessary re-renders
@@ -132,12 +137,13 @@ export function Chatbot() {
 
   // Auth context for user info
   const { user } = useAuth();
+  const { allowFunctional, isReady: cookieConsentReady } = useCookieConsent();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [sessionId, setSessionId] = useState<string>('');
+  const [sessionId, setSessionId] = useState<string>(() => uuidv4());
   const [scrollbarWidth, setScrollbarWidth] = useState<number>(0);
   const [showLoginPrompt, setShowLoginPrompt] = useState<boolean>(false);
   const [isEscalated, setIsEscalated] = useState<boolean>(false);
@@ -161,8 +167,20 @@ export function Chatbot() {
     'Τιμές & διαθεσιμότητα',
   ];
 
-  // Initialize session
+  // Initialize session based on functional cookie consent.
   useEffect(() => {
+    if (!cookieConsentReady) return;
+
+    if (!allowFunctional) {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // No-op when storage is unavailable.
+      }
+      setSessionId(uuidv4());
+      return;
+    }
+
     try {
       let storedSession = localStorage.getItem(STORAGE_KEY);
       if (!storedSession) {
@@ -174,7 +192,7 @@ export function Chatbot() {
       console.warn('Failed to access localStorage for chat session', error);
       setSessionId(uuidv4());
     }
-  }, []);
+  }, [allowFunctional, cookieConsentReady]);
 
   // Generate random ID
   const randomID = useCallback(() => {

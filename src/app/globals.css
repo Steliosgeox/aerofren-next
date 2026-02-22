@@ -179,7 +179,6 @@
   --contact-border: rgba(76, 167, 224, 0.32);
   --contact-text: var(--theme-text);
   --contact-muted: #9caec2;
-  --contact-veil-strength: 1;
 
   /* Liquid Glass System (iOS 26 style) */
   --c-glass: #bbbbbc;
@@ -216,7 +215,6 @@
   --contact-border: rgba(36, 88, 138, 0.32);
   --contact-text: #153b62;
   --contact-muted: #365977;
-  --contact-veil-strength: 0.76;
 
   /* Liquid Glass - Light Mode */
   --c-glass: #bbbbbc;
@@ -253,7 +251,6 @@
   --contact-border: rgba(137, 194, 238, 0.28);
   --contact-text: #dce8f3;
   --contact-muted: #9aafc3;
-  --contact-veil-strength: 0.9;
 
   /* Liquid Glass - Dim Mode */
   --c-glass: hsl(335 250% 74% / 1);
@@ -676,23 +673,6 @@ h4,
 /* Sections with heavy overlay (almost opaque) */
 .section-waves-heavy {
   background: rgba(6, 16, 31, 0.92);
-}
-
-/* Page background portal layers */
-.page-background-layer {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.page-background-layer--base {
-  z-index: 0;
-}
-
-.page-background-layer--overlay {
-  z-index: 5;
 }
 
 /* ========================================

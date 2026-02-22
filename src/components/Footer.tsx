@@ -14,6 +14,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { MagicBento, ParticleCard } from "@/components/MagicBento";
+import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
 
 // =============================================================================
 // TYPES
@@ -146,6 +147,7 @@ const NavLink = memo(function NavLink({ item, showIndicator = false }: { item: N
     <li>
       <Link
         href={item.path}
+        prefetch={false}
         className={`text-sm text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors block leading-tight ${showIndicator ? "flex items-center gap-2 group" : ""
           }`}
       >
@@ -255,6 +257,7 @@ const ADDRESS_VALUE = (
 
 export function Footer() {
   const glowColor = "var(--theme-accent-rgb)";
+  const { openPreferences } = useCookieConsent();
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -433,14 +436,21 @@ export function Footer() {
             <span className="sr-only">Copyright </span>
             AEROFREN © {currentYear} / ΟΛΑ ΤΑ ΣΥΣΤΗΜΑΤΑ ΕΝΕΡΓΑ
           </p>
-          <nav aria-label="Νομικές πληροφορίες" className="flex gap-8">
-            <Link href="/terms" className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
+          <nav aria-label="Νομικές πληροφορίες" className="flex flex-wrap items-center justify-center gap-4 md:gap-8">
+            <Link href="/terms" prefetch={false} className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
               Όροι χρήσης
             </Link>
-            <Link href="/privacy" className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
+            <Link href="/privacy" prefetch={false} className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
               Πολιτική απορρήτου
             </Link>
-            <Link href="/sitemap" className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
+            <button
+              type="button"
+              onClick={openPreferences}
+              className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none"
+            >
+              Ρυθμίσεις cookies
+            </button>
+            <Link href="/sitemap.xml" prefetch={false} className="hover:text-[var(--theme-text)] transition-colors focus:text-[var(--theme-text)] focus:outline-none">
               Χάρτης ιστότοπου
             </Link>
           </nav>

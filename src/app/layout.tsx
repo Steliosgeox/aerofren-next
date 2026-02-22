@@ -9,6 +9,7 @@ import { AuthWrapper } from "@/components/AuthWrapper"
 import ErrorBoundary from "@/components/ui/ErrorBoundary"
 import FpsOverlay from "@/components/FpsOverlay"
 import PageVisibilityHandler from "@/components/PageVisibilityHandler"
+import { CookieConsentProvider } from "@/components/cookies/CookieConsentProvider"
 
 const ttNorms = localFont({
   src: "../fonts/TTNormsProVariable.ttf",
@@ -101,9 +102,11 @@ export default async function RootLayout({
           <ErrorBoundary>
             <AuthWrapper>
               <StyledComponentsRegistry nonce={nonce}>
-                {children}
-                <FpsOverlay />
-                <PageVisibilityHandler />
+                <CookieConsentProvider>
+                  {children}
+                  <FpsOverlay />
+                  <PageVisibilityHandler />
+                </CookieConsentProvider>
               </StyledComponentsRegistry>
             </AuthWrapper>
           </ErrorBoundary>
