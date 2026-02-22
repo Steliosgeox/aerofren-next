@@ -5,7 +5,7 @@
  * - Rate limiting (5 requests/minute per IP)
  * - Zod validation
  * - Honeypot bot detection
- * - Firestore persistence
+ * - Multi-channel delivery (Firestore + SMTP email)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,6 +13,11 @@ import { z } from 'zod';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+import {
+    getContactEmailConfig,
+    sendContactEmail,
+    type ContactSubmissionPayload,
+} from '@/lib/contact-delivery';
 
 /**
  * Contact form validation schema
@@ -31,6 +36,7 @@ const contactSchema = z.object({
 });
 
 const CONTACTS_COLLECTION = 'contactSubmissions';
+const createRequestId = () => crypto.randomUUID();
 
 /**
  * POST /api/contact
@@ -80,49 +86,113 @@ export async function POST(request: NextRequest) {
         }
 
         const { name, email, phone, company, subject, message } = validation.data;
+        const requestId = createRequestId();
+        const submittedAt = Timestamp.now();
+        const submittedAtISO = submittedAt.toDate().toISOString();
+        const ipAddress = clientIP !== 'anonymous' ? clientIP : undefined;
 
         const db = getAdminFirestore();
-        if (!db) {
-            console.error('Firebase Admin not configured - contact submission failed');
+        const emailConfig = getContactEmailConfig();
+
+        const firestoreEnabled = Boolean(db);
+        const emailEnabled = emailConfig.configured;
+
+        if (!firestoreEnabled && !emailEnabled) {
+            console.error('[contact-api] No delivery channel configured', {
+                requestId,
+                missingEmailVars: emailConfig.missing,
+            });
             return NextResponse.json(
-                { error: 'Αποτυχία αποθήκευσης. Παρακαλώ δοκιμάστε ξανά.' },
+                { error: 'Η υπηρεσία επικοινωνίας δεν είναι διαθέσιμη προσωρινά.' },
                 { status: 503 }
             );
         }
 
-        // Save to Firestore with admin privileges
-        const submission = {
+        const payload: ContactSubmissionPayload = {
+            requestId,
             name,
             email,
             message,
-            submittedAt: Timestamp.now(),
-            status: 'new',
             ...(phone ? { phone } : {}),
             ...(company ? { company } : {}),
             ...(subject ? { subject } : {}),
-            ...(clientIP !== 'anonymous' ? { ipAddress: clientIP } : {}),
+            ...(ipAddress ? { ipAddress } : {}),
+            submittedAtISO,
         };
 
-        const docRef = await db.collection(CONTACTS_COLLECTION).add(submission);
-        const submissionId = docRef.id;
+        let firestoreSuccess = false;
+        let firestoreId: string | null = null;
+        let firestoreError: string | null = null;
 
-        if (!submissionId) {
-            // Firestore save failed - log for debugging but don't expose to user
-            console.error('Failed to save contact submission to Firestore');
+        if (db) {
+            try {
+                const submission = {
+                    requestId,
+                    name,
+                    email,
+                    message,
+                    submittedAt,
+                    status: 'new',
+                    source: 'website-contact-form',
+                    ...(phone ? { phone } : {}),
+                    ...(company ? { company } : {}),
+                    ...(subject ? { subject } : {}),
+                    ...(ipAddress ? { ipAddress } : {}),
+                };
+
+                const docRef = await db.collection(CONTACTS_COLLECTION).add(submission);
+                firestoreId = docRef.id;
+                firestoreSuccess = Boolean(firestoreId);
+            } catch (firestoreWriteError) {
+                firestoreError =
+                    firestoreWriteError instanceof Error
+                        ? firestoreWriteError.message
+                        : 'Firestore write failed';
+                console.error('[contact-api] Firestore write failed', {
+                    requestId,
+                    error: firestoreError,
+                });
+            }
+        }
+
+        const emailResult = await sendContactEmail(payload);
+        const emailSuccess = emailResult.success;
+        const hasSuccessfulChannel = firestoreSuccess || emailSuccess;
+
+        if (!hasSuccessfulChannel) {
+            console.error('[contact-api] Submission failed for all channels', {
+                requestId,
+                firestoreError,
+                emailError: emailResult.error,
+            });
             return NextResponse.json(
-                { error: 'Αποτυχία αποθήκευσης. Παρακαλώ δοκιμάστε ξανά.' },
-                { status: 500 }
+                { error: 'Αποτυχία αποστολής. Παρακαλώ δοκιμάστε ξανά.' },
+                { status: 503 }
             );
+        }
+
+        if (!emailSuccess) {
+            console.warn('[contact-api] Submission accepted without email delivery', {
+                requestId,
+                firestoreSuccess,
+                emailError: emailResult.error,
+            });
         }
 
         return NextResponse.json(
             {
                 success: true,
                 message: 'Το μήνυμά σας στάλθηκε επιτυχώς.',
+                requestId,
+                delivery: {
+                    firestore: firestoreSuccess,
+                    email: emailSuccess,
+                },
             },
             {
                 headers: {
                     'X-RateLimit-Remaining': String(rateLimit.remaining),
+                    'X-Contact-Request-Id': requestId,
                 },
             }
         );
@@ -140,8 +210,15 @@ export async function POST(request: NextRequest) {
  * Health check endpoint
  */
 export async function GET() {
+    const emailConfig = getContactEmailConfig();
+    const firestoreConfigured = Boolean(getAdminFirestore());
+
     return NextResponse.json({
         status: 'ok',
         message: 'Contact API is running',
+        channels: {
+            firestore: firestoreConfigured ? 'configured' : 'missing',
+            email: emailConfig.configured ? 'configured' : 'missing',
+        },
     });
 }
