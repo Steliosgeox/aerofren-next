@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 
 /**
  * Route-level error boundary
@@ -36,9 +37,9 @@ export default function Error({
                     <button onClick={reset} className="error-boundary__btn error-boundary__btn--primary">
                         Δοκιμάστε ξανά
                     </button>
-                    <a href="/" className="error-boundary__btn error-boundary__btn--secondary">
+                    <Link href="/" className="error-boundary__btn error-boundary__btn--secondary">
                         Αρχική σελίδα
-                    </a>
+                    </Link>
                 </div>
             </div>
 

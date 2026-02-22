@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect, useState, useMemo } from "react";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -178,7 +178,7 @@ export default function HorizontalGallery() {
         window.addEventListener("resize", resizeHandler);
         // Initial refresh with slight delay
         setTimeout(() => ScrollTrigger.refresh(), 100);
-      } catch (error) {
+      } catch {
         console.warn("GSAP not available, falling back to CSS scroll");
       }
     };

@@ -31,6 +31,7 @@ export function useRateLimit(config: Partial<RateLimitConfig> = {}) {
 
     const [isLocked, setIsLocked] = useState(false);
     const [remainingTime, setRemainingTime] = useState(0);
+    const [attemptsRemaining, setAttemptsRemaining] = useState(maxAttempts);
     const stateRef = useRef<RateLimitState>({
         attempts: 0,
         firstAttemptTime: 0,
@@ -46,6 +47,7 @@ export function useRateLimit(config: Partial<RateLimitConfig> = {}) {
         if (state.lockedUntil > now) {
             setIsLocked(true);
             setRemainingTime(Math.ceil((state.lockedUntil - now) / 1000));
+            setAttemptsRemaining(0);
             return true;
         }
 
@@ -56,12 +58,14 @@ export function useRateLimit(config: Partial<RateLimitConfig> = {}) {
                 firstAttemptTime: 0,
                 lockedUntil: 0,
             };
+            setAttemptsRemaining(maxAttempts);
         }
 
         setIsLocked(false);
         setRemainingTime(0);
+        setAttemptsRemaining(Math.max(0, maxAttempts - stateRef.current.attempts));
         return false;
-    }, [windowMs]);
+    }, [maxAttempts, windowMs]);
 
     // Record an attempt
     const recordAttempt = useCallback(() => {
@@ -80,6 +84,7 @@ export function useRateLimit(config: Partial<RateLimitConfig> = {}) {
                 firstAttemptTime: now,
                 lockedUntil: 0,
             };
+            setAttemptsRemaining(Math.max(0, maxAttempts - 1));
             return true;
         }
 
@@ -90,17 +95,21 @@ export function useRateLimit(config: Partial<RateLimitConfig> = {}) {
                 firstAttemptTime: now,
                 lockedUntil: 0,
             };
+            setAttemptsRemaining(Math.max(0, maxAttempts - 1));
             return true;
         }
 
         // Increment attempts
         state.attempts++;
+        const remainingAttempts = Math.max(0, maxAttempts - state.attempts);
+        setAttemptsRemaining(remainingAttempts);
 
         // Check if should lock
         if (state.attempts >= maxAttempts) {
             state.lockedUntil = now + lockoutMs;
             setIsLocked(true);
             setRemainingTime(Math.ceil(lockoutMs / 1000));
+            setAttemptsRemaining(0);
             return false;
         }
 
@@ -116,7 +125,8 @@ export function useRateLimit(config: Partial<RateLimitConfig> = {}) {
         };
         setIsLocked(false);
         setRemainingTime(0);
-    }, []);
+        setAttemptsRemaining(maxAttempts);
+    }, [maxAttempts]);
 
     // Update remaining time periodically when locked
     useEffect(() => {
@@ -138,18 +148,13 @@ export function useRateLimit(config: Partial<RateLimitConfig> = {}) {
         return () => clearInterval(interval);
     }, [isLocked]);
 
-    // Check lock on mount
-    useEffect(() => {
-        checkLock();
-    }, [checkLock]);
-
     return {
         isLocked,
         remainingTime,
         recordAttempt,
         reset,
         checkLock,
-        attemptsRemaining: maxAttempts - stateRef.current.attempts,
+        attemptsRemaining,
     };
 }
 

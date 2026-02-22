@@ -1,20 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useId } from "react";
+import { useEffect, useRef, useId } from "react";
 import { useTheme } from "next-themes";
 
 type Theme = "light" | "dark" | "dim";
 
 export function LiquidGlassSwitcher() {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const switcherRef = useRef<HTMLFieldSetElement>(null);
   const id = useId(); // Unique ID per instance to avoid radio name collisions
-
-  // Prevent hydration mismatch - only render after mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Track previous selection for animation direction
   useEffect(() => {
@@ -48,7 +42,7 @@ export function LiquidGlassSwitcher() {
         radio.removeEventListener("change", handleChange);
       });
     };
-  }, [mounted, resolvedTheme]);
+  }, [resolvedTheme]);
 
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
@@ -56,17 +50,6 @@ export function LiquidGlassSwitcher() {
 
   // Use resolvedTheme for comparison (handles system theme resolution)
   const currentTheme = (resolvedTheme || theme || "dark") as Theme;
-
-  // SSR guard: show skeleton placeholder until mounted to prevent layout shift
-  if (!mounted) {
-    return (
-      <div
-        className="w-[140px] h-[44px] rounded-full animate-pulse"
-        style={{ background: "rgba(255, 255, 255, 0.1)" }}
-        aria-hidden="true"
-      />
-    );
-  }
 
   return (
     <>

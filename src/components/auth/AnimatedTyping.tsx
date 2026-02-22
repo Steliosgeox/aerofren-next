@@ -14,7 +14,10 @@ interface AnimatedTypingProps {
  * Hook to track document visibility for pausing animations
  */
 const useDocumentVisibility = (): boolean => {
-    const [isVisible, setIsVisible] = useState(true);
+    const [isVisible, setIsVisible] = useState(() => {
+        if (typeof document === 'undefined') return true;
+        return document.visibilityState === 'visible';
+    });
 
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -22,7 +25,6 @@ const useDocumentVisibility = (): boolean => {
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        setIsVisible(document.visibilityState === 'visible');
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);

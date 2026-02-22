@@ -60,28 +60,19 @@ const useDarkMode = () => {
 
 const EMPTY_STYLE: React.CSSProperties = {};
 
-const GlassSurface: React.FC<GlassSurfaceProps> = ({
-  children,
-  width = 200,
-  height = 80,
-  borderRadius = 20,
-  borderWidth = 0.07,
-  brightness = 50,
-  opacity = 0.93,
-  blur = 11,
-  displace = 0,
-  backgroundOpacity = 0.05,
-  saturation = 1,
-  distortionScale = -180,
-  redOffset = 0,
-  greenOffset = 10,
-  blueOffset = 20,
-  xChannel = "R",
-  yChannel = "G",
-  mixBlendMode = "difference",
-  className = "",
-  style = EMPTY_STYLE,
-}) => {
+const GlassSurface: React.FC<GlassSurfaceProps> = (props) => {
+  const {
+    children,
+    width = 200,
+    height = 80,
+    borderRadius = 20,
+    blur = 11,
+    backgroundOpacity = 0.05,
+    saturation = 1,
+    className = "",
+    style = EMPTY_STYLE,
+  } = props;
+
   const isDarkMode = useDarkMode();
 
   const getContainerStyles = (): React.CSSProperties => {

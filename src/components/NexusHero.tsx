@@ -570,7 +570,9 @@ export default function NexusHero() {
 
         const device = getDeviceInfo();
         const presets = createPresets(device.isMobile);
-        const initialPreset = presets[currentTheme];
+        const themeFromDom = (document.documentElement.getAttribute("data-theme") as "dark" | "light" | "dim") || "dark";
+        const initialPreset = presets[themeFromDom];
+        let loadedRevealTimeout: ReturnType<typeof setTimeout> | null = null;
 
         // Create scene
         const scene = new THREE.Scene();
@@ -773,7 +775,7 @@ export default function NexusHero() {
         handlePointerMove(window.innerWidth / 2, window.innerHeight / 2);
 
         // Start animation
-        setIsLoaded(true);
+        loadedRevealTimeout = setTimeout(() => setIsLoaded(true), 0);
         animate();
 
         // Add GSAP ScrollTrigger for canvas fade-out
@@ -839,6 +841,11 @@ export default function NexusHero() {
             canvasRef.current = null;
             clockRef.current = null;
             animateRef.current = null;
+
+            if (loadedRevealTimeout) {
+                clearTimeout(loadedRevealTimeout);
+                loadedRevealTimeout = null;
+            }
         };
     }, [handlePointerMove]);
 

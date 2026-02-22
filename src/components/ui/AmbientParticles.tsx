@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { gsap, MotionPathPlugin, useGSAP } from "@/lib/gsap/client";
+import { gsap, useGSAP } from "@/lib/gsap/client";
 
 /**
  * AmbientParticles Component

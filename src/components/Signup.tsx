@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, Mail, User, AlertTriangle } from 'lucide-react';
+import { Loader2, Mail, AlertTriangle } from 'lucide-react';
 import GlassSurface from '@/components/ui/GlassSurface';
 import { AuthLayout, ValuePanel, ChatButton, AuthInput } from '@/components/auth';
 import { useAuthForm, INPUT_LIMITS } from '@/lib/auth';
@@ -16,7 +16,6 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Signup() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
-    const [mounted, setMounted] = useState(false);
     const [showEmailForm, setShowEmailForm] = useState(false);
 
     const {
@@ -35,8 +34,6 @@ export default function Signup() {
         formatLockoutTime,
     } = useAuthForm('signup');
 
-    useEffect(() => { setMounted(true); }, []);
-
     useEffect(() => {
         if (user && !authLoading) router.push('/');
     }, [user, authLoading, router]);
@@ -45,7 +42,6 @@ export default function Signup() {
         <AuthLayout valuePanel={<ValuePanel />}>
             <div
                 className="w-full max-w-[320px] flex flex-col items-center text-center transition-opacity duration-300"
-                style={{ opacity: mounted ? 1 : 0 }}
             >
                 {/* Logo */}
                 <div className="w-14 h-14 mb-5 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-[14px] flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_60px_rgba(0,0,0,0.2)]">

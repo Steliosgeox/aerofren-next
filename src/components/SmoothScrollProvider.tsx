@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useLayoutEffect, ReactNode } from "react";
-import { gsap, ScrollSmoother, ScrollTrigger } from "@/lib/gsap/client";
+import { ScrollSmoother, ScrollTrigger } from "@/lib/gsap/client";
 
 /**
  * SmoothScrollProvider Component

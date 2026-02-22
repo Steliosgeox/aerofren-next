@@ -1,5 +1,4 @@
-/* eslint-disable react/no-unknown-property */
-import React, { forwardRef, useMemo, useRef, useLayoutEffect, useState, useEffect } from 'react';
+import React, { forwardRef, useRef, useLayoutEffect, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree, RootState } from '@react-three/fiber';
 import { Color, Mesh, ShaderMaterial } from 'three';
 import { IUniform } from 'three';
@@ -9,7 +8,10 @@ import { IUniform } from 'three';
  * Returns false when tab is hidden to pause animations
  */
 const useDocumentVisibility = (): boolean => {
-    const [isVisible, setIsVisible] = useState(true);
+    const [isVisible, setIsVisible] = useState(() => {
+        if (typeof document === 'undefined') return true;
+        return document.visibilityState === 'visible';
+    });
 
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -17,8 +19,6 @@ const useDocumentVisibility = (): boolean => {
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        // Set initial state
-        setIsVisible(document.visibilityState === 'visible');
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -167,29 +167,8 @@ const Silk: React.FC<SilkProps> = ({ speed = 5, scale = 1, color = '#7B7481', no
             uRotation: { value: rotation },
             uTime: { value: 0 }
         }),
-        []
+        [speed, scale, noiseIntensity, color, rotation]
     );
-
-    useEffect(() => {
-        uniforms.uSpeed.value = speed;
-    }, [speed, uniforms]);
-
-    useEffect(() => {
-        uniforms.uScale.value = scale;
-    }, [scale, uniforms]);
-
-    useEffect(() => {
-        uniforms.uNoiseIntensity.value = noiseIntensity;
-    }, [noiseIntensity, uniforms]);
-
-    useEffect(() => {
-        const [r, g, b] = hexToNormalizedRGB(color);
-        uniforms.uColor.value.setRGB(r, g, b);
-    }, [color, uniforms]);
-
-    useEffect(() => {
-        uniforms.uRotation.value = rotation;
-    }, [rotation, uniforms]);
 
     return (
         <Canvas

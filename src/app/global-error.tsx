@@ -13,6 +13,10 @@ export default function GlobalError({
     error: Error & { digest?: string };
     reset: () => void;
 }) {
+    if (process.env.NODE_ENV !== "production") {
+        console.error("Global error:", error);
+    }
+
     return (
         <html lang="el">
             <body style={{

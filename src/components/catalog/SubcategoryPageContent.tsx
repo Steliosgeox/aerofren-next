@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
 import { CategorySidebar } from "@/components/catalog/CategorySidebar";
 import { QuoteModal } from "@/components/QuoteModal";

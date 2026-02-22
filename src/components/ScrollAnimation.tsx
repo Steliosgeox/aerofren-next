@@ -1,7 +1,8 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef } from 'react';
-import { gsap, ScrollTrigger } from '@/lib/gsap/client';
+import { gsap } from '@/lib/gsap/client';
 import styles from './ScrollAnimation.module.css';
 
 // Layer 1: Background/Outer elements (6 images)
@@ -62,7 +63,6 @@ export default function ScrollAnimation() {
         }
 
         const layers = container.querySelectorAll(`.${styles.layer}`);
-        const scaler = container.querySelector(`.${styles.scaler}`);
         const scalerImg = container.querySelector(`.${styles.scalerImage}`);
 
         if (layers.length === 0) {
@@ -115,9 +115,6 @@ export default function ScrollAnimation() {
 
             // Scaler image animation: starts large, shrinks to fit grid cell
             if (scalerImg) {
-                // Get the grid cell size for the scaler
-                const scalerEl = scaler as HTMLElement;
-
                 tl.fromTo(scalerImg,
                     {
                         scale: 2.5, // Start larger than normal

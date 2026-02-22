@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     validateLogin,
@@ -10,8 +9,6 @@ import {
     isRateLimitError,
     useRateLimit,
     formatLockoutTime,
-    type LoginFormData,
-    type SignupFormData,
 } from '@/lib/auth';
 
 /**
@@ -40,7 +37,6 @@ export interface AuthFormFields {
  * Handles form state, validation, rate limiting, and auth operations.
  */
 export function useAuthForm(mode: 'login' | 'signup') {
-    const router = useRouter();
     const {
         user,
         loading: authLoading,

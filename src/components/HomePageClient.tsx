@@ -25,7 +25,13 @@ export default function HomePageClient() {
     const [statsInView, setStatsInView] = useState(false);
     const [contactInView, setContactInView] = useState(false);
     const [reduceMotion, setReduceMotion] = useState(false);
-    const [lowEndDevice, setLowEndDevice] = useState(false);
+    const [lowEndDevice] = useState(() => {
+        if (typeof navigator === "undefined") return false;
+        const deviceMemory =
+            (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
+        const cpuCores = navigator.hardwareConcurrency ?? 4;
+        return deviceMemory <= 4 || cpuCores <= 4;
+    });
 
     useEffect(() => {
         const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -37,11 +43,6 @@ export default function HomePageClient() {
         } else {
             media.addListener(updateMotion);
         }
-
-        const deviceMemory =
-            (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
-        const cpuCores = navigator.hardwareConcurrency ?? 4;
-        setLowEndDevice(deviceMemory <= 4 || cpuCores <= 4);
 
         return () => {
             if (typeof media.addEventListener === "function") {

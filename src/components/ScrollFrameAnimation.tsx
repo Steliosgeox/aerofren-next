@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
-import { gsap, ScrollTrigger } from "@/lib/gsap/client";
+import { gsap } from "@/lib/gsap/client";
 import { debounce } from "@/lib/debounce";
 
 /**
@@ -18,9 +18,6 @@ import { debounce } from "@/lib/debounce";
 
 // Frame configuration
 const FRAME_COUNT = 118;
-const SPLASH_FRAME = 25;  // Frame where water splash becomes prominent
-const CROSSFADE_START_SCROLL = 0.1;  // 10vh - when to start showing canvas
-const CROSSFADE_END_SCROLL = 0.2;    // 20vh - when canvas is fully visible
 
 // Frame path generator
 const getFramePath = (index: number): string => {
