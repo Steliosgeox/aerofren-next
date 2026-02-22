@@ -676,6 +676,30 @@ h4,
 }
 
 /* ========================================
+   MAGIC BENTO BORDER GLOW
+   ======================================== */
+
+.bento-card--border-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: radial-gradient(var(--glow-radius, 200px) circle at var(--glow-x, 50%) var(--glow-y, 50%),
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity, 0) * 0.82)) 0%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity, 0) * 0.36)) 36%,
+      transparent 68%);
+  border-radius: inherit;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.22s ease;
+  z-index: 2;
+}
+
+/* ========================================
    UTILITY CLASSES
    ======================================== */
 

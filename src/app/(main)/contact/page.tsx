@@ -13,7 +13,7 @@ export default function ContactPage() {
     <div className="min-h-screen text-[var(--contact-text)]">
       <ContactHero />
 
-      <section className="relative py-6 z-10">
+      <section className="relative py-6 z-10 [content-visibility:auto] [contain-intrinsic-size:980px]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
             <ContactInfoPanel glowColor={glowColor} />

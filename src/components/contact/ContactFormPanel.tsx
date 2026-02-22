@@ -15,6 +15,10 @@ export function ContactFormPanel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fieldClass =
+    "bg-[color-mix(in_srgb,var(--contact-surface)_86%,transparent)] border-[var(--contact-border)] text-[var(--contact-text)] placeholder:text-[var(--contact-muted)]/70 focus:border-[var(--theme-accent)] focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)] transition-[border-color,box-shadow,background-color] duration-200";
+  const submitButtonClass =
+    "w-full h-9 text-sm font-semibold bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-hover)] hover:from-[var(--theme-accent-hover)] hover:to-[var(--theme-accent)] text-white shadow-md shadow-black/20 transition-[transform,box-shadow,background-image] hover:shadow-black/30 hover:-translate-y-0.5";
 
   const updateField = (field: keyof ContactFormState, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -76,14 +80,18 @@ export function ContactFormPanel() {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col [content-visibility:auto] [contain-intrinsic-size:880px]">
       <div className="relative flex-1 flex flex-col rounded-xl overflow-hidden bg-[var(--contact-surface)] border border-[var(--contact-border)] shadow-xl">
-        <div className="h-1 bg-gradient-to-r from-[var(--theme-accent)] via-[color-mix(in_srgb,var(--theme-accent)_70%,transparent)] to-[var(--theme-accent-hover)] shrink-0" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-55 bg-[linear-gradient(120deg,color-mix(in_srgb,var(--theme-accent)_9%,transparent)_0%,transparent_46%,color-mix(in_srgb,var(--theme-accent)_8%,transparent)_100%)]"
+        />
+        <div className="relative h-1 bg-gradient-to-r from-[var(--theme-accent)] via-[color-mix(in_srgb,var(--theme-accent)_70%,transparent)] to-[var(--theme-accent-hover)] shrink-0" />
 
-        <div className="flex-1 p-4 md:p-5 flex flex-col overflow-auto">
+        <div className="relative flex-1 p-4 md:p-5 flex flex-col">
           {isSubmitted ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 motion-safe:animate-pulse motion-reduce:animate-none">
                 <CheckCircle className="w-8 h-8 text-emerald-400" />
               </div>
               <h2 className="text-xl font-bold text-[var(--contact-text)] mb-2">
@@ -137,7 +145,7 @@ export function ContactFormPanel() {
                       value={formData.name}
                       onChange={(e) => updateField("name", e.target.value)}
                       placeholder="Γιάννης Παπαδόπουλος"
-                      className="bg-[color-mix(in_srgb,var(--contact-surface)_86%,transparent)] border-[var(--contact-border)] text-[var(--contact-text)] placeholder:text-[var(--contact-muted)]/70 focus:border-[var(--theme-accent)] focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]"
+                      className={fieldClass}
                     />
                   </div>
                   <div className="space-y-1">
@@ -147,7 +155,7 @@ export function ContactFormPanel() {
                       value={formData.company}
                       onChange={(e) => updateField("company", e.target.value)}
                       placeholder="Όνομα εταιρείας"
-                      className="bg-[color-mix(in_srgb,var(--contact-surface)_86%,transparent)] border-[var(--contact-border)] text-[var(--contact-text)] placeholder:text-[var(--contact-muted)]/70 focus:border-[var(--theme-accent)] focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]"
+                      className={fieldClass}
                     />
                   </div>
                 </div>
@@ -162,7 +170,7 @@ export function ContactFormPanel() {
                       value={formData.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       placeholder="email@example.com"
-                      className="bg-[color-mix(in_srgb,var(--contact-surface)_86%,transparent)] border-[var(--contact-border)] text-[var(--contact-text)] placeholder:text-[var(--contact-muted)]/70 focus:border-[var(--theme-accent)] focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]"
+                      className={fieldClass}
                     />
                   </div>
                   <div className="space-y-1">
@@ -173,7 +181,7 @@ export function ContactFormPanel() {
                       value={formData.phone}
                       onChange={(e) => updateField("phone", e.target.value)}
                       placeholder="210 1234567"
-                      className="bg-[color-mix(in_srgb,var(--contact-surface)_86%,transparent)] border-[var(--contact-border)] text-[var(--contact-text)] placeholder:text-[var(--contact-muted)]/70 focus:border-[var(--theme-accent)] focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]"
+                      className={fieldClass}
                     />
                   </div>
                 </div>
@@ -185,7 +193,7 @@ export function ContactFormPanel() {
                     value={formData.subject}
                     onChange={(e) => updateField("subject", e.target.value)}
                     placeholder="π.χ. Αίτημα προσφοράς, Τεχνική ερώτηση..."
-                    className="bg-[color-mix(in_srgb,var(--contact-surface)_86%,transparent)] border-[var(--contact-border)] text-[var(--contact-text)] placeholder:text-[var(--contact-muted)]/70 focus:border-[var(--theme-accent)] focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]"
+                    className={fieldClass}
                   />
                 </div>
 
@@ -198,13 +206,13 @@ export function ContactFormPanel() {
                     onChange={(e) => updateField("message", e.target.value)}
                     placeholder="Περιγράψτε το αίτημά σας, κωδικούς προϊόντων, ποσότητες..."
                     rows={3}
-                    className="bg-[color-mix(in_srgb,var(--contact-surface)_86%,transparent)] border-[var(--contact-border)] text-[var(--contact-text)] placeholder:text-[var(--contact-muted)]/70 focus:border-[var(--theme-accent)] focus:ring-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)] resize-none"
+                    className={`${fieldClass} resize-none`}
                   />
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full h-9 text-sm font-semibold bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-hover)] hover:from-[var(--theme-accent-hover)] hover:to-[var(--theme-accent)] text-white shadow-md shadow-black/20 transition-all hover:shadow-black/30 hover:-translate-y-0.5"
+                  className={submitButtonClass}
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
