@@ -51,6 +51,7 @@
     "@types/three": "^0.182.0",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^5.1.2",
+    "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
