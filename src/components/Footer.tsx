@@ -46,6 +46,10 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Προϊόντα", path: "/products" },
   { name: "Η Εταιρεία", path: "/about" },
   { name: "Επικοινωνία", path: "/contact" },
+  { name: "Συχνές Ερωτήσεις", path: "/faq" },
+  { name: "Γλωσσάριο", path: "/glossary" },
+  { name: "Τεχνικοί Οδηγοί", path: "/resources" },
+  { name: "Κλάδοι", path: "/industries" },
   { name: "Όροι Χρήσης", path: "/terms" },
   { name: "Πολιτική Απορρήτου", path: "/privacy" },
 ];
@@ -255,7 +259,11 @@ const ADDRESS_VALUE = (
 // MAIN COMPONENT
 // =============================================================================
 
-export function Footer() {
+interface FooterProps {
+  currentYear: number;
+}
+
+export function Footer({ currentYear }: FooterProps) {
   const glowColor = "var(--theme-accent-rgb)";
   const { openPreferences } = useCookieConsent();
   const [email, setEmail] = useState("");
@@ -288,8 +296,6 @@ export function Footer() {
       setEmailError(null);
     }
   }, [emailError]);
-
-  const currentYear = new Date().getFullYear();
 
   return (
     <footer
