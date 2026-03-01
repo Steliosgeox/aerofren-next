@@ -83,6 +83,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             fill
             sizes="100vw"
             className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--theme-bg-solid)] to-[color-mix(in_srgb,var(--theme-bg-solid)_60%,transparent)]" />
         </div>
