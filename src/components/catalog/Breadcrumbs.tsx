@@ -3,14 +3,28 @@
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 import { BreadcrumbItem } from "@/data/types";
+import { buildBreadcrumbSchema } from "@/lib/schema/breadcrumb";
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
 }
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
+  const schemaItems = [
+    { name: "Αρχική", url: "https://aerofren.gr" },
+    ...items.map((item) => ({
+      name: item.label,
+      url: `https://aerofren.gr${item.href}`,
+    })),
+  ];
+
   return (
-    <nav className="flex items-center gap-2 text-sm py-4">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBreadcrumbSchema(schemaItems)) }}
+      />
+      <nav className="flex items-center gap-2 text-sm py-4">
       <Link
         href="/"
         className="flex items-center gap-1 text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors"
@@ -35,5 +49,6 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         </div>
       ))}
     </nav>
+    </>
   );
 }
