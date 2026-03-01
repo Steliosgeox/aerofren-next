@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { ReactLenis, useLenis } from "lenis/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -20,7 +21,7 @@ function ScrollTriggerSync() {
   return null;
 }
 
-export default function LenisProvider({ children }: { children: React.ReactNode }) {
+export default function LenisProvider({ children }: { children: ReactNode }) {
   const prefersReducedMotion =
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
