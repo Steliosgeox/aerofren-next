@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 import { BreadcrumbItem } from "@/data/types";
@@ -7,9 +5,10 @@ import { buildBreadcrumbSchema } from "@/lib/schema/breadcrumb";
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
+  nonce?: string | null;
 }
 
-export function Breadcrumbs({ items }: BreadcrumbsProps) {
+export function Breadcrumbs({ items, nonce }: BreadcrumbsProps) {
   const schemaItems = [
     { name: "Αρχική", url: "https://aerofren.gr" },
     ...items.map((item) => ({
@@ -22,6 +21,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
     <>
       <script
         type="application/ld+json"
+        nonce={nonce ?? undefined}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBreadcrumbSchema(schemaItems)) }}
       />
       <nav className="flex items-center gap-2 text-sm py-4">

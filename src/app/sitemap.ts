@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { categories } from "@/data/categories";
+import { RESOURCE_GUIDE_SLUGS } from "@/lib/constants/aerofren";
 
 /**
  * Dynamic sitemap for AEROFREN
@@ -70,6 +71,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: "monthly",
             priority: 0.8,
         },
+        ...RESOURCE_GUIDE_SLUGS.map((slug) => ({
+            url: `${baseUrl}/resources/${slug}`,
+            lastModified: new Date("2026-02-27"),
+            changeFrequency: "monthly" as const,
+            priority: 0.7,
+        })),
         {
             url: `${baseUrl}/alternatives`,
             lastModified: new Date("2026-02-27"),

@@ -6,6 +6,15 @@ export const metadata: Metadata = {
   title: "Τεχνικοί Οδηγοί & Resources | AEROFREN",
   description: "Τεχνικοί οδηγοί επιλογής πνευματικών εξαρτημάτων, σχεδίασης κυκλωμάτων, και σύγκρισης υλικών. Industrial guides for pneumatic system design.",
   alternates: { canonical: "https://aerofren.gr/resources" },
+  openGraph: {
+    title: "Τεχνικοί Οδηγοί & Resources | AEROFREN",
+    description: "Τεχνικοί οδηγοί επιλογής πνευματικών εξαρτημάτων, σχεδίασης κυκλωμάτων, και σύγκρισης υλικών.",
+    url: "https://aerofren.gr/resources",
+    siteName: "AEROFREN",
+    locale: "el_GR",
+    type: "website",
+    images: [{ url: "/images/hero-fittings.jpg", width: 1200, height: 630, alt: "AEROFREN – Εξαρτήματα Νερού & Αέρα" }],
+  },
 };
 
 const guides = [

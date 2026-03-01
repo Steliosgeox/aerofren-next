@@ -1,21 +1,22 @@
-// src/lib/schema/OrganizationSchema.tsx
-export function OrganizationSchema() {
+import { FOUNDING_YEAR, ORGANIZATION_ID, SITE_URL, YEARS_OF_EXPERIENCE, PRODUCT_COUNT } from "@/lib/constants/aerofren";
+
+export function OrganizationSchema({ nonce }: { nonce?: string | null } = {}) {
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": ["Organization", "WholesaleStore"],
-        "@id": "https://aerofren.gr/#organization",
+        "@type": ["Organization", "LocalBusiness"],
+        "@id": ORGANIZATION_ID,
         "name": "AEROFREN",
-        "url": "https://aerofren.gr",
+        "url": SITE_URL,
         "logo": {
           "@type": "ImageObject",
-          "url": "https://aerofren.gr/images/logo-light.webp",
+          "url": `${SITE_URL}/images/logo-light.webp`,
           "width": 200,
           "height": 60,
         },
-        "description": "B2B προμηθευτής πνευματικών εξαρτημάτων και συστημάτων νερού. B2B supplier of pneumatic and water system components.",
-        "foundingDate": "1980",
+        "description": `B2B προμηθευτής πνευματικών εξαρτημάτων και συστημάτων νερού από το ${FOUNDING_YEAR}. ${YEARS_OF_EXPERIENCE}+ χρόνια εμπειρίας, ${PRODUCT_COUNT} προϊόντα.`,
+        "foundingDate": String(FOUNDING_YEAR),
         "telephone": "+302103461645",
         "email": "info@aerofren.gr",
         "address": {
@@ -41,7 +42,7 @@ export function OrganizationSchema() {
         ],
         "areaServed": [
           { "@type": "Country", "name": "Greece" },
-          { "@type": "Continent", "name": "Europe" },
+          "Europe",
         ],
         "knowsAbout": [
           "Pneumatic Systems",
@@ -54,7 +55,8 @@ export function OrganizationSchema() {
         ],
         "numberOfEmployees": {
           "@type": "QuantitativeValue",
-          "value": "10-50",
+          "minValue": 10,
+          "maxValue": 50,
         },
         "sameAs": [
           "https://www.linkedin.com/company/aerofren",
@@ -66,6 +68,7 @@ export function OrganizationSchema() {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce ?? undefined}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

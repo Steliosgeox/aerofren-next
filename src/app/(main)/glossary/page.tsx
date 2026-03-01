@@ -6,6 +6,15 @@ export const metadata: Metadata = {
   title: "Γλωσσάριο Πνευματικών Εξαρτημάτων | AEROFREN",
   description: "Πλήρες γλωσσάριο τεχνικών όρων για πνευματικά συστήματα, ρακόρ, βαλβίδες. Technical glossary for pneumatic fittings, valves, and industrial systems.",
   alternates: { canonical: "https://aerofren.gr/glossary" },
+  openGraph: {
+    title: "Γλωσσάριο Πνευματικών Εξαρτημάτων | AEROFREN",
+    description: "Πλήρες γλωσσάριο τεχνικών όρων για πνευματικά συστήματα, ρακόρ, βαλβίδες.",
+    url: "https://aerofren.gr/glossary",
+    siteName: "AEROFREN",
+    locale: "el_GR",
+    type: "website",
+    images: [{ url: "/images/hero-fittings.jpg", width: 1200, height: 630, alt: "AEROFREN – Εξαρτήματα Νερού & Αέρα" }],
+  },
 };
 
 const terms = [
@@ -36,7 +45,7 @@ export default function GlossaryPage() {
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-4xl">
-      <GlossarySchema terms={terms} />
+      <GlossarySchema terms={sortedTerms} />
 
       <h1 className="text-3xl font-bold mb-2">Γλωσσάριο Τεχνικών Όρων</h1>
       <p className="text-muted-foreground mb-8">
@@ -44,8 +53,8 @@ export default function GlossaryPage() {
       </p>
 
       <dl className="grid gap-6">
-        {sortedTerms.map((term, i) => (
-          <div key={i} id={term.name.toLowerCase().replace(/\s+/g, "-")} className="border-b pb-4">
+        {sortedTerms.map((term) => (
+          <div key={term.name} id={term.name.toLowerCase().replace(/\s+/g, "-")} className="border-b pb-4">
             <dt className="font-semibold text-lg">{term.name}</dt>
             {term.alternateName && (
               <span className="text-sm text-primary">{term.alternateName}</span>

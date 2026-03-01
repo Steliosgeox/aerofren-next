@@ -1,28 +1,29 @@
-// src/lib/schema/WebsiteSchema.tsx
-export function WebsiteSchema() {
+import { ORGANIZATION_ID, SITE_URL, WEBSITE_ID } from "@/lib/constants/aerofren";
+
+export function WebsiteSchema({ nonce }: { nonce?: string | null } = {}) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "@id": "https://aerofren.gr/#website",
+    "@id": WEBSITE_ID,
     "name": "AEROFREN",
-    "url": "https://aerofren.gr",
+    "url": SITE_URL,
     "inLanguage": ["el", "en"],
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://aerofren.gr/products?q={search_term_string}",
+        "urlTemplate": `${SITE_URL}/products?q={search_term_string}`,
       },
-      "query-input": "required name=search_term_string",
     },
     "publisher": {
-      "@id": "https://aerofren.gr/#organization",
+      "@id": ORGANIZATION_ID,
     },
   };
 
   return (
     <script
       type="application/ld+json"
+      nonce={nonce ?? undefined}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

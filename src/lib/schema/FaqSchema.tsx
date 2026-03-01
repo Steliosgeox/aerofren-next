@@ -1,4 +1,3 @@
-// src/lib/schema/FaqSchema.tsx
 interface FaqItem {
   question: string;
   answer: string;
@@ -6,9 +5,10 @@ interface FaqItem {
 
 interface FaqSchemaProps {
   items: FaqItem[];
+  nonce?: string | null;
 }
 
-export function FaqSchema({ items }: FaqSchemaProps) {
+export function FaqSchema({ items, nonce }: FaqSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -25,6 +25,7 @@ export function FaqSchema({ items }: FaqSchemaProps) {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce ?? undefined}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { headers } from "next/headers"
 import AboutHistoryGrid from "@/components/AboutHistoryGrid"
 import { FounderPersonSchema } from "@/lib/schema/PersonSchema"
 
@@ -11,10 +12,11 @@ export const metadata: Metadata = {
     },
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+    const nonce = (await headers()).get("x-nonce")
     return (
         <>
-            <FounderPersonSchema />
+            <FounderPersonSchema nonce={nonce} />
             <AboutHistoryGrid />
         </>
     )

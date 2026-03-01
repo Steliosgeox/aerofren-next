@@ -102,8 +102,8 @@ export default async function RootLayout({
             {`window.__webpack_nonce__ = ${JSON.stringify(nonce)};`}
           </Script>
         ) : null}
-        <OrganizationSchema />
-        <WebsiteSchema />
+        <OrganizationSchema nonce={nonce} />
+        <WebsiteSchema nonce={nonce} />
         <ThemeProvider
           attribute="data-theme"
           defaultTheme="dark"

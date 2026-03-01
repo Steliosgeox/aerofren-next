@@ -1,16 +1,16 @@
-// src/lib/schema/PersonSchema.tsx
-export function FounderPersonSchema() {
+import { FOUNDING_YEAR, FOUNDER_ID, ORGANIZATION_ID, YEARS_OF_EXPERIENCE } from "@/lib/constants/aerofren";
+
+export function FounderPersonSchema({ nonce }: { nonce?: string | null } = {}) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Person",
+    "@id": FOUNDER_ID,
     "name": "Βασίλειος Κουτελίδης",
     "alternateName": "Vassilios Koutelidis",
     "jobTitle": "Ιδρυτής",
-    "description": "Ίδρυσε την AEROFREN το 1980 και αφιέρωσε 35+ χρόνια στον κλάδο πνευματικών συστημάτων και εξαρτημάτων νερού.",
+    "description": `Ίδρυσε την AEROFREN το ${FOUNDING_YEAR} και αφιέρωσε ${YEARS_OF_EXPERIENCE}+ χρόνια στον κλάδο πνευματικών συστημάτων και εξαρτημάτων νερού.`,
     "worksFor": {
-      "@type": "Organization",
-      "@id": "https://aerofren.gr/#organization",
-      "name": "AEROFREN",
+      "@id": ORGANIZATION_ID,
     },
     "knowsAbout": [
       "Pneumatic Systems",
@@ -23,6 +23,7 @@ export function FounderPersonSchema() {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce ?? undefined}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

@@ -1,11 +1,12 @@
-// src/lib/schema/ArticleSchema.tsx
+import { ORGANIZATION_ID } from "@/lib/constants/aerofren";
+
 interface ArticleSchemaProps {
   title: string;
   description: string;
   url: string;
   datePublished: string;
   dateModified: string;
-  authorName?: string;
+  nonce?: string | null;
 }
 
 export function ArticleSchema({
@@ -14,7 +15,7 @@ export function ArticleSchema({
   url,
   datePublished,
   dateModified,
-  authorName = "AEROFREN",
+  nonce,
 }: ArticleSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
@@ -25,12 +26,10 @@ export function ArticleSchema({
     "datePublished": datePublished,
     "dateModified": dateModified,
     "author": {
-      "@type": "Organization",
-      "@id": "https://aerofren.gr/#organization",
-      "name": authorName,
+      "@id": ORGANIZATION_ID,
     },
     "publisher": {
-      "@id": "https://aerofren.gr/#organization",
+      "@id": ORGANIZATION_ID,
     },
     "inLanguage": ["el", "en"],
   };
@@ -38,6 +37,7 @@ export function ArticleSchema({
   return (
     <script
       type="application/ld+json"
+      nonce={nonce ?? undefined}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

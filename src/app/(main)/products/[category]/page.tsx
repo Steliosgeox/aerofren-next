@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { categories, getCategoryBySlug } from "@/data/categories";
 import { Breadcrumbs } from "@/components/catalog/Breadcrumbs";
@@ -55,6 +56,7 @@ export async function generateMetadata({
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category: categorySlug } = await params;
   const category = getCategoryBySlug(categorySlug);
+  const nonce = (await headers()).get("x-nonce");
 
   if (!category) {
     notFound();
@@ -72,6 +74,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           description: sub.descriptionEl,
           image: sub.image,
         }))}
+        nonce={nonce}
       />
       {/* Hero Section */}
       <section className="relative bg-[var(--theme-bg-solid)] text-[var(--theme-text)] py-16 pt-28 overflow-hidden">
@@ -94,6 +97,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               { label: "Προϊόντα", href: "/products" },
               { label: category.nameEl, href: `/products/${category.slug}` },
             ]}
+            nonce={nonce}
           />
 
           <div className="mt-6 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">

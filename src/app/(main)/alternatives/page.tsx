@@ -4,8 +4,17 @@ import { FaqSchema } from "@/lib/schema/FaqSchema";
 
 export const metadata: Metadata = {
   title: "Εναλλακτικό SMC, Festo, Parker στην Ελλάδα | AEROFREN",
-  description: "Ψάχνετε εναλλακτικό προμηθευτή SMC, Festo, ή Parker στην Ελλάδα; Η AEROFREN προσφέρει συμβατά πνευματικά εξαρτήματα με 35+ χρόνια εμπειρίας. Greek alternatives to SMC Festo Parker pneumatic components.",
+  description: "Ψάχνετε εναλλακτικό προμηθευτή SMC, Festo, ή Parker στην Ελλάδα; Η AEROFREN προσφέρει συμβατά πνευματικά εξαρτήματα. Greek alternatives to SMC Festo Parker pneumatic components.",
   alternates: { canonical: "https://aerofren.gr/alternatives" },
+  openGraph: {
+    title: "Εναλλακτικό SMC, Festo, Parker στην Ελλάδα | AEROFREN",
+    description: "Ψάχνετε εναλλακτικό SMC, Festo ή Parker; Η AEROFREN διαθέτει 120.000+ συμβατά εξαρτήματα.",
+    url: "https://aerofren.gr/alternatives",
+    siteName: "AEROFREN",
+    locale: "el_GR",
+    type: "website",
+    images: [{ url: "/images/hero-fittings.jpg", width: 1200, height: 630, alt: "AEROFREN – Εξαρτήματα Νερού & Αέρα" }],
+  },
 };
 
 const alternativeFaqs = [
@@ -51,8 +60,8 @@ export default function AlternativesPage() {
       </div>
 
       <div className="space-y-6">
-        {alternativeFaqs.map((item, i) => (
-          <div key={i} className="border-b pb-6">
+        {alternativeFaqs.map((item) => (
+          <div key={item.question} className="border-b pb-6">
             <h2 className="font-semibold text-lg mb-2">{item.question}</h2>
             <p className="text-muted-foreground leading-relaxed">{item.answer}</p>
           </div>
