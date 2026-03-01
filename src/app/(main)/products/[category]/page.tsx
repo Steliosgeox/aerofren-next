@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ItemListSchema } from "@/lib/schema/ItemListSchema";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -61,6 +62,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--theme-bg-solid)" }}>
+      <ItemListSchema
+        name={category.nameEl}
+        description={category.descriptionEl}
+        url={`https://aerofren.gr/products/${categorySlug}`}
+        items={category.subcategories.map((sub) => ({
+          name: sub.nameEl,
+          url: `https://aerofren.gr/products/${categorySlug}/${sub.slug}`,
+          description: sub.descriptionEl,
+          image: sub.image,
+        }))}
+      />
       {/* Hero Section */}
       <section className="relative bg-[var(--theme-bg-solid)] text-[var(--theme-text)] py-16 pt-28 overflow-hidden">
         {/* Background Image */}
