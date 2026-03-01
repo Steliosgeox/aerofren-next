@@ -8,6 +8,8 @@ export default function MainLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const currentYear = new Date().getFullYear()
+
   return (
     <>
       {/* ============================================
@@ -27,7 +29,7 @@ export default function MainLayout({
       {/* ScrollSmoother wrapper for buttery smooth scrolling */}
       <RouteScrollShell>
         <main className="min-h-screen">{children}</main>
-        <Footer />
+        <Footer currentYear={currentYear} />
       </RouteScrollShell>
     </>
   )

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useLayoutEffect, ReactNode } from "react";
-import { ScrollSmoother, ScrollTrigger } from "@/lib/gsap/client";
+import { gsap, ScrollSmoother, ScrollTrigger } from "@/lib/gsap/client";
 
 /**
  * SmoothScrollProvider Component
@@ -54,6 +54,20 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
   // This prevents "removeChild" errors from GSAP's pinned/moved elements
   useLayoutEffect(() => {
     return () => {
+      // ZERO: Strip data-lag attributes and inline styles that ScrollSmoother's
+      // effects mode injects onto [data-speed] elements. Without this, stale GSAP
+      // mutations remain in the DOM between navigations and cause hydration mismatches.
+      const content = document.getElementById("smooth-content");
+      if (content) {
+        content.querySelectorAll("[data-lag]").forEach((el) => {
+          (el as HTMLElement).removeAttribute("data-lag");
+          gsap.set(el, { clearProps: "transform,willChange" });
+        });
+        content.querySelectorAll("[data-speed]").forEach((el) => {
+          gsap.set(el, { clearProps: "transform,willChange" });
+        });
+      }
+
       // FIRST: Kill ScrollSmoother BEFORE killing triggers
       if (smootherRef.current) {
         smootherRef.current.paused(true);

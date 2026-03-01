@@ -1,0 +1,549 @@
+/* AboutHistoryGrid.module.css
+ * Premium scroll-driven grid animation for Aerofren About page
+ * GSAP ScrollTrigger implementation without SmoothScrollProvider
+ */
+
+/* ========================================
+   CONFIG & VARIABLES
+   ======================================== */
+.wrap {
+    /* Palette - Theme-aware via CSS custom properties */
+    --bg: var(--theme-bg-solid, #0a0a0f);
+    --text-muted: var(--theme-text-muted, #64748b);
+    --text-light: var(--theme-text, #e5e5e5);
+    --accent: var(--theme-accent, #00bae2);
+
+    /* Base Reset */
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-light);
+    font-family: var(--font-tt-norms, "TT Norms", sans-serif);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
+
+/* ========================================
+   LAYOUT: SPLIT VIEW
+   ======================================== */
+
+/* Left Panel: Scrollable Content */
+.content {
+    width: 50%;
+    padding-bottom: 20vh;
+    position: relative;
+    z-index: 20;
+}
+
+/* Right Panel: Sticky Visual */
+.stickyVisual {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    z-index: 10;
+    pointer-events: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   HEADER SECTION
+   ======================================== */
+.header {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    padding-left: 10vw;
+}
+
+.brandName {
+    font-size: 1.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 300;
+    margin: 0;
+    color: var(--accent);
+    opacity: 0.8;
+}
+
+.titleLarge {
+    display: block;
+    font-size: 5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-light);
+    margin-top: 1rem;
+    line-height: 1;
+}
+
+/* ========================================
+   SCROLL SECTIONS
+   ======================================== */
+.scrollSection {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 10vw;
+    padding-right: 2rem;
+}
+
+.focusText {
+    font-size: 3.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 500px;
+    letter-spacing: -0.02em;
+    will-change: transform, opacity;
+}
+
+.description {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    opacity: 0.9;
+    margin-top: 1.5rem;
+    max-width: 500px;
+    line-height: 1.8;
+    font-weight: 300;
+    border-left: 2px solid var(--accent);
+    padding-left: 1.5rem;
+    will-change: transform, opacity;
+}
+
+/* ========================================
+   CLOSING SECTION
+   ======================================== */
+.closingSection {
+    height: 60vh;
+    display: flex;
+    align-items: center;
+    padding-left: 10vw;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 10vh;
+}
+
+.closer {
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: var(--text-muted);
+}
+
+.closer strong {
+    display: block;
+    font-size: 2rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.contactInfo {
+    margin-top: 1.5rem;
+    line-height: 1.8;
+}
+
+.contactInfo a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.contactInfo a:hover {
+    opacity: 0.8;
+}
+
+/* ========================================
+   GRID: IMAGE LAYERS
+   ======================================== */
+.grid {
+    --offset: 0;
+    --container-width: 600px;
+    --gap: clamp(8px, 1.5vw, 16px);
+
+    width: 100%;
+    max-width: var(--container-width);
+    height: 60vh;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: var(--gap);
+    position: relative;
+}
+
+/* Layers using subgrid */
+.layer {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    opacity: 0;
+    transform: scale(0);
+    will-change: opacity, transform;
+}
+
+/* Layer 1: Outer edges - odd on left column, even on right column */
+.layer:nth-of-type(1)>div:nth-of-type(odd) {
+    grid-column: 1;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(even) {
+    grid-column: -2;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(1) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(2) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(3) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(4) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(5) {
+    grid-row: 3;
+}
+
+.layer:nth-of-type(1)>div:nth-of-type(6) {
+    grid-row: 3;
+}
+
+/* Layer 2: Inner columns */
+.layer:nth-of-type(2)>div:nth-of-type(odd) {
+    grid-column: 2;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(even) {
+    grid-column: -3;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(1) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(2) {
+    grid-row: 1;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(3) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(4) {
+    grid-row: 2;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(5) {
+    grid-row: 3;
+}
+
+.layer:nth-of-type(2)>div:nth-of-type(6) {
+    grid-row: 3;
+}
+
+/* Layer 3: Center column top and bottom */
+.layer:nth-of-type(3)>div:first-of-type {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.layer:nth-of-type(3)>div:last-of-type {
+    grid-column: 3;
+    grid-row: 3;
+}
+
+/* Image styling */
+.grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: clamp(6px, 1vw, 12px);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(59, 130, 246, 0.05);
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.grid img:hover {
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(139, 92, 246, 0.15);
+    transform: scale(1.02);
+}
+
+/* Scaler - Center hero image */
+.scaler {
+    grid-column: 3;
+    grid-row: 2;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scalerImage {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: clamp(6px, 1vw, 12px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 80px rgba(59, 130, 246, 0.1);
+    transform-origin: center center;
+}
+
+/* ========================================
+   PROGRESS INDICATORS
+   ======================================== */
+
+/* Desktop: Vertical Line on Border */
+.desktopProgress {
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: top;
+    transform: scaleY(0);
+    z-index: 20;
+}
+
+/* Mobile: Circular Widget */
+.mobileProgress {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    padding: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.mobileProgress svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progressCircle {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+}
+
+.trackCircle {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 8;
+}
+
+/* ========================================
+   THEME OVERRIDES
+   ======================================== */
+
+/* Dark Theme (default) */
+:global([data-theme="dark"]) .wrap {
+    --bg: #06101f;
+    --text-muted: #4b5563;
+    --text-light: #e5e5e5;
+    --accent: #00bae2;
+}
+
+/* Light Theme */
+:global([data-theme="light"]) .wrap {
+    --bg: #f0f4f8;
+    --text-muted: #64748b;
+    --text-light: #1a365d;
+    --accent: #0066cc;
+}
+
+:global([data-theme="light"]) .grid img {
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.1),
+        0 0 40px rgba(0, 102, 204, 0.05);
+}
+
+:global([data-theme="light"]) .description {
+    color: #334155;
+}
+
+:global([data-theme="light"]) .closingSection {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dim Theme - Purplish modern */
+:global([data-theme="dim"]) .wrap {
+    --bg: #152433;
+    --text-muted: #7c3aed;
+    --text-light: #d5dbe2;
+    --accent: #c084fc;
+}
+
+:global([data-theme="dim"]) .brandName {
+    color: #c084fc;
+}
+
+:global([data-theme="dim"]) .titleLarge {
+    background: linear-gradient(180deg, #e879f9 0%, #a855f7 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+:global([data-theme="dim"]) .grid img {
+    box-shadow:
+        0 4px 20px rgba(168, 85, 247, 0.2),
+        0 0 40px rgba(139, 92, 246, 0.1);
+}
+
+:global([data-theme="dim"]) .closer strong {
+    color: #e879f9;
+}
+
+:global([data-theme="dim"]) .desktopProgress {
+    background: linear-gradient(180deg, #c084fc, #e879f9);
+}
+
+:global([data-theme="dim"]) .progressCircle {
+    stroke: #c084fc;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 1024px) {
+    .grid {
+        --container-width: 500px;
+    }
+
+    .titleLarge {
+        font-size: 4rem;
+    }
+
+    .focusText {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stickyVisual {
+        opacity: 0.15;
+        width: 100%;
+        z-index: -1;
+        border-left: none;
+    }
+
+    .content {
+        width: 100%;
+    }
+
+    .scrollSection {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .header {
+        padding-left: 1.5rem;
+    }
+
+    .closingSection {
+        padding-left: 1.5rem;
+    }
+
+    /* Adjust Typography */
+    .focusText {
+        font-size: 2rem;
+    }
+
+    .titleLarge {
+        font-size: 3.5rem;
+    }
+
+    /* Toggle Progress Indicators */
+    .desktopProgress {
+        display: none;
+    }
+
+    .mobileProgress {
+        display: block;
+    }
+
+    /* Hide outer layer on mobile */
+    .layer:nth-of-type(1) {
+        display: none;
+    }
+
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+        --container-width: 350px;
+    }
+
+    /* Adjust Layer 2 for mobile */
+    .layer:nth-of-type(2)>div:nth-of-type(odd) {
+        grid-column: 1;
+    }
+
+    .layer:nth-of-type(2)>div:nth-of-type(even) {
+        grid-column: -2;
+    }
+}
+
+@media (max-width: 480px) {
+    .titleLarge {
+        font-size: 2.5rem;
+    }
+
+    .focusText {
+        font-size: 1.5rem;
+    }
+
+    .description {
+        font-size: 1rem;
+    }
+
+    .closer strong {
+        font-size: 1.5rem;
+    }
+}
+
+/* ========================================
+   REDUCED MOTION FALLBACK
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+    .layer {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+    }
+
+    .scalerImage {
+        transform: scale(1) !important;
+    }
+
+    .focusText,
+    .description {
+        filter: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}

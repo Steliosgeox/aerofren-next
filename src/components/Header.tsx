@@ -59,6 +59,11 @@ const navItems = [
 // Optimized Logo Component - Only loads ONE image based on theme
 function LogoImage() {
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Logo configuration per theme
   const logoConfig = {
@@ -67,8 +72,8 @@ function LogoImage() {
     light: { src: "/images/LOGOlight.webp", width: 620, height: 176, className: "h-[11rem] mt-2 -ml-2" },
   };
 
-  // Default to dark until theme is resolved
-  const themeKey = (resolvedTheme ?? "dark") as keyof typeof logoConfig;
+  // Keep SSR and first client render deterministic to avoid hydration mismatch.
+  const themeKey = (mounted ? resolvedTheme : "dark") as keyof typeof logoConfig;
   const config = logoConfig[themeKey] || logoConfig.dark;
 
   return (

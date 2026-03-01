@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollSmoother } from "@/lib/gsap";
 import { ArrowUp } from "lucide-react";
 
 /**
@@ -59,10 +59,17 @@ export function BackToTop() {
     }, [isVisible]);
 
     const handleClick = () => {
+        const smoother = ScrollSmoother.get();
+        if (smoother) {
+            smoother.scrollTo(0, true);
+            return;
+        }
+
         gsap.to(window, {
-            scrollTo: { y: 0, autoKill: true },
+            scrollTo: { y: 0, autoKill: false },
             duration: 1.0,
             ease: "power2.inOut",
+            overwrite: "auto",
         });
     };
 
@@ -92,7 +99,8 @@ export function BackToTop() {
                     overflow-hidden
                     relative
                     transition-all duration-300 ease-out
-                    hover:w-[140px] md:hover:w-[120px]
+                    hover:w-[156px] md:hover:w-[146px]
+                    hover:h-[52px] md:hover:h-[48px]
                     hover:rounded-[50px]
                     focus-visible:outline-2 focus-visible:outline-offset-4
                     motion-reduce:transition-none
@@ -115,6 +123,7 @@ export function BackToTop() {
                 <span
                     className={`
                         absolute
+                        left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
                         text-[0px] opacity-0
                         font-semibold font-sans whitespace-nowrap
                         transition-all duration-300 ease-out
