@@ -1,19 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useId, useState } from "react";
-import { useTheme } from "next-themes";
+import { useEffect, useRef, useId } from "react";
+import { useAppTheme } from "@/lib/theme/useAppTheme";
 
 type Theme = "light" | "dark" | "dim";
 
 export function LiquidGlassSwitcher() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { effectiveTheme, mounted, setTheme } = useAppTheme();
   const switcherRef = useRef<HTMLFieldSetElement>(null);
   const id = useId(); // Unique ID per instance to avoid radio name collisions
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Track previous selection for animation direction
   useEffect(() => {
@@ -47,7 +42,7 @@ export function LiquidGlassSwitcher() {
         radio.removeEventListener("change", handleChange);
       });
     };
-  }, [resolvedTheme]);
+  }, [effectiveTheme]);
 
   const handleThemeChange = (newTheme: Theme) => {
     if (!document.startViewTransition) {
@@ -56,15 +51,12 @@ export function LiquidGlassSwitcher() {
     }
 
     document.startViewTransition(() => {
-      // Force immediate DOM update so View Transition captures the new state 
-      // BEFORE React asynchronously re-renders
-      document.documentElement.setAttribute('data-theme', newTheme);
       setTheme(newTheme);
     });
   };
 
   // Use deterministic fallback until mounted to avoid hydration mismatch.
-  const currentTheme = (mounted ? (resolvedTheme || theme) : "dark") as Theme;
+  const currentTheme = mounted ? effectiveTheme : "dark";
 
   return (
     <>

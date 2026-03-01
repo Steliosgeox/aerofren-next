@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
@@ -32,13 +32,15 @@ export default function HomePageClient() {
   const [statsInView, setStatsInView] = useState(false);
   const [contactInView, setContactInView] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [lowEndDevice, setLowEndDevice] = useState(false);
+  const lowEndDevice = useMemo(() => {
+    if (typeof navigator === "undefined") {
+      return false;
+    }
 
-  useEffect(() => {
     const deviceMemory =
       (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
     const cpuCores = navigator.hardwareConcurrency ?? 4;
-    setLowEndDevice(deviceMemory <= 4 || cpuCores <= 4);
+    return deviceMemory <= 4 || cpuCores <= 4;
   }, []);
 
   useEffect(() => {
