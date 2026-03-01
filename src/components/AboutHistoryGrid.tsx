@@ -1,7 +1,7 @@
 'use client';
-/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { gsap } from '@/lib/gsap/client';
 import styles from './AboutHistoryGrid.module.css';
 
@@ -296,38 +296,58 @@ export default function AboutHistoryGrid() {
                 <div className={styles.grid}>
                     {/* Layer 1: Background/Outer */}
                     <div className={styles.layer}>
-                        {LAYER_1_IMAGES.map((src, i) => (
-                            <div key={`l1-${i}`}>
-                                <img src={src} alt="" loading="eager" decoding="async" />
+                        {LAYER_1_IMAGES.map((src) => (
+                            <div key={src}>
+                                <Image
+                                    src={src}
+                                    alt=""
+                                    width={640}
+                                    height={640}
+                                    sizes="(max-width: 1024px) 33vw, 16vw"
+                                />
                             </div>
                         ))}
                     </div>
 
                     {/* Layer 2: Midground */}
                     <div className={styles.layer}>
-                        {LAYER_2_IMAGES.map((src, i) => (
-                            <div key={`l2-${i}`}>
-                                <img src={src} alt="" loading="eager" decoding="async" />
+                        {LAYER_2_IMAGES.map((src) => (
+                            <div key={src}>
+                                <Image
+                                    src={src}
+                                    alt=""
+                                    width={640}
+                                    height={640}
+                                    sizes="(max-width: 1024px) 33vw, 16vw"
+                                />
                             </div>
                         ))}
                     </div>
 
                     {/* Layer 3: Foreground */}
                     <div className={styles.layer}>
-                        {LAYER_3_IMAGES.map((src, i) => (
-                            <div key={`l3-${i}`}>
-                                <img src={src} alt="" loading="eager" />
+                        {LAYER_3_IMAGES.map((src) => (
+                            <div key={src}>
+                                <Image
+                                    src={src}
+                                    alt=""
+                                    width={640}
+                                    height={640}
+                                    sizes="(max-width: 1024px) 33vw, 16vw"
+                                />
                             </div>
                         ))}
                     </div>
 
                     {/* Scaler - Center Hero */}
                     <div className={styles.scaler}>
-                        <img
+                        <Image
                             src={SCALER_IMAGE}
                             alt="AEROFREN — Κεντρικό προϊόν"
                             className={styles.scalerImage}
-                            loading="eager"
+                            width={900}
+                            height={1125}
+                            sizes="(max-width: 1024px) 33vw, 20vw"
                         />
                     </div>
                 </div>

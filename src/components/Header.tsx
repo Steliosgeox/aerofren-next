@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, memo, useCallback, useMemo, useSyncExternalStore } from "react";
 import { categories } from "@/data/categories";
 import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
@@ -59,11 +59,11 @@ const navItems = [
 // Optimized Logo Component - Only loads ONE image based on theme
 function LogoImage() {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => { },
+    () => true,
+    () => false,
+  );
 
   // Logo configuration per theme
   const logoConfig = {

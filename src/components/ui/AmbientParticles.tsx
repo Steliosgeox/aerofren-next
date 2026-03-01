@@ -136,7 +136,7 @@ export default function AmbientParticles() {
                 {/* Actual visible particles */}
                 {PARTICLE_CONFIG.map((config, index) => (
                     <div
-                        key={`particle-${config.size}-${config.opacity}-${index}`}
+                        key={`particle-${config.pathId}-${config.delay}`}
                         ref={(el) => { particleRefs.current[index] = el; }}
                         className="particle"
                         style={{

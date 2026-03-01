@@ -12,9 +12,9 @@ export default function CategoryLoading() {
 
             {/* Grid Skeleton */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((slotId) => (
                     <div
-                        key={i}
+                        key={`category-skeleton-${slotId}`}
                         className="flex flex-col bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-2xl overflow-hidden h-[360px]"
                     >
                         {/* Image placeholder */}

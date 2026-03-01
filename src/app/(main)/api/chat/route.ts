@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Mistral } from '@mistralai/mistralai';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 import { AEROFREN_SYSTEM_PROMPT, FALLBACK_RESPONSES } from '@/lib/chatbot/prompts';
-import { z } from 'zod';
+import * as z from 'zod';
 
 // Initialize Mistral client (lazy - only when needed)
 let mistralClient: Mistral | null = null;

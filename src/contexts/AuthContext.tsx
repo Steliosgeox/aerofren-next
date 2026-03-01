@@ -5,7 +5,14 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, {
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+    useSyncExternalStore,
+    ReactNode,
+} from 'react';
 import type { User } from 'firebase/auth';
 import { isAdminEmail } from '@/lib/admin-emails';
 
@@ -20,24 +27,37 @@ interface AuthContextType {
     signOut: () => Promise<void>;
 }
 
+interface AuthState {
+    user: User | null;
+    loading: boolean;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const INITIAL_AUTH_STATE: AuthState = {
+    user: null,
+    loading: true,
+};
+
+const subscribeNoop = () => () => { };
+const getMountedSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 interface AuthProviderProps {
     children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [mounted, setMounted] = useState(false);
+    const mounted = useSyncExternalStore(
+        subscribeNoop,
+        getMountedSnapshot,
+        getServerSnapshot,
+    );
+    const [authState, setAuthState] = useState<AuthState>(INITIAL_AUTH_STATE);
+    const { user, loading } = authState;
 
     // Check if user is admin (uses shared utility)
     const isAdmin = isAdminEmail(user?.email);
-
-    // Only run on client
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     useEffect(() => {
         if (!mounted) return;
@@ -47,23 +67,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
             try {
                 const { getFirebaseAuth, onAuthStateChanged } = await import('@/lib/firebase');
                 const auth = getFirebaseAuth();
-                const unsubscribe = onAuthStateChanged(auth,
+                const unsubscribe = onAuthStateChanged(
+                    auth,
                     (firebaseUser) => {
-                        setUser(firebaseUser);
-                        setLoading(false);
+                        setAuthState({
+                            user: firebaseUser,
+                            loading: false,
+                        });
                     },
                     (error) => {
                         // Handle auth state change errors (e.g., configuration-not-found)
                         console.warn('Firebase Auth listener error:', error.message);
-                        setUser(null);
-                        setLoading(false);
+                        setAuthState({
+                            user: null,
+                            loading: false,
+                        });
                     }
                 );
                 return unsubscribe;
             } catch (error) {
                 console.warn('Auth init error (non-fatal):', error);
-                setUser(null);
-                setLoading(false);
+                setAuthState({
+                    user: null,
+                    loading: false,
+                });
                 return () => { };
             }
         };
@@ -87,40 +114,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const signInWithGoogle = async () => {
         try {
-            setLoading(true);
+            setAuthState((previous) => ({ ...previous, loading: true }));
             const { signInWithGoogle: firebaseSignInWithGoogle } = await import('@/lib/firebase');
             await firebaseSignInWithGoogle();
         } catch (error) {
             console.error('Sign in error:', error);
             throw error;
         } finally {
-            setLoading(false);
+            setAuthState((previous) => ({ ...previous, loading: false }));
         }
     };
 
     const signInWithEmail = async (email: string, password: string) => {
         try {
-            setLoading(true);
+            setAuthState((previous) => ({ ...previous, loading: true }));
             const { signInWithEmail: firebaseSignInWithEmail } = await import('@/lib/firebase');
             await firebaseSignInWithEmail(email, password);
         } catch (error) {
             console.error('Email sign in error:', error);
             throw error;
         } finally {
-            setLoading(false);
+            setAuthState((previous) => ({ ...previous, loading: false }));
         }
     };
 
     const signUpWithEmail = async (email: string, password: string, displayName?: string) => {
         try {
-            setLoading(true);
+            setAuthState((previous) => ({ ...previous, loading: true }));
             const { signUpWithEmail: firebaseSignUpWithEmail } = await import('@/lib/firebase');
             await firebaseSignUpWithEmail(email, password, displayName);
         } catch (error) {
             console.error('Email sign up error:', error);
             throw error;
         } finally {
-            setLoading(false);
+            setAuthState((previous) => ({ ...previous, loading: false }));
         }
     };
 
@@ -136,11 +163,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const signOut = async () => {
         try {
+            setAuthState((previous) => ({ ...previous, loading: true }));
             const { signOut: firebaseSignOut } = await import('@/lib/firebase');
             await firebaseSignOut();
         } catch (error) {
             console.error('Sign out error:', error);
             throw error;
+        } finally {
+            setAuthState((previous) => ({ ...previous, loading: false }));
         }
     };
 

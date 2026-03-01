@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useId, useState } from "react";
+import { useEffect, useRef, useId, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 
 type Theme = "light" | "dark" | "dim";
+
+const subscribeNoop = () => () => {};
+const getMountedSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export function LiquidGlassSwitcher() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const switcherRef = useRef<HTMLFieldSetElement>(null);
   const id = useId(); // Unique ID per instance to avoid radio name collisions
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    getMountedSnapshot,
+    getServerSnapshot,
+  );
 
   // Track previous selection for animation direction
   useEffect(() => {
@@ -56,9 +60,6 @@ export function LiquidGlassSwitcher() {
     }
 
     document.startViewTransition(() => {
-      // Force immediate DOM update so View Transition captures the new state 
-      // BEFORE React asynchronously re-renders
-      document.documentElement.setAttribute('data-theme', newTheme);
       setTheme(newTheme);
     });
   };

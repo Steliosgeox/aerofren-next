@@ -162,6 +162,13 @@ export default function AdminPage() {
       ]
     : [];
 
+  const statsSkeletonSlots = [
+    "total-chats",
+    "escalated-chats",
+    "pending-escalations",
+    "unique-users",
+  ] as const;
+
   // Show access denied for non-admins (also covers loading state)
   if (authLoading || !user || !isAdmin) {
     return (
@@ -357,9 +364,9 @@ export default function AdminPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {isLoading ? (
             // Skeleton loaders
-            [...Array(4)].map((_, i) => (
+            statsSkeletonSlots.map((slotId) => (
               <div
-                key={`skeleton-${i}`}
+                key={`skeleton-${slotId}`}
                 className="rounded-xl p-6 animate-pulse"
                 style={{
                   background: "var(--theme-glass-bg)",

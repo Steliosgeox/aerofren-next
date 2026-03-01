@@ -199,6 +199,15 @@ export default async function GuidePage({ params }: GuidePageProps) {
   const guide = guides[guideSlug];
   const nonce = (await headers()).get("x-nonce");
   if (!guide) notFound();
+  const lineOccurrences = new Map<string, number>();
+  const keyedLines = guide.content.split("\n").map((line) => {
+    const count = (lineOccurrences.get(line) ?? 0) + 1;
+    lineOccurrences.set(line, count);
+    return {
+      line,
+      key: `${line}-${count}`,
+    };
+  });
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-3xl">
@@ -215,29 +224,29 @@ export default async function GuidePage({ params }: GuidePageProps) {
       <p className="text-muted-foreground mb-8">{guide.description}</p>
 
       <div className="prose prose-invert max-w-none">
-        {guide.content.split("\n").map((line, i) => {
+        {keyedLines.map(({ line, key }) => {
           if (line.startsWith("## ")) {
-            return <h2 key={i} className="text-2xl font-bold mt-8 mb-4">{line.slice(3)}</h2>;
+            return <h2 key={key} className="text-2xl font-bold mt-8 mb-4">{line.slice(3)}</h2>;
           }
           if (line.startsWith("### ")) {
-            return <h3 key={i} className="text-xl font-semibold mt-6 mb-3">{line.slice(4)}</h3>;
+            return <h3 key={key} className="text-xl font-semibold mt-6 mb-3">{line.slice(4)}</h3>;
           }
           if (line.startsWith("**") && line.endsWith("**")) {
-            return <p key={i} className="font-semibold mt-4">{line.slice(2, -2)}</p>;
+            return <p key={key} className="font-semibold mt-4">{line.slice(2, -2)}</p>;
           }
           if (line.startsWith("- ")) {
-            return <li key={i} className="ml-4 text-muted-foreground">{line.slice(2)}</li>;
+            return <li key={key} className="ml-4 text-muted-foreground">{line.slice(2)}</li>;
           }
           if (line.startsWith("|")) {
             return null; // tables rendered as plain text for now
           }
           if (line === "---") {
-            return <hr key={i} className="my-6 border-border" />;
+            return <hr key={key} className="my-6 border-border" />;
           }
           if (line.trim() === "") {
-            return <br key={i} />;
+            return <br key={key} />;
           }
-          return <p key={i} className="text-muted-foreground leading-relaxed">{line}</p>;
+          return <p key={key} className="text-muted-foreground leading-relaxed">{line}</p>;
         })}
       </div>
 

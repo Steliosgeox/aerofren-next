@@ -32,14 +32,13 @@ export default function HomePageClient() {
   const [statsInView, setStatsInView] = useState(false);
   const [contactInView, setContactInView] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [lowEndDevice, setLowEndDevice] = useState(false);
-
-  useEffect(() => {
-    const deviceMemory =
-      (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
-    const cpuCores = navigator.hardwareConcurrency ?? 4;
-    setLowEndDevice(deviceMemory <= 4 || cpuCores <= 4);
-  }, []);
+  const [lowEndDevice] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const navigatorInfo = window.navigator as Navigator & { deviceMemory?: number };
+    const deviceMemory = navigatorInfo.deviceMemory ?? 4;
+    const cpuCores = navigatorInfo.hardwareConcurrency ?? 4;
+    return deviceMemory <= 4 || cpuCores <= 4;
+  });
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
