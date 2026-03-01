@@ -50,6 +50,13 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    languages: {
+      "el": "https://aerofren.gr",
+      "en": "https://aerofren.gr",
+      "x-default": "https://aerofren.gr",
+    },
+  },
   openGraph: {
     title: "AEROFREN – Εξαρτήματα Νερού & Αέρα",
     description: "Ο κορυφαίος B2B προμηθευτής εξαρτημάτων νερού και αέρα στην Ελλάδα. 35+ χρόνια εμπειρίας.",
