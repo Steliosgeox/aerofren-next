@@ -218,6 +218,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </div>
         </div>
       </section>
+      <div className="max-w-7xl mx-auto px-6 pb-4">
+        <p className="text-xs text-muted-foreground">
+          Τελευταία ενημέρωση καταλόγου: Φεβρουάριος 2026
+        </p>
+      </div>
     </div>
   );
 }
