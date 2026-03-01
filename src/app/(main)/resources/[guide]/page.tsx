@@ -1,5 +1,6 @@
 // src/app/(main)/resources/[guide]/page.tsx
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ArticleSchema } from "@/lib/schema/ArticleSchema";
 
@@ -181,12 +182,22 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
     title: `${guide.title} | AEROFREN`,
     description: guide.description,
     alternates: { canonical: `https://aerofren.gr/resources/${guideSlug}` },
+    openGraph: {
+      title: `${guide.title} | AEROFREN`,
+      description: guide.description,
+      url: `https://aerofren.gr/resources/${guideSlug}`,
+      siteName: "AEROFREN",
+      locale: "el_GR",
+      type: "article",
+      images: [{ url: "/images/hero-fittings.jpg", width: 1200, height: 630, alt: "AEROFREN – Εξαρτήματα Νερού & Αέρα" }],
+    },
   };
 }
 
 export default async function GuidePage({ params }: GuidePageProps) {
   const { guide: guideSlug } = await params;
   const guide = guides[guideSlug];
+  const nonce = (await headers()).get("x-nonce");
   if (!guide) notFound();
 
   return (
@@ -197,6 +208,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
         url={`https://aerofren.gr/resources/${guideSlug}`}
         datePublished="2026-02-27"
         dateModified="2026-02-27"
+        nonce={nonce}
       />
 
       <h1 className="text-3xl font-bold mb-4">{guide.title}</h1>
