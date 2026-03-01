@@ -35,18 +35,16 @@ export function useParallax(containerRef: RefObject<HTMLElement | null>) {
 
     nodes.forEach((node) => {
       const speed = parseFloat(node.dataset.speed ?? "1");
-      if (speed === 1) return;
+      if (speed === 1 || isNaN(speed)) return;
 
-      const range = 150 * Math.abs(speed - 1);
+      const range = 150 * (speed - 1);
 
       const st = ScrollTrigger.create({
         trigger: container,
         start: "top bottom",
         end: "bottom top",
         onUpdate: (self) => {
-          const y =
-            gsap.utils.interpolate(-range, range, 1 - self.progress) *
-            (speed - 1);
+          const y = gsap.utils.interpolate(-range, range, self.progress);
           gsap.set(node, { y, overwrite: "auto" });
         },
       });
