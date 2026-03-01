@@ -10,6 +10,8 @@ import ErrorBoundary from "@/components/ui/ErrorBoundary"
 import FpsOverlay from "@/components/FpsOverlay"
 import PageVisibilityHandler from "@/components/PageVisibilityHandler"
 import { CookieConsentProvider } from "@/components/cookies/CookieConsentProvider"
+import { OrganizationSchema } from "@/lib/schema/OrganizationSchema"
+import { WebsiteSchema } from "@/lib/schema/WebsiteSchema"
 
 const ttNorms = localFont({
   src: "../fonts/TTNormsProVariable.ttf",
@@ -100,6 +102,8 @@ export default async function RootLayout({
             {`window.__webpack_nonce__ = ${JSON.stringify(nonce)};`}
           </Script>
         ) : null}
+        <OrganizationSchema />
+        <WebsiteSchema />
         <ThemeProvider
           attribute="data-theme"
           defaultTheme="dark"
