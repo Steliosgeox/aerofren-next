@@ -5,7 +5,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Mail, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
 import GlassSurface from '@/components/ui/GlassSurface';
-import { AuthLayout, ValuePanel, ChatButton, AuthInput } from '@/components/auth';
+import {
+    AuthLayout,
+    ValuePanel,
+    ChatButton,
+    AuthInput,
+    AuthAlert,
+    AuthPrimaryButton,
+    AuthSocialButton,
+    AuthDivider,
+} from '@/components/auth';
 import { useAuthForm, INPUT_LIMITS, validateResetPassword, getAuthErrorMessage } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -98,25 +107,27 @@ export default function Login() {
 
                 {/* Lockout Warning */}
                 {isLocked && (
-                    <div className="w-full p-3 px-4 rounded-lg mb-4 text-sm flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 text-amber-300" role="alert">
-                        <AlertTriangle size={18} />
-                        <span>Πολλές προσπάθειες. Δοκιμάστε σε {formatLockoutTime()}.</span>
-                    </div>
+                    <AuthAlert
+                        variant="warning"
+                        className="w-full p-3 px-4 rounded-lg mb-4 text-sm flex items-center gap-2"
+                        icon={<AlertTriangle size={18} />}
+                    >
+                        Πολλές προσπάθειες. Δοκιμάστε σε {formatLockoutTime()}.
+                    </AuthAlert>
                 )}
 
                 {/* Error Message */}
                 {(error || resetError) && !isLocked && (
-                    <div className="w-full p-3 px-4 rounded-lg mb-4 text-sm flex items-center gap-2 bg-red-500/15 border border-red-500/30 text-red-300" role="alert">
-                        <span>{error || resetError}</span>
-                    </div>
+                    <AuthAlert variant="error" className="w-full p-3 px-4 rounded-lg mb-4 text-sm flex items-center gap-2">
+                        {error || resetError}
+                    </AuthAlert>
                 )}
 
                 {!showEmailForm ? (
                     <>
                         {/* Google Sign-in Button */}
                         <div className="w-full">
-                            <button
-                                className="w-full flex items-center justify-center gap-3 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl py-3.5 px-6 cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,0,0,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                            <AuthSocialButton
                                 onClick={handleGoogleAuth}
                                 disabled={isGoogleLoading || authLoading || isLocked}
                             >
@@ -133,15 +144,11 @@ export default function Login() {
                                 <span className="text-white font-semibold text-[0.9375rem]">
                                     {isGoogleLoading ? 'Σύνδεση...' : 'Συνέχεια με Google'}
                                 </span>
-                            </button>
+                            </AuthSocialButton>
                         </div>
 
                         {/* Divider */}
-                        <div className="flex items-center w-full my-5 gap-3.5">
-                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
-                            <span className="text-[var(--theme-text-muted)] text-[0.8125rem] font-medium">ή</span>
-                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
-                        </div>
+                        <AuthDivider />
 
                         {/* Email Toggle Button */}
                         <GlassSurface width="100%" height={48} borderRadius={12} brightness={40} opacity={0.8} blur={8} backgroundOpacity={0.05} className="hover:scale-[1.02] transition-transform cursor-pointer">
@@ -173,13 +180,13 @@ export default function Login() {
                                 <p className="text-[var(--theme-text)] text-[0.9375rem] leading-relaxed">
                                     Σας στείλαμε email με οδηγίες επαναφοράς κωδικού στο <strong>{resetEmail}</strong>.
                                 </p>
-                                <button
+                                <AuthPrimaryButton
                                     type="button"
-                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(0,0,0,0.3)]"
+                                    className="hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(0,0,0,0.3)]"
                                     onClick={handleBackToLogin}
                                 >
                                     Επιστροφή στη σύνδεση
-                                </button>
+                                </AuthPrimaryButton>
                             </div>
                         ) : (
                             <form onSubmit={handleForgotPassword} className="w-full flex flex-col gap-3" noValidate>
@@ -197,14 +204,19 @@ export default function Login() {
                                     autoComplete="email"
                                     error={resetError}
                                 />
-                                <button
+                                <AuthPrimaryButton
                                     type="submit"
-                                    className="w-full py-3.5 px-6 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,0,0,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
                                     disabled={isResetting}
+                                    isLoading={isResetting}
+                                    loadingContent={
+                                        <>
+                                            <Loader2 size={20} className="animate-spin" />
+                                            Αποστολή...
+                                        </>
+                                    }
                                 >
-                                    {isResetting && <Loader2 size={20} className="animate-spin" />}
-                                    {isResetting ? 'Αποστολή...' : 'Αποστολή συνδέσμου'}
-                                </button>
+                                    Αποστολή συνδέσμου
+                                </AuthPrimaryButton>
                             </form>
                         )}
                     </>
@@ -248,22 +260,23 @@ export default function Login() {
                                 Ξεχάσατε τον κωδικό;
                             </button>
 
-                            <button
+                            <AuthPrimaryButton
                                 type="submit"
-                                className="w-full py-3.5 px-6 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] border-none rounded-xl text-base font-semibold text-white cursor-pointer transition-all flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_6px_28px_rgba(0,0,0,0.3)] disabled:opacity-60 disabled:cursor-not-allowed"
                                 disabled={isEmailLoading || authLoading || isLocked}
+                                isLoading={isEmailLoading}
+                                loadingContent={
+                                    <>
+                                        <Loader2 size={20} className="animate-spin" />
+                                        Σύνδεση...
+                                    </>
+                                }
                             >
-                                {isEmailLoading && <Loader2 size={20} className="animate-spin" />}
-                                {isEmailLoading ? 'Σύνδεση...' : 'Σύνδεση'}
-                            </button>
+                                Σύνδεση
+                            </AuthPrimaryButton>
                         </form>
 
                         {/* Divider */}
-                        <div className="flex items-center w-full my-5 gap-3.5">
-                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
-                            <span className="text-[var(--theme-text-muted)] text-[0.8125rem] font-medium">ή</span>
-                            <div className="flex-1 h-px bg-[var(--theme-glass-border)]" />
-                        </div>
+                        <AuthDivider />
 
                         {/* Google Toggle */}
                         <GlassSurface width="100%" height={48} borderRadius={12} brightness={40} opacity={0.8} blur={8} backgroundOpacity={0.05} className="hover:scale-[1.02] transition-transform cursor-pointer">

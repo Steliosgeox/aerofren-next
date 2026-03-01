@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 export interface GlassSurfaceProps {
   children?: React.ReactNode;
@@ -25,39 +25,6 @@ export interface GlassSurfaceProps {
   style?: React.CSSProperties;
 }
 
-const useDarkMode = () => {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const html = document.documentElement;
-
-    const readTheme = () => {
-      const theme = html.getAttribute("data-theme");
-      if (theme === "light") return false;
-      if (theme === "dark" || theme === "dim") return true;
-      return mediaQuery.matches;
-    };
-
-    const sync = () => setIsDark(readTheme());
-
-    sync();
-    mediaQuery.addEventListener("change", sync);
-
-    const observer = new MutationObserver(sync);
-    observer.observe(html, { attributes: true, attributeFilter: ["data-theme"] });
-
-    return () => {
-      mediaQuery.removeEventListener("change", sync);
-      observer.disconnect();
-    };
-  }, []);
-
-  return isDark;
-};
-
 const EMPTY_STYLE: React.CSSProperties = {};
 
 const GlassSurface: React.FC<GlassSurfaceProps> = (props) => {
@@ -73,53 +40,27 @@ const GlassSurface: React.FC<GlassSurfaceProps> = (props) => {
     style = EMPTY_STYLE,
   } = props;
 
-  const isDarkMode = useDarkMode();
+  const surfaceMix = Math.max(0, Math.min(100, Math.round(backgroundOpacity * 100)));
 
-  const getContainerStyles = (): React.CSSProperties => {
-    const baseStyles: React.CSSProperties = {
-      ...style,
-      width: typeof width === "number" ? `${width}px` : width,
-      height: typeof height === "number" ? `${height}px` : height,
-      borderRadius: `${borderRadius}px`,
-      // Add modern webkit support for older Safari/iOS
-      backdropFilter: `blur(${blur}px) saturate(${saturation * 100}%)`,
-      WebkitBackdropFilter: `blur(${blur}px) saturate(${saturation * 100}%)`,
-    };
-
-    if (isDarkMode) {
-      return {
-        ...baseStyles,
-        background: `rgba(0, 0, 0, ${backgroundOpacity})`,
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: `inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
-                    inset 0 -1px 0 0 rgba(255, 255, 255, 0.02),
-                    0 8px 32px 0 rgba(0, 0, 0, 0.3)`,
-      };
-    } else {
-      return {
-        ...baseStyles,
-        background: `rgba(255, 255, 255, ${Math.max(backgroundOpacity, 0.15)})`,
-        border: "1px solid rgba(255, 255, 255, 0.3)",
-        boxShadow: `inset 0 1px 0 0 rgba(255, 255, 255, 0.6),
-                    inset 0 -1px 0 0 rgba(255, 255, 255, 0.2),
-                    0 8px 32px 0 rgba(31, 38, 135, 0.15)`,
-      };
-    }
+  const containerStyles: React.CSSProperties = {
+    ...style,
+    width: typeof width === "number" ? `${width}px` : width,
+    height: typeof height === "number" ? `${height}px` : height,
+    borderRadius: `${borderRadius}px`,
+    backdropFilter: `blur(${blur}px) saturate(${saturation * 100}%)`,
+    WebkitBackdropFilter: `blur(${blur}px) saturate(${saturation * 100}%)`,
+    background: `color-mix(in srgb, var(--glass-surface-base) ${surfaceMix}%, transparent)`,
+    border: "1px solid var(--glass-surface-border)",
+    boxShadow: "var(--glass-surface-shadow)",
   };
 
-  const glassSurfaceClasses =
-    "relative flex items-center justify-center overflow-hidden transition-opacity duration-[260ms] ease-out";
-
-  const focusVisibleClasses = isDarkMode
-    ? "focus-visible:outline-2 focus-visible:outline-[#0A84FF] focus-visible:outline-offset-2"
-    : "focus-visible:outline-2 focus-visible:outline-[#007AFF] focus-visible:outline-offset-2";
+  const classes =
+    "relative flex items-center justify-center overflow-hidden transition-opacity duration-[260ms] ease-out " +
+    "focus-visible:outline-2 focus-visible:outline-[var(--focus-ring-color)] focus-visible:outline-offset-2";
 
   return (
-    <div
-      className={`${glassSurfaceClasses} ${focusVisibleClasses} ${className}`}
-      style={getContainerStyles()}
-    >
-      <div className="w-full h-full flex items-center justify-center p-2 rounded-[inherit] relative z-10 overflow-hidden">
+    <div className={`${classes} ${className}`} style={containerStyles}>
+      <div className="relative z-10 flex h-full w-full items-center justify-center overflow-hidden rounded-[inherit] p-2">
         {children}
       </div>
     </div>
