@@ -8,54 +8,86 @@ import { categories } from "@/data/categories";
  * - Dynamic category pages (12 categories)
  * - Dynamic subcategory pages (~66 subcategories)
  */
+const CATALOG_LAST_UPDATED = new Date("2026-02-27");  // Update when catalog changes
+const SITE_LAUNCHED = new Date("2025-01-01");         // Approximate launch date
+
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = "https://aerofren.gr";
-    const now = new Date();
 
     // Static pages
     const staticPages: MetadataRoute.Sitemap = [
         {
             url: baseUrl,
-            lastModified: now,
+            lastModified: CATALOG_LAST_UPDATED,
             changeFrequency: "weekly",
             priority: 1.0,
         },
         {
             url: `${baseUrl}/about`,
-            lastModified: now,
+            lastModified: SITE_LAUNCHED,
             changeFrequency: "monthly",
             priority: 0.7,
         },
         {
             url: `${baseUrl}/contact`,
-            lastModified: now,
+            lastModified: SITE_LAUNCHED,
             changeFrequency: "monthly",
-            priority: 0.7,
+            priority: 0.6,
         },
         {
             url: `${baseUrl}/privacy`,
-            lastModified: now,
-            changeFrequency: "monthly",
-            priority: 0.5,
+            lastModified: new Date("2026-02-22"),
+            changeFrequency: "yearly",
+            priority: 0.3,
         },
         {
             url: `${baseUrl}/terms`,
-            lastModified: now,
-            changeFrequency: "monthly",
-            priority: 0.5,
+            lastModified: new Date("2026-02-22"),
+            changeFrequency: "yearly",
+            priority: 0.3,
         },
         {
             url: `${baseUrl}/products`,
-            lastModified: now,
+            lastModified: CATALOG_LAST_UPDATED,
             changeFrequency: "weekly",
             priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/faq`,
+            lastModified: new Date("2026-02-27"),
+            changeFrequency: "monthly",
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/glossary`,
+            lastModified: new Date("2026-02-27"),
+            changeFrequency: "monthly",
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/resources`,
+            lastModified: new Date("2026-02-27"),
+            changeFrequency: "monthly",
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/alternatives`,
+            lastModified: new Date("2026-02-27"),
+            changeFrequency: "monthly",
+            priority: 0.8,
+        },
+        {
+            url: `${baseUrl}/industries`,
+            lastModified: new Date("2026-02-27"),
+            changeFrequency: "monthly",
+            priority: 0.7,
         },
     ];
 
     // Category pages
     const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
         url: `${baseUrl}/products/${cat.slug}`,
-        lastModified: now,
+        lastModified: CATALOG_LAST_UPDATED,
         changeFrequency: "weekly" as const,
         priority: 0.8,
     }));
@@ -64,7 +96,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const subcategoryPages: MetadataRoute.Sitemap = categories.flatMap((cat) =>
         cat.subcategories.map((sub) => ({
             url: `${baseUrl}/products/${cat.slug}/${sub.slug}`,
-            lastModified: now,
+            lastModified: CATALOG_LAST_UPDATED,
             changeFrequency: "weekly" as const,
             priority: 0.6,
         }))
