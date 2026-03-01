@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import AboutHistoryGrid from "@/components/AboutHistoryGrid"
+import { FounderPersonSchema } from "@/lib/schema/PersonSchema"
 
 export const metadata: Metadata = {
     title: "Η Ιστορία μας | AEROFREN",
@@ -11,5 +12,10 @@ export const metadata: Metadata = {
 }
 
 export default function AboutPage() {
-    return <AboutHistoryGrid />
+    return (
+        <>
+            <FounderPersonSchema />
+            <AboutHistoryGrid />
+        </>
+    )
 }
