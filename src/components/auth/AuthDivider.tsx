@@ -16,5 +16,3 @@ export function AuthDivider({ text = 'ή', className = '' }: AuthDividerProps) {
     </div>
   );
 }
-
-export default AuthDivider;

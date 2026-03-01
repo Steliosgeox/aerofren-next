@@ -22,5 +22,3 @@ export function AuthSocialButton({
     </button>
   );
 }
-
-export default AuthSocialButton;

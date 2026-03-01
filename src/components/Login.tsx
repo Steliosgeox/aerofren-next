@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Mail, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -18,6 +18,8 @@ import {
 import { useAuthForm, INPUT_LIMITS, validateResetPassword, getAuthErrorMessage } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 
+const subscribe = () => () => {};
+
 /**
  * Login Component - Tailwind Refactored
  * Lines reduced: 427 → ~250
@@ -25,7 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Login() {
     const router = useRouter();
     const { resetPassword } = useAuth();
-    const [mounted, setMounted] = useState(false);
+    const mounted = useSyncExternalStore(subscribe, () => true, () => false);
     const [showEmailForm, setShowEmailForm] = useState(false);
 
     // Forgot password states
@@ -52,8 +54,6 @@ export default function Login() {
         togglePassword,
         formatLockoutTime,
     } = useAuthForm('login');
-
-    useEffect(() => { setMounted(true); }, []);
 
     useEffect(() => {
         if (user && !authLoading) router.push('/');

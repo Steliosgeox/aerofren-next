@@ -3,7 +3,7 @@
  * Zod schemas for bulletproof input validation
  */
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 // Email validation - stricter than basic regex
 export const emailSchema = z

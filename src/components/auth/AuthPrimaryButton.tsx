@@ -27,5 +27,3 @@ export function AuthPrimaryButton({
     </button>
   );
 }
-
-export default AuthPrimaryButton;

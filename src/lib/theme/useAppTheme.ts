@@ -44,5 +44,3 @@ export function useAppTheme(): UseAppThemeResult {
     setTheme,
   };
 }
-
-export default useAppTheme;

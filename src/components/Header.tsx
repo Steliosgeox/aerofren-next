@@ -9,7 +9,7 @@ import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
 import GlassSurface from "./ui/GlassSurface";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "next-themes";
+import { useAppTheme } from "@/lib/theme/useAppTheme";
 // Import from centralized GSAP config - plugins are pre-registered there
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import {
@@ -58,12 +58,7 @@ const navItems = [
 
 // Optimized Logo Component - Only loads ONE image based on theme
 function LogoImage() {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { effectiveTheme } = useAppTheme();
 
   // Logo configuration per theme
   const logoConfig = {
@@ -72,8 +67,7 @@ function LogoImage() {
     light: { src: "/images/LOGOlight.webp", width: 620, height: 176, className: "h-[11rem] mt-2 -ml-2" },
   };
 
-  // Keep SSR and first client render deterministic to avoid hydration mismatch.
-  const themeKey = (mounted ? resolvedTheme : "dark") as keyof typeof logoConfig;
+  const themeKey = effectiveTheme as keyof typeof logoConfig;
   const config = logoConfig[themeKey] || logoConfig.dark;
 
   return (

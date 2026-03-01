@@ -19,5 +19,3 @@ export function AuthAlert({ variant, children, icon, className = '' }: AuthAlert
     </div>
   );
 }
-
-export default AuthAlert;
