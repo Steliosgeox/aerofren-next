@@ -13,7 +13,6 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { SplitText } from "./SplitText";
 
 // Phase 1: Premium Animation Plugins
@@ -34,7 +33,6 @@ if (typeof window !== "undefined") {
     gsap.registerPlugin(
         ScrollTrigger,
         ScrollToPlugin,
-        ScrollSmoother,
         SplitText,
         // Phase 1: Animation plugins
         ScrambleTextPlugin,
@@ -148,7 +146,6 @@ export {
     useGSAP,
     ScrollTrigger,
     ScrollToPlugin,
-    ScrollSmoother,
     SplitText,
     // Phase 1 exports
     ScrambleTextPlugin,
