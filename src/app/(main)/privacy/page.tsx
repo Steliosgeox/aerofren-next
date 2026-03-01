@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Πολιτική Απορρήτου | AEROFREN",
   description:
     "Πολιτική Απορρήτου της AEROFREN σύμφωνα με τις απαιτήσεις GDPR για B2B επικοινωνία, φόρμα ενδιαφέροντος και διαχείριση δικαιωμάτων υποκειμένων.",
+  alternates: {
+    canonical: "https://aerofren.gr/privacy",
+  },
 };
 
 const sections = [

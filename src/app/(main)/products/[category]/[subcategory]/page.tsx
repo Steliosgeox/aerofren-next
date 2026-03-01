@@ -38,6 +38,9 @@ export async function generateMetadata({
   return {
     title: `${subcategory.nameEl} | ${category.nameEl} | AEROFREN`,
     description: `${subcategory.nameEl} - ${subcategory.productCount.toLocaleString("el-GR")} προϊόντα. ${category.descriptionEl}`,
+    alternates: {
+      canonical: `https://aerofren.gr/products/${catSlug}/${subSlug}`,
+    },
     openGraph: {
       title: `${subcategory.nameEl} | AEROFREN`,
       description: `${subcategory.nameEl} - ${subcategory.productCount.toLocaleString("el-GR")} προϊόντα`,

@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Κατάλογος Προϊόντων | AEROFREN",
   description:
     "Ανακαλύψτε την πλήρη γκάμα εξαρτημάτων νερού και αέρα της AEROFREN. Ρακόρ, βαλβίδες, σωλήνες, πνευματικά εξαρτήματα και πολλά άλλα.",
+  alternates: {
+    canonical: "https://aerofren.gr/products",
+  },
   openGraph: {
     title: "Κατάλογος Προϊόντων | AEROFREN",
     description:

@@ -1,10 +1,18 @@
-"use client";
-
+import type { Metadata } from "next";
 import { ContactCallToAction } from "@/components/contact/ContactCallToAction";
 import { ContactFormPanel } from "@/components/contact/ContactFormPanel";
 import { ContactHero } from "@/components/contact/ContactHero";
 import { ContactInfoPanel } from "@/components/contact/ContactInfoPanel";
 import { ContactMapCard } from "@/components/contact/ContactMapCard";
+
+export const metadata: Metadata = {
+  title: "Επικοινωνία | AEROFREN",
+  description:
+    "Επικοινωνήστε με την AEROFREN για B2B αγορές και τεχνική υποστήριξη. Χρυσοστόμου Σμύρνης 26, Μοσχάτο, Αθήνα. Τηλ: 210 3461645.",
+  alternates: {
+    canonical: "https://aerofren.gr/contact",
+  },
+};
 
 export default function ContactPage() {
   const glowColor = "var(--theme-accent-rgb)";

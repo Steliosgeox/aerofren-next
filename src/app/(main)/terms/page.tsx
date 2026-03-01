@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Όροι Χρήσης | AEROFREN",
   description:
     "Όροι χρήσης του ιστότοπου AEROFREN για B2B ενημέρωση, χρήση περιεχομένου, επικοινωνία και περιορισμούς ευθύνης.",
+  alternates: {
+    canonical: "https://aerofren.gr/terms",
+  },
 };
 
 const sections = [

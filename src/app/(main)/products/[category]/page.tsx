@@ -40,6 +40,9 @@ export async function generateMetadata({
   return {
     title: `${category.nameEl} | AEROFREN`,
     description: category.descriptionEl,
+    alternates: {
+      canonical: `https://aerofren.gr/products/${categorySlug}`,
+    },
     openGraph: {
       title: `${category.nameEl} | AEROFREN`,
       description: category.descriptionEl,

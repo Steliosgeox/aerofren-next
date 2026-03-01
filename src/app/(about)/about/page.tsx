@@ -1,11 +1,15 @@
-import AboutPhilosophy from "@/components/AboutPhilosophy"
+import type { Metadata } from "next"
+import AboutHistoryGrid from "@/components/AboutHistoryGrid"
 
-export const metadata = {
-    title: "Η Εταιρεία | AEROFREN",
+export const metadata: Metadata = {
+    title: "Η Ιστορία μας | AEROFREN",
     description:
-        "Η AEROFREN είναι κορυφαίος B2B προμηθευτής πνευματικών και υδραυλικών εξαρτημάτων στην Ελλάδα. Μάθετε περισσότερα για την ιστορία μας, την αποστολή μας και τη δέσμευσή μας στην τεχνική αριστεία.",
+        "Ανακαλύψτε την ιστορία της AEROFREN από το 1980. Η διαδρομή μας ξεκίνησε από τον Βασίλειο Κουτελίδη και συνεχίζεται σήμερα με την ίδια αφοσίωση στην ποιότητα και την αξιοπιστία.",
+    alternates: {
+        canonical: "https://aerofren.gr/about",
+    },
 }
 
 export default function AboutPage() {
-    return <AboutPhilosophy />
+    return <AboutHistoryGrid />
 }
