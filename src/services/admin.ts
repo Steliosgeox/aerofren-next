@@ -103,3 +103,53 @@ export async function fetchChatHistoryPage(
         nextCursor: data.nextCursor ?? null,
     };
 }
+
+export interface ContactSubmission {
+    id: string;
+    requestId: string;
+    name: string;
+    email: string;
+    message: string;
+    phone?: string;
+    company?: string;
+    subject?: string;
+    submittedAt: string;
+    status: 'new' | 'read' | 'replied';
+    source: string;
+}
+
+export async function fetchContactSubmissionsPage(
+    user: AuthUser | null,
+    options?: { cursor?: string | null; limit?: number }
+): Promise<PaginatedResult<ContactSubmission>> {
+    const params = new URLSearchParams();
+    if (options?.cursor) params.set('cursor', options.cursor);
+    if (options?.limit) params.set('limit', String(options.limit));
+
+    const data = await fetchWithAuth<{ contacts: ContactSubmission[]; nextCursor: string | null }>(
+        user,
+        `/api/admin/contacts${params.toString() ? `?${params.toString()}` : ''}`
+    );
+
+    return {
+        items: data.contacts ?? [],
+        nextCursor: data.nextCursor ?? null,
+    };
+}
+
+export async function updateContactStatus(
+    user: AuthUser | null,
+    id: string,
+    status: ContactSubmission['status']
+): Promise<boolean> {
+    const data = await fetchWithAuth<{ success: boolean }>(
+        user,
+        `/api/admin/contacts/${encodeURIComponent(id)}`,
+        {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        }
+    );
+    return data.success === true;
+}
