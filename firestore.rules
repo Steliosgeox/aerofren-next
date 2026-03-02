@@ -90,19 +90,25 @@ service cloud.firestore {
     }
     
     // ==========================================
-    // ESCALATED CHATS - Auth create, admin read/update
+    // ESCALATED CHATS - Auth create, admin read/update, owner read
     // ==========================================
     match /escalatedChats/{sessionId} {
       // Authenticated users can escalate their own chats
-      allow create: if 
+      allow create: if
         isAuthenticated() &&
         request.resource.data.userId == request.auth.uid &&
         request.resource.data.sessionId is string &&
         request.resource.data.status in ['pending', 'in_progress', 'resolved'];
-      
-      // Only admins can read and update escalations
-      allow read, update: if isAdmin();
-      
+
+      // Admins can read and update all escalations
+      // Authenticated users can read their own escalations
+      // (for real-time notification subscriptions via client SDK onSnapshot)
+      allow read: if isAdmin() ||
+                    (isAuthenticated() && resource.data.userId == request.auth.uid);
+
+      // Only admins can update escalations
+      allow update: if isAdmin();
+
       // No deletes
       allow delete: if false;
     }
