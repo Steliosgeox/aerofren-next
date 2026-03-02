@@ -2,6 +2,7 @@ import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { RouteEffects } from "@/components/RouteEffects"
 import { RouteScrollShell } from "@/components/RouteScrollShell"
+import { NotificationProvider } from "@/contexts/NotificationContext"
 
 export default function MainLayout({
   children,
@@ -23,14 +24,16 @@ export default function MainLayout({
       {/* Route-scoped fixed effects (z-index handled by components) */}
       <RouteEffects />
 
-      {/* Header - Fixed for accessibility */}
-      <Header />
+      <NotificationProvider>
+        {/* Header - Fixed for accessibility */}
+        <Header />
 
-      {/* ScrollSmoother wrapper for buttery smooth scrolling */}
-      <RouteScrollShell>
-        <main className="min-h-screen">{children}</main>
-        <Footer currentYear={currentYear} />
-      </RouteScrollShell>
+        {/* ScrollSmoother wrapper for buttery smooth scrolling */}
+        <RouteScrollShell>
+          <main className="min-h-screen">{children}</main>
+          <Footer currentYear={currentYear} />
+        </RouteScrollShell>
+      </NotificationProvider>
     </>
   )
 }

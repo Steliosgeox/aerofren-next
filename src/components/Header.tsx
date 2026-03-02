@@ -33,6 +33,7 @@ import {
   LogOut,
   Shield,
 } from "lucide-react";
+import { NotificationBell } from './NotificationBell';
 
 const iconMap: Record<string, React.ReactNode> = {
   plug: <Plug className="w-5 h-5" />,
@@ -528,15 +529,18 @@ function HeaderComponent() {
               </nav>
             </div>
 
-            {/* Desktop CTA - Theme Switcher + User - Right Side Grid */}
-            <div className="hidden xl:grid grid-cols-[1fr_auto] items-center z-20 justify-self-end w-full">
+            {/* Desktop CTA - Theme Switcher + Notifications + User - Right Side Grid */}
+            <div className="hidden xl:grid grid-cols-[1fr_auto_auto] items-center gap-2 z-20 justify-self-end w-full">
               {/* Theme Switcher - Centered in remaining space */}
               <div className="justify-self-center">
                 <LiquidGlassSwitcher />
               </div>
 
+              {/* Notification Bell - visible when logged in */}
+              {user && !authLoading && <NotificationBell />}
+
               {/* Login / User Avatar - Anchored Right */}
-              <div className="relative justify-self-end" ref={userMenuRef}>
+              <div className="relative" ref={userMenuRef}>
                 {user && !authLoading ? (
                   <>
                     <button
