@@ -6,7 +6,11 @@
     --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
     /* Use theme background solid color as base */
     background-color: var(--theme-bg-solid, #0a0a0f);
-    overflow: hidden;
+    /* NOTE: overflow: hidden intentionally removed.
+       GSAP pin (pin: true) on .scrollSection inside an overflow:hidden parent
+       causes ScrollTrigger to miscalculate trigger positions — pinning fires
+       too early, overlapping with the HorizontalGallery.
+       The ::before bg-image is position:absolute inset:0 and doesn't need clipping. */
     position: relative;
     width: 100%;
 }
@@ -138,23 +142,18 @@
     }
 }
 
-/* Layers using subgrid - VISIBLE BY DEFAULT for fallback */
+/* Layers - start hidden; GSAP animates them in on scroll.
+   Using opacity: 0 by default prevents the flash-of-content before GSAP
+   initializes, and eliminates the need for overflow:hidden on contentWrap. */
 .layer {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 1 / -1;
     grid-template-columns: subgrid;
     grid-template-rows: subgrid;
-    /* Start visible - animation will control visibility */
-    opacity: 1;
-    transform: scale(1);
-    will-change: opacity, transform;
-}
-
-/* When animations initialize, layers will be controlled by JS */
-.layer[data-animated="true"] {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.5);
+    will-change: opacity, transform;
 }
 
 /* Layer 1: Outer edges - odd on left column, even on right column */
@@ -332,15 +331,17 @@
     -webkit-text-fill-color: transparent;
 }
 
-/* Reduced motion fallback */
+/* Reduced motion fallback — show all layers immediately, no animation */
 @media (prefers-reduced-motion: reduce) {
     .layer {
         opacity: 1 !important;
         transform: scale(1) !important;
+        will-change: auto;
     }
 
     .scalerImage {
         width: 100% !important;
         height: 100% !important;
+        transform: scale(1) !important;
     }
 }

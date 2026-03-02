@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Mail, AlertTriangle } from 'lucide-react';
@@ -16,6 +16,11 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Signup() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
+    const mounted = useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false,
+    );
     const [showEmailForm, setShowEmailForm] = useState(false);
 
     const {
@@ -23,6 +28,7 @@ export default function Signup() {
         error,
         fieldErrors,
         showPassword,
+        showConfirmPassword,
         isLocked,
         isGoogleLoading,
         isEmailLoading,
@@ -31,6 +37,7 @@ export default function Signup() {
         handleEmailSubmit,
         clearErrors,
         togglePassword,
+        toggleConfirmPassword,
         formatLockoutTime,
     } = useAuthForm('signup');
 
@@ -41,7 +48,7 @@ export default function Signup() {
     return (
         <AuthLayout valuePanel={<ValuePanel />}>
             <div
-                className="w-full max-w-[320px] flex flex-col items-center text-center transition-opacity duration-300"
+                className={`w-full max-w-[320px] flex flex-col items-center text-center transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}
             >
                 {/* Logo */}
                 <div className="w-14 h-14 mb-5 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-[14px] flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_60px_rgba(0,0,0,0.2)]">
@@ -169,8 +176,8 @@ export default function Signup() {
                                 error={fieldErrors.confirmPassword}
                                 disabled={isLocked}
                                 showPasswordToggle
-                                showPassword={showPassword}
-                                onTogglePassword={togglePassword}
+                                showPassword={showConfirmPassword}
+                                onTogglePassword={toggleConfirmPassword}
                             />
 
                             <button
@@ -230,7 +237,7 @@ export default function Signup() {
 
                 {/* Chat Section */}
                 <div className="mt-6 w-full">
-                    <ChatButton onClick={() => console.log('Open chat')} />
+                    <ChatButton onClick={() => router.push('/contact')} />
                 </div>
             </div>
         </AuthLayout>

@@ -213,7 +213,6 @@ export default function HorizontalGallery() {
           position: relative;
           overflow: hidden;
           z-index: 10;
-          background: transparent;
         }
 
         .gallery-container {

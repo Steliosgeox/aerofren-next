@@ -70,70 +70,61 @@ export default function ScrollAnimation() {
             return;
         }
 
-        // Mark layers as animated (triggers CSS to set initial hidden state)
-        layers.forEach(layer => {
-            (layer as HTMLElement).setAttribute('data-animated', 'true');
-        });
+        // Delay initialization so HorizontalGallery's pin spacer is already in the DOM
+        // before we register our ScrollTrigger. Gallery timeline:
+        //   t=100ms  → gallery pin spacer created
+        //   t=200ms  → ScrollTrigger.refresh() called by gallery
+        //   t=350ms  → we register HERE, measuring the correct document position
+        // Without this delay, we register at t=0ms (no spacer yet) and lock in a start
+        // position that's ~4000px too early, causing the pin to fire mid-gallery.
+        let ctx: ReturnType<typeof gsap.context> | null = null;
 
-        // Create scroll-triggered timeline
-        const ctx = gsap.context(() => {
-            // Main timeline PINNED to scroll section - section stays fixed while animating
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: section,
-                    start: 'top top',
-                    end: 'bottom bottom',
-                    scrub: 1,
-                    pin: true,
-                    anticipatePin: 1,
-                },
-            });
-
-            // Stagger offsets for each layer (outer reveals first)
-            const layerStartTimes = [0, 0.2, 0.4];
-
-            // Animate each layer
-            layers.forEach((layer, index) => {
-                const htmlLayer = layer as HTMLElement;
-                const startTime = layerStartTimes[index] || 0;
-
-                // Fade and scale in
-                tl.fromTo(htmlLayer,
-                    {
-                        opacity: 0,
-                        scale: 0.5,
+        const initTimer = setTimeout(() => {
+            ctx = gsap.context(() => {
+                // Main timeline PINNED to scroll section.
+                // invalidateOnRefresh: true ensures subsequent resize-triggered refreshes
+                // also recalculate the start position correctly.
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top top',
+                        end: 'bottom bottom',
+                        scrub: 1,
+                        pin: true,
+                        invalidateOnRefresh: true,
                     },
-                    {
-                        opacity: 1,
-                        scale: 1,
-                        duration: 0.3,
-                        ease: 'power2.out',
-                    },
-                    startTime
-                );
-            });
+                });
 
-            // Scaler image animation: starts large, shrinks to fit grid cell
-            if (scalerImg) {
-                tl.fromTo(scalerImg,
-                    {
-                        scale: 2.5, // Start larger than normal
-                    },
-                    {
-                        scale: 1, // Shrink to fit
-                        duration: 0.5,
-                        ease: 'power2.inOut',
-                    },
-                    0 // Start at beginning
-                );
-            }
+                // Stagger offsets for each layer (outer reveals first)
+                const layerStartTimes = [0, 0.2, 0.4];
 
-            console.log('[ScrollAnimation] GSAP animations initialized successfully');
-        }, container);
+                // Animate each layer
+                layers.forEach((layer, index) => {
+                    const htmlLayer = layer as HTMLElement;
+                    const startTime = layerStartTimes[index] || 0;
 
-        // Cleanup on unmount
+                    tl.fromTo(htmlLayer,
+                        { opacity: 0, scale: 0.5 },
+                        { opacity: 1, scale: 1, duration: 0.3, ease: 'power2.out' },
+                        startTime
+                    );
+                });
+
+                // Scaler image animation: starts large, shrinks to fit grid cell
+                if (scalerImg) {
+                    tl.fromTo(scalerImg,
+                        { scale: 2.5 },
+                        { scale: 1, duration: 0.5, ease: 'power2.inOut' },
+                        0
+                    );
+                }
+            }, container);
+        }, 350);
+
+        // Cleanup on unmount — clear timer and revert GSAP context if it was created
         return () => {
-            ctx.revert();
+            clearTimeout(initTimer);
+            ctx?.revert();
         };
     }, []);
 
