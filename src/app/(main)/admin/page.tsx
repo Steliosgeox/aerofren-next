@@ -18,7 +18,7 @@ import { AdminStats, EscalatedChat, fetchAdminStats, fetchEscalations, resolveEs
 import { AdminLayout } from "@/components/admin";
 
 export default function AdminPage() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [escalatedChats, setEscalatedChats] = useState<EscalatedChat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,8 +26,10 @@ export default function AdminPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [authError, setAuthError] = useState(false);
 
+  // AdminLayout guarantees this page only renders when user is authenticated + admin.
+  // The guard here is just a runtime safety net for the service calls.
   const fetchData = useCallback(async () => {
-    if (!user || !isAdmin) return;
+    if (!user) return;
 
     try {
       const [statsData, escalationsData] = await Promise.all([
@@ -49,13 +51,13 @@ export default function AdminPage() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [user, isAdmin]);
+  }, [user]);
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user) {
       fetchData();
     }
-  }, [user, isAdmin, fetchData]);
+  }, [user, fetchData]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -129,8 +131,8 @@ export default function AdminPage() {
       {/* Error banner */}
       {errorMessage && (
         <div
-          className="mb-6 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-          style={{ background: 'var(--theme-accent)/10', border: '1px solid color-mix(in srgb, var(--theme-accent) 30%, transparent)' }}
+          className="mb-6 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[var(--theme-accent)]/10"
+          style={{ border: '1px solid color-mix(in srgb, var(--theme-accent) 30%, transparent)' }}
           role="alert"
         >
           <p className="text-sm text-[var(--theme-text)]">{errorMessage}</p>
