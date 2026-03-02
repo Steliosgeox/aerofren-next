@@ -216,8 +216,7 @@ function RequestsPageContent() {
         if (selectedContact && selectedContact.status === 'new') {
             handleContactStatusChange(selectedContact.id, 'read');
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedContact?.id]);
+    }, [selectedContact?.id, selectedContact?.status, handleContactStatusChange]);
 
     const handleResolveEscalation = async (sessionId: string) => {
         if (!user) return;
