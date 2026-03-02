@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { gsap, ScrollSmoother } from "@/lib/gsap";
+import { gsap } from "@/lib/gsap";
+import { useLenis } from "lenis/react";
 import { ArrowUp } from "lucide-react";
 
 /**
@@ -18,6 +19,7 @@ export function BackToTop() {
     const [isVisible, setIsVisible] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const tweenRef = useRef<gsap.core.Tween | null>(null);
+    const lenis = useLenis();
 
     // Throttled scroll detection
     useEffect(() => {
@@ -59,9 +61,8 @@ export function BackToTop() {
     }, [isVisible]);
 
     const handleClick = () => {
-        const smoother = ScrollSmoother.get();
-        if (smoother) {
-            smoother.scrollTo(0, true);
+        if (lenis) {
+            lenis.scrollTo(0, { lerp: 0.05 });
             return;
         }
 

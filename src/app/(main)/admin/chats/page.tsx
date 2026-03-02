@@ -82,17 +82,12 @@ function AdminChatsPageContent() {
     }
   }, [searchParams]);
 
-  // Redirect if not admin
+  // Redirect unauthenticated users immediately
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      const timer = setTimeout(() => {
-        if (!user) {
-          router.push("/login");
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (!authLoading && !user) {
+      router.replace("/login");
     }
-  }, [user, authLoading, isAdmin, router]);
+  }, [user, authLoading, router]);
 
   const SESSIONS_PAGE_SIZE = 50;
   const MESSAGES_PAGE_SIZE = 50;
@@ -278,7 +273,7 @@ function AdminChatsPageContent() {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--theme-bg-solid)" }}>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--theme-bg-solid)]">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-accent)]" />
       </div>
     );
@@ -287,19 +282,9 @@ function AdminChatsPageContent() {
   // Show access denied for non-admins
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "var(--theme-bg-solid)" }}>
-        <div
-          className="w-full max-w-md rounded-xl p-8 text-center"
-          style={{
-            background: "var(--theme-glass-bg)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid var(--theme-glass-border)",
-          }}
-        >
-          <div
-            className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4"
-            style={{ background: "rgba(239, 68, 68, 0.2)" }}
-          >
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--theme-bg-solid)]">
+        <div className="w-full max-w-md rounded-xl p-8 text-center bg-[var(--theme-glass-bg)] backdrop-blur-md border border-[var(--theme-glass-border)]">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 bg-red-500/20">
             <Shield className="w-8 h-8 text-red-400" />
           </div>
           <h2 className="text-2xl font-bold text-[var(--theme-text)] mb-2">Πρόσβαση μόνο για διαχειριστές</h2>
@@ -338,16 +323,9 @@ function AdminChatsPageContent() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--theme-bg-solid)" }}>
-      {/* Header */}
-      <div
-        className="sticky top-0 z-10"
-        style={{
-          background: "var(--theme-glass-bg)",
-          backdropFilter: "blur(8px)",
-          borderBottom: "1px solid var(--theme-glass-border)",
-        }}
-      >
+    <div className="min-h-screen bg-[var(--theme-bg-solid)]">
+      {/* Sub-header — sticky below the global 100px fixed header */}
+      <div className="sticky top-[100px] z-30 bg-[var(--theme-glass-bg)] backdrop-blur-md border-b border-[var(--theme-glass-border)]">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -394,21 +372,15 @@ function AdminChatsPageContent() {
       <div className="max-w-7xl mx-auto p-4">
         {errorMessage && (
           <div
-            className="mb-4 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-            style={{
-              background: "color-mix(in srgb, var(--theme-accent) 12%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--theme-accent) 35%, transparent)",
-            }}
+            className="mb-4 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[var(--theme-accent)]/10 border border-[var(--theme-accent)]/30"
             role="alert"
           >
-            <div className="text-sm text-[var(--theme-text)]">
-              {errorMessage}
-            </div>
+            <p className="text-sm text-[var(--theme-text)]">{errorMessage}</p>
             {authError && (
               <Button
                 size="sm"
                 onClick={handleSignOut}
-                className="bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white"
+                className="bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white shrink-0"
               >
                 Σύνδεση ξανά
               </Button>
@@ -418,14 +390,7 @@ function AdminChatsPageContent() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Sessions List */}
           <div className="lg:col-span-1">
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{
-                background: "var(--theme-glass-bg)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid var(--theme-glass-border)",
-              }}
-            >
+            <div className="rounded-xl overflow-hidden bg-[var(--theme-glass-bg)] backdrop-blur-md border border-[var(--theme-glass-border)]">
               <div className="p-4 border-b border-[var(--theme-glass-border)]">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--theme-text-muted)]" />
@@ -541,14 +506,7 @@ function AdminChatsPageContent() {
 
           {/* Chat View */}
           <div className="lg:col-span-2">
-            <div
-              className="h-[70vh] flex flex-col rounded-xl overflow-hidden"
-              style={{
-                background: "var(--theme-glass-bg)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid var(--theme-glass-border)",
-              }}
-            >
+            <div className="h-[70vh] flex flex-col rounded-xl overflow-hidden bg-[var(--theme-glass-bg)] backdrop-blur-md border border-[var(--theme-glass-border)]">
               <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-[var(--theme-glass-border)]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-full flex items-center justify-center">
@@ -680,7 +638,7 @@ export default function AdminChatsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--theme-bg-solid)" }}>
+        <div className="min-h-screen flex items-center justify-center bg-[var(--theme-bg-solid)]">
           <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-accent)]" />
         </div>
       }

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import SmoothScrollProvider from '@/components/SmoothScrollProvider';
+import LenisProvider from '@/components/LenisProvider';
 
 const DISABLE_SMOOTH_SCROLL_PREFIXES = ['/admin', '/login', '/signup'];
 
@@ -17,5 +17,5 @@ export function RouteScrollShell({ children }: { children: React.ReactNode }) {
         return <>{children}</>;
     }
 
-    return <SmoothScrollProvider>{children}</SmoothScrollProvider>;
+    return <LenisProvider>{children}</LenisProvider>;
 }

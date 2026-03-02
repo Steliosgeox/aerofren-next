@@ -16,7 +16,10 @@ const ADMIN_EMAILS: readonly string[] = [
 
 /**
  * Check if an email address belongs to an admin user.
+ * Case-insensitive: Google OAuth may return email in any casing
+ * (e.g. GamersPCExperts@gmail.com vs gamerspcexperts@gmail.com).
  */
 export function isAdminEmail(email: string | null | undefined): boolean {
-    return email ? ADMIN_EMAILS.includes(email) : false;
+    if (!email) return false;
+    return (ADMIN_EMAILS as readonly string[]).includes(email.toLowerCase());
 }

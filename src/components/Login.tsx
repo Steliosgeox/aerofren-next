@@ -83,8 +83,7 @@ export default function Login() {
     return (
         <AuthLayout valuePanel={<ValuePanel />}>
             <div
-                className="w-full max-w-[320px] flex flex-col items-center text-center transition-opacity duration-300"
-                style={{ opacity: mounted ? 1 : 0 }}
+                className={`w-full max-w-[320px] flex flex-col items-center text-center transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}
             >
                 {/* Logo */}
                 <div className="w-14 h-14 mb-5 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-[14px] flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.35),0_0_60px_rgba(0,0,0,0.2)]">
@@ -295,7 +294,7 @@ export default function Login() {
 
                 {/* Chat Section */}
                 <div className="mt-6 w-full">
-                    <ChatButton onClick={() => console.log('Open chat')} />
+                    <ChatButton onClick={() => router.push('/contact')} />
                 </div>
             </div>
         </AuthLayout>

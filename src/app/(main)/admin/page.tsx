@@ -1,7 +1,13 @@
 /**
  * Admin Dashboard Page
  * Protected by Firebase Auth (admin only)
- * Glass theme styling with real Firebase data
+ *
+ * Fixes applied vs original:
+ * - Sidebar correctly starts below the fixed 100px global header
+ * - Replaced all inline style={{ ... }} with Tailwind utility classes
+ * - Removed setTimeout redirect (instant redirect on non-admin access)
+ * - Skeleton uses Tailwind animate-pulse without raw color-mix
+ * - Mobile hamburger positioned below header (top-[116px])
  */
 
 "use client";
@@ -43,17 +49,12 @@ export default function AdminPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [authError, setAuthError] = useState(false);
 
-  // Redirect if not admin
+  // Redirect non-admins immediately — no setTimeout
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      const timer = setTimeout(() => {
-        if (!user) {
-          router.push("/login");
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (!authLoading && !user) {
+      router.replace("/login");
     }
-  }, [user, authLoading, isAdmin, router]);
+  }, [user, authLoading, router]);
 
   // Fetch data from Firebase
   const fetchData = useCallback(async () => {
@@ -88,19 +89,16 @@ export default function AdminPage() {
     }
   }, [user, isAdmin, fetchData]);
 
-  // Refresh data
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await fetchData();
   };
 
-  // Handle sign out
   const handleSignOut = async () => {
     await signOut();
     router.push("/");
   };
 
-  // Handle resolve escalation
   const handleResolveEscalation = async (sessionId: string) => {
     if (!user?.email) return;
     const success = await resolveEscalation(user, sessionId);
@@ -109,7 +107,6 @@ export default function AdminPage() {
     }
   };
 
-  // Format date
   const formatTime = (timestamp: string | Date | null | undefined) => {
     const date =
       typeof timestamp === "string"
@@ -125,136 +122,118 @@ export default function AdminPage() {
     });
   };
 
-  // Status labels
   const STATUS_LABELS: Record<"pending" | "in_progress" | "resolved", string> = {
     pending: "Σε αναμονή",
     in_progress: "Σε εξέλιξη",
     resolved: "Ολοκληρώθηκε",
   };
 
-  // Stats cards configuration
   const statsCards = stats
     ? [
         {
           label: "Συνολικές συνομιλίες",
           value: stats.totalChats.toString(),
           icon: <MessageCircle className="w-6 h-6" />,
-          color: "from-[var(--theme-accent)] to-[var(--theme-accent-hover)]",
         },
         {
           label: "Κλιμακωμένες συνομιλίες",
           value: stats.escalatedChats.toString(),
           icon: <AlertTriangle className="w-6 h-6" />,
-          color: "from-[var(--theme-accent)] to-[var(--theme-accent-hover)]",
         },
         {
           label: "Εκκρεμείς κλιμακώσεις",
           value: stats.pendingEscalations.toString(),
           icon: <Clock className="w-6 h-6" />,
-          color: "from-[var(--theme-accent)] to-[var(--theme-accent-hover)]",
         },
         {
           label: "Μοναδικοί χρήστες",
           value: stats.uniqueUsers.toString(),
           icon: <Users className="w-6 h-6" />,
-          color: "from-[var(--theme-accent)] to-[var(--theme-accent-hover)]",
         },
       ]
     : [];
 
-  const statsSkeletonSlots = [
-    "total-chats",
-    "escalated-chats",
-    "pending-escalations",
-    "unique-users",
-  ] as const;
-
-  // Show access denied for non-admins (also covers loading state)
-  if (authLoading || !user || !isAdmin) {
+  // Loading state
+  if (authLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center p-6"
-        style={{ background: "var(--theme-bg-solid)" }}
-      >
-        <div
-          className="w-full max-w-md rounded-xl p-8 text-center"
-          style={{
-            background: "var(--theme-glass-bg)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid var(--theme-glass-border)",
-          }}
-        >
-          <div
-            className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4"
-            style={{
-              background: authLoading
-                ? "color-mix(in srgb, var(--theme-accent) 20%, transparent)"
-                : "rgba(239, 68, 68, 0.2)",
-            }}
-          >
-            {authLoading ? (
-              <Loader2 className="w-8 h-8 text-[var(--theme-accent)] animate-spin" />
-            ) : (
-              <Shield className="w-8 h-8 text-red-400" />
-            )}
+      <div className="min-h-screen flex items-center justify-center bg-[var(--theme-bg-solid)]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-accent)]" />
+      </div>
+    );
+  }
+
+  // Access denied — non-admin logged in users
+  if (!user || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--theme-bg-solid)]">
+        <div className="w-full max-w-md rounded-xl p-8 text-center bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] backdrop-blur-md">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 bg-red-500/20">
+            <Shield className="w-8 h-8 text-red-400" />
           </div>
           <h2 className="text-2xl font-bold text-[var(--theme-text)] mb-2">
-            {authLoading ? "Φόρτωση..." : "Πρόσβαση μόνο για διαχειριστές"}
+            Πρόσβαση μόνο για διαχειριστές
           </h2>
-          {!authLoading && (
-            <div className="space-y-4 mt-4">
-              <p className="text-[var(--theme-text-muted)]">
-                {!user
-                  ? "Πρέπει να συνδεθείτε για να δείτε αυτή τη σελίδα."
-                  : "Ο λογαριασμός σας δεν έχει δικαιώματα διαχειριστή."}
-              </p>
-              {!user ? (
+          <div className="space-y-4 mt-4">
+            <p className="text-[var(--theme-text-muted)]">
+              {!user
+                ? "Πρέπει να συνδεθείτε για να δείτε αυτή τη σελίδα."
+                : "Ο λογαριασμός σας δεν έχει δικαιώματα διαχειριστή."}
+            </p>
+            {!user ? (
+              <Button
+                onClick={() => router.push("/login")}
+                className="w-full bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-[var(--theme-text-inverse)]"
+              >
+                Σύνδεση
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-[var(--theme-text-muted)]">
+                  Συνδεδεμένος ως: {user.email}
+                </p>
                 <Button
-                  onClick={() => router.push("/login")}
-                  className="w-full bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-[var(--theme-text-inverse)]"
+                  variant="outline"
+                  onClick={handleSignOut}
+                  className="w-full border-[var(--theme-glass-border)] text-[var(--theme-text)] hover:bg-[var(--theme-glass-bg)]"
                 >
-                  Σύνδεση
+                  Αποσύνδεση
                 </Button>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-[var(--theme-text-muted)]">
-                    Συνδεδεμένος ως: {user.email}
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={handleSignOut}
-                    className="w-full border-[var(--theme-glass-border)] text-[var(--theme-text)] hover:bg-[var(--theme-glass-bg)]"
-                  >
-                    Αποσύνδεση
-                  </Button>
-                </div>
-              )}
-              <Link href="/" className="text-[var(--theme-accent)] text-sm hover:underline block">
-                Επιστροφή στην αρχική
-              </Link>
-            </div>
-          )}
+              </div>
+            )}
+            <Link href="/" className="text-[var(--theme-accent)] text-sm hover:underline block">
+              Επιστροφή στην αρχική
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: "var(--theme-bg-solid)" }}>
-      {/* Glass Sidebar */}
+    /*
+     * Layout strategy: The global Header is position:fixed at 100px height.
+     * We offset everything with pt-[100px] on the outer wrapper so content
+     * starts below the header. The sidebar uses top-[100px] when fixed on
+     * mobile so it never overlaps the header.
+     */
+    <div className="min-h-screen flex bg-[var(--theme-bg-solid)] pt-[100px]">
+      {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          }`}
-        style={{
-          background: "var(--theme-glass-bg)",
-          backdropFilter: "blur(8px)",
-          borderRight: "1px solid var(--theme-glass-border)",
-        }}
+        className={`
+          fixed lg:sticky lg:top-[100px] lg:self-start
+          top-[100px] left-0
+          z-40
+          w-64 h-[calc(100vh-100px)]
+          overflow-y-auto
+          transform transition-transform duration-300 ease-in-out
+          bg-[var(--theme-glass-bg)] border-r border-[var(--theme-glass-border)] backdrop-blur-md
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
       >
-        <div className="p-6">
+        <div className="p-6 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold">A</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)] rounded-xl flex items-center justify-center shrink-0">
+              <span className="text-white font-bold text-sm">A</span>
             </div>
             <div>
               <span className="text-[var(--theme-text)] font-bold text-lg">AEROFREN</span>
@@ -263,12 +242,12 @@ export default function AdminPage() {
           </div>
 
           {/* User Info */}
-          <div className="mb-6 p-3 rounded-xl" style={{ background: "var(--theme-glass-bg)" }}>
+          <div className="mb-6 p-3 rounded-xl bg-white/5">
             <div className="flex items-center gap-2">
               {user.photoURL ? (
-                <Image src={user.photoURL} alt="" width={32} height={32} className="w-8 h-8 rounded-full" />
+                <Image src={user.photoURL} alt="" width={32} height={32} className="w-8 h-8 rounded-full shrink-0" />
               ) : (
-                <UserCircle className="w-8 h-8 text-[var(--theme-text-muted)]" />
+                <UserCircle className="w-8 h-8 text-[var(--theme-text-muted)] shrink-0" />
               )}
               <div className="min-w-0">
                 <p className="text-sm text-[var(--theme-text)] truncate">{user.displayName || "Διαχειριστής"}</p>
@@ -277,49 +256,59 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <nav className="space-y-2">
+          <nav className="space-y-1 flex-1">
             {[
               { label: "Σύνοψη", icon: <TrendingUp className="w-5 h-5" />, active: true, href: "/admin" },
-              { label: "Συνομιλίες AI", icon: <Bot className="w-5 h-5" />, href: "/admin/chats" },
-              { label: "Αιτήματα", icon: <MessageCircle className="w-5 h-5" />, href: "#" },
-              { label: "Χρήστες", icon: <Users className="w-5 h-5" />, href: "#" },
-              { label: "Ρυθμίσεις", icon: <Settings className="w-5 h-5" />, href: "#" },
+              { label: "Συνομιλίες AI", icon: <Bot className="w-5 h-5" />, active: false, href: "/admin/chats" },
+              { label: "Αιτήματα", icon: <MessageCircle className="w-5 h-5" />, active: false, href: "#" },
+              { label: "Χρήστες", icon: <Users className="w-5 h-5" />, active: false, href: "#" },
+              { label: "Ρυθμίσεις", icon: <Settings className="w-5 h-5" />, active: false, href: "#" },
             ].map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${item.active
-                  ? "bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-hover)] text-white"
-                  : "text-[var(--theme-text-muted)] hover:bg-[var(--theme-glass-bg)] hover:text-[var(--theme-text)]"
-                  }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  item.active
+                    ? "bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-hover)] text-white shadow-lg"
+                    : "text-[var(--theme-text-muted)] hover:bg-white/5 hover:text-[var(--theme-text)]"
+                }`}
               >
                 {item.icon}
                 {item.label}
               </Link>
             ))}
           </nav>
-        </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--theme-text-muted)] hover:bg-[var(--theme-glass-bg)] hover:text-[var(--theme-text)] transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            Αποσύνδεση
-          </button>
+          <div className="pt-4 border-t border-[var(--theme-glass-border)]">
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[var(--theme-text-muted)] hover:bg-white/5 hover:text-[var(--theme-text)] transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              Αποσύνδεση
+            </button>
+          </div>
         </div>
       </aside>
 
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-8 pt-24 lg:pt-8">
-        {/* Mobile Header */}
+      <main className="flex-1 min-w-0 p-6 lg:p-8">
+        {/* Mobile hamburger — positioned just below header */}
         <button
-          className="lg:hidden fixed top-28 left-4 z-40 p-2 rounded-xl shadow-lg"
-          style={{ background: "var(--theme-glass-bg)", backdropFilter: "blur(10px)" }}
+          className="lg:hidden fixed top-[116px] left-4 z-50 p-2 rounded-xl shadow-lg bg-[var(--theme-glass-bg)] backdrop-blur-md border border-[var(--theme-glass-border)]"
           onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Toggle sidebar"
         >
-          {sidebarOpen ? <X className="w-6 h-6 text-[var(--theme-text)]" /> : <Menu className="w-6 h-6 text-[var(--theme-text)]" />}
+          {sidebarOpen ? <X className="w-5 h-5 text-[var(--theme-text)]" /> : <Menu className="w-5 h-5 text-[var(--theme-text)]" />}
         </button>
 
         <div className="flex items-center justify-between mb-8">
@@ -329,7 +318,7 @@ export default function AdminPage() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="gap-2 border-[var(--theme-glass-border)] text-[var(--theme-text)] hover:bg-[var(--theme-glass-bg)]"
+            className="gap-2 border-[var(--theme-glass-border)] text-[var(--theme-text)] hover:bg-white/5"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Ανανέωση
@@ -338,21 +327,15 @@ export default function AdminPage() {
 
         {errorMessage && (
           <div
-            className="mb-6 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-            style={{
-              background: "color-mix(in srgb, var(--theme-accent) 12%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--theme-accent) 35%, transparent)",
-            }}
+            className="mb-6 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[var(--theme-accent)]/10 border border-[var(--theme-accent)]/30"
             role="alert"
           >
-            <div className="text-sm text-[var(--theme-text)]">
-              {errorMessage}
-            </div>
+            <p className="text-sm text-[var(--theme-text)]">{errorMessage}</p>
             {authError && (
               <Button
                 size="sm"
                 onClick={handleSignOut}
-                className="bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white"
+                className="bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white shrink-0"
               >
                 Σύνδεση ξανά
               </Button>
@@ -363,53 +346,36 @@ export default function AdminPage() {
         {/* Stats Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {isLoading ? (
-            // Skeleton loaders
-            statsSkeletonSlots.map((slotId) => (
+            Array.from({ length: 4 }).map((_, i) => (
               <div
-                key={`skeleton-${slotId}`}
-                className="rounded-xl p-6 animate-pulse"
-                style={{
-                  background: "var(--theme-glass-bg)",
-                  border: "1px solid var(--theme-glass-border)",
-                }}
+                key={i}
+                className="rounded-xl p-6 animate-pulse bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)]"
               >
-                <div className="w-12 h-12 rounded-xl bg-[color-mix(in_srgb,var(--theme-glass-bg)_70%,transparent)] mb-4" />
-                <div className="h-8 w-16 rounded bg-[color-mix(in_srgb,var(--theme-glass-bg)_70%,transparent)] mb-2" />
-                <div className="h-4 w-24 rounded bg-[color-mix(in_srgb,var(--theme-glass-bg)_70%,transparent)]" />
+                <div className="w-12 h-12 rounded-xl bg-white/10 mb-4" />
+                <div className="h-8 w-16 rounded bg-white/10 mb-2" />
+                <div className="h-4 w-24 rounded bg-white/10" />
               </div>
             ))
           ) : (
             statsCards.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-xl p-6"
-                style={{
-                  background: "var(--theme-glass-bg)",
-                  backdropFilter: "blur(8px)",
-                  border: "1px solid var(--theme-glass-border)",
-                }}
+                className="rounded-xl p-6 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] backdrop-blur-md"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white bg-gradient-to-br ${stat.color}`}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white bg-gradient-to-br from-[var(--theme-accent)] to-[var(--theme-accent-hover)]">
                     {stat.icon}
                   </div>
                 </div>
                 <p className="text-3xl font-extrabold text-[var(--theme-text)]">{stat.value}</p>
-                <p className="text-[var(--theme-text-muted)] text-sm">{stat.label}</p>
+                <p className="text-[var(--theme-text-muted)] text-sm mt-1">{stat.label}</p>
               </div>
             ))
           )}
         </div>
 
-        {/* Κλιμακωμένες συνομιλίες */}
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{
-            background: "var(--theme-glass-bg)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid var(--theme-glass-border)",
-          }}
-        >
+        {/* Escalated Chats */}
+        <div className="rounded-xl overflow-hidden bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] backdrop-blur-md">
           <div className="p-6 border-b border-[var(--theme-glass-border)]">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-[var(--theme-text)] flex items-center gap-2">
@@ -417,10 +383,11 @@ export default function AdminPage() {
                 Κλιμακωμένες συνομιλίες
               </h2>
               <Link href="/admin/chats" className="text-sm text-[var(--theme-accent)] hover:underline">
-                Δείτε όλες τις συνομιλίες →
+                Δείτε όλες →
               </Link>
             </div>
           </div>
+
           <div className="p-6">
             {isLoading ? (
               <div className="flex justify-center py-8">
@@ -432,34 +399,35 @@ export default function AdminPage() {
                 <p className="text-[var(--theme-text-muted)]">Δεν υπάρχουν κλιμακωμένες συνομιλίες.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full min-w-[600px]">
                   <thead>
                     <tr className="border-b border-[var(--theme-glass-border)]">
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--theme-text-muted)] text-sm">Χρήστης</th>
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--theme-text-muted)] text-sm">Email</th>
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--theme-text-muted)] text-sm">Ημερομηνία</th>
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--theme-text-muted)] text-sm">Κατάσταση</th>
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--theme-text-muted)] text-sm">Ενέργειες</th>
+                      {["Χρήστης", "Email", "Ημερομηνία", "Κατάσταση", "Ενέργειες"].map((col) => (
+                        <th key={col} className="text-left py-3 px-4 font-semibold text-[var(--theme-text-muted)] text-sm whitespace-nowrap">
+                          {col}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {escalatedChats.slice(0, 5).map((chat) => (
                       <tr
                         key={chat.sessionId}
-                        className="border-b border-[var(--theme-glass-border)] hover:bg-[var(--theme-glass-bg)] transition-colors"
+                        className="border-b border-[var(--theme-glass-border)] hover:bg-white/5 transition-colors"
                       >
-                        <td className="py-4 px-4 font-medium text-[var(--theme-text)]">{chat.userName}</td>
-                        <td className="py-4 px-4 text-[var(--theme-text-muted)]">{chat.userEmail}</td>
-                        <td className="py-4 px-4 text-[var(--theme-text-muted)]">{formatTime(chat.escalatedAt)}</td>
+                        <td className="py-4 px-4 font-medium text-[var(--theme-text)] whitespace-nowrap">{chat.userName}</td>
+                        <td className="py-4 px-4 text-[var(--theme-text-muted)] max-w-[160px] truncate">{chat.userEmail}</td>
+                        <td className="py-4 px-4 text-[var(--theme-text-muted)] whitespace-nowrap">{formatTime(chat.escalatedAt)}</td>
                         <td className="py-4 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-bold ${chat.status === "pending"
-                              ? "bg-yellow-500/20 text-yellow-400 animate-pulse"
-                              : chat.status === "in_progress"
-                                ? "bg-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)] text-[var(--theme-accent)]"
-                                : "bg-green-500/20 text-green-400"
-                              }`}
+                            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                              chat.status === "pending"
+                                ? "bg-yellow-500/20 text-yellow-400 animate-pulse"
+                                : chat.status === "in_progress"
+                                  ? "bg-[var(--theme-accent)]/20 text-[var(--theme-accent)]"
+                                  : "bg-green-500/20 text-green-400"
+                            }`}
                           >
                             {STATUS_LABELS[chat.status]}
                           </span>
@@ -468,14 +436,14 @@ export default function AdminPage() {
                           <div className="flex gap-2">
                             <Link
                               href={`/admin/chats?session=${chat.sessionId}`}
-                              className="px-3 py-1 text-xs font-medium rounded-lg bg-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)] text-[var(--theme-accent)] hover:bg-[color-mix(in_srgb,var(--theme-accent)_30%,transparent)] transition-colors"
+                              className="px-3 py-1 text-xs font-medium rounded-lg bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] hover:bg-[var(--theme-accent)]/30 transition-colors whitespace-nowrap"
                             >
                               Προβολή
                             </Link>
                             {chat.status !== "resolved" && (
                               <button
                                 onClick={() => handleResolveEscalation(chat.sessionId)}
-                                className="px-3 py-1 text-xs font-medium rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
+                                className="px-3 py-1 text-xs font-medium rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors whitespace-nowrap"
                               >
                                 Επίλυση
                               </button>

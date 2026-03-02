@@ -1,20 +1,20 @@
 "use client";
 
-import { useRef, useLayoutEffect, ReactNode } from "react";
-import { gsap, ScrollSmoother, ScrollTrigger } from "@/lib/gsap/client";
+import type { ReactNode } from "react";
 
 /**
- * SmoothScrollProvider Component
- * 
- * Wraps the entire application with GSAP ScrollSmoother for buttery smooth
- * inertia-style scrolling across all pages.
- * 
- * Features:
- * - Smooth 1.5s momentum scrolling
- * - Touch device support (light smoothing)
- * - Data-speed/data-lag parallax effects enabled
- * - Normalized scroll behavior across browsers
- * - Respects prefers-reduced-motion
+ * SmoothScrollProvider — DEPRECATED
+ *
+ * This component previously wrapped the application with GSAP ScrollSmoother.
+ * It has been superseded by LenisProvider as part of the GSAP → Lenis migration.
+ *
+ * ScrollSmoother has been removed from src/lib/gsap/client.ts.
+ * RouteScrollShell now uses LenisProvider directly.
+ *
+ * This file is kept as a passthrough to avoid breaking any future accidental
+ * imports during the migration phase. It renders children unchanged.
+ *
+ * @deprecated Use LenisProvider instead.
  */
 
 interface SmoothScrollProviderProps {
@@ -22,115 +22,5 @@ interface SmoothScrollProviderProps {
 }
 
 export default function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
-  const smootherRef = useRef<ScrollSmoother | null>(null);
-
-  useLayoutEffect(() => {
-    // SSR guard
-    if (typeof window === "undefined") return;
-
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    // Create ScrollSmoother instance
-    // CRITICAL: normalizeScroll: false prevents GSAP from hijacking all scroll events
-    // which was causing severe performance issues and conflicts with Next.js navigation
-    smootherRef.current = ScrollSmoother.create({
-      wrapper: "#smooth-wrapper",
-      content: "#smooth-content",
-      smooth: prefersReducedMotion ? 0 : 1.2, // Reduced from 1.5 for snappier feel
-      effects: !prefersReducedMotion, // Enable data-speed/data-lag attributes
-      smoothTouch: 0.1, // Light touch smoothing for mobile
-      normalizeScroll: false, // CRITICAL: false prevents scroll hijacking
-      ignoreMobileResize: true, // Prevents layout thrashing on mobile
-    });
-
-    // Refresh ScrollTrigger after smoother is created
-    ScrollTrigger.refresh();
-
-    // Cleanup handled in separate useLayoutEffect for proper timing
-  }, []);
-
-  // CRITICAL: useLayoutEffect cleanup runs synchronously before React commits DOM changes
-  // This prevents "removeChild" errors from GSAP's pinned/moved elements
-  useLayoutEffect(() => {
-    return () => {
-      // ZERO: Strip data-lag attributes and inline styles that ScrollSmoother's
-      // effects mode injects onto [data-speed] elements. Without this, stale GSAP
-      // mutations remain in the DOM between navigations and cause hydration mismatches.
-      const content = document.getElementById("smooth-content");
-      if (content) {
-        content.querySelectorAll("[data-lag]").forEach((el) => {
-          (el as HTMLElement).removeAttribute("data-lag");
-          gsap.set(el, { clearProps: "transform,willChange" });
-        });
-        content.querySelectorAll("[data-speed]").forEach((el) => {
-          gsap.set(el, { clearProps: "transform,willChange" });
-        });
-      }
-
-      // FIRST: Kill ScrollSmoother BEFORE killing triggers
-      if (smootherRef.current) {
-        smootherRef.current.paused(true);
-        smootherRef.current.kill();
-        smootherRef.current = null;
-      }
-
-      // SECOND: Kill all ScrollTriggers with error handling
-      ScrollTrigger.getAll().forEach(t => {
-        try {
-          t.kill();
-        } catch {
-          // Ignore cleanup errors - element may already be removed
-        }
-      });
-
-      // THIRD: Clear all GSAP scroll-related caches
-      ScrollTrigger.clearMatchMedia();
-      ScrollTrigger.clearScrollMemory();
-
-      // FOURTH: Reset scroll position for clean navigation
-      if (typeof window !== "undefined") {
-        window.scrollTo(0, 0);
-      }
-    };
-  }, []);
-
-  return (
-    <>
-      <div id="smooth-wrapper">
-        <div id="smooth-content">
-          {children}
-        </div>
-      </div>
-
-      <style jsx global>{`
-        /* ScrollSmoother wrapper structure */
-        #smooth-wrapper {
-          overflow: hidden;
-          position: fixed;
-          height: 100%;
-          width: 100%;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 1; /* Above fixed backgrounds (waves: -1, webp: 0) */
-        }
-
-        #smooth-content {
-          overflow: visible;
-          width: 100%;
-        }
-
-        /* Utility classes for parallax effects */
-        [data-speed] {
-          will-change: transform;
-        }
-
-        [data-lag] {
-          will-change: transform;
-        }
-      `}</style>
-    </>
-  );
+  return <>{children}</>;
 }
