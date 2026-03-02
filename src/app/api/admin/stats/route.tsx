@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
             sessionsRef.count().get(),
             escalationsRef.count().get(),
             escalationsRef.where('status', '==', 'pending').count().get(),
-            chatsRef.where('timestamp', '>=', Timestamp.fromDate(today)).count().get(),
+            sessionsRef.where('lastMessageAt', '>=', Timestamp.fromDate(today)).count().get(),
         ]);
 
         let totalChats = totalSessionsSnap.data().count || 0;

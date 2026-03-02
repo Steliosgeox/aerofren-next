@@ -167,7 +167,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                         body: `${esc.userName || esc.userEmail || 'Χρήστης'} ζητά βοήθεια`,
                         timestamp: new Date(esc.escalatedAt),
                         href: '/admin/requests',
-                        isRead: readIds.has(notifId),
+                        isRead: false,
                     });
                 }
             }
@@ -186,7 +186,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                         body: `${contact.name}: ${contact.subject || contact.message.slice(0, 50)}`,
                         timestamp: new Date(contact.submittedAt),
                         href: '/admin/requests?tab=contacts',
-                        isRead: readIds.has(notifId),
+                        isRead: false,
                     });
                 }
             }
@@ -202,7 +202,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         } catch (error) {
             console.warn('[NotificationContext] Admin poll error:', error);
         }
-    }, [user, isAdmin, readIds]);
+    }, [user, isAdmin]);
 
     useEffect(() => {
         if (!user || !isAdmin) return;

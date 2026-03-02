@@ -38,7 +38,7 @@ import { AdminLayout } from "@/components/admin";
 
 function AdminChatsPageContent() {
   const searchParams = useSearchParams();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
 
   const [sessions, setSessions] = useState<AdminChatSession[]>([]);
   const [sessionsCursor, setSessionsCursor] = useState<string | null>(null);
@@ -82,7 +82,7 @@ function AdminChatsPageContent() {
 
   const fetchSessionsPage = useCallback(
     async (options?: { cursor?: string | null; append?: boolean }) => {
-      if (!user || !isAdmin) return;
+      if (!user) return;
 
       const append = options?.append ?? false;
       if (append) {
@@ -120,15 +120,15 @@ function AdminChatsPageContent() {
         }
       }
     },
-    [user, isAdmin]
+    [user]
   );
 
   // Load sessions on mount
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user) {
       fetchSessionsPage();
     }
-  }, [user, isAdmin, fetchSessionsPage]);
+  }, [user, fetchSessionsPage]);
 
   // Fetch messages for a session
   const fetchMessagesPage = useCallback(
@@ -136,7 +136,7 @@ function AdminChatsPageContent() {
       sessionId: string,
       options?: { cursor?: string | null; append?: boolean }
     ) => {
-      if (!user || !isAdmin) return;
+      if (!user) return;
 
       const append = options?.append ?? false;
       if (!append) {
@@ -182,14 +182,14 @@ function AdminChatsPageContent() {
         }
       }
     },
-    [user, isAdmin]
+    [user]
   );
 
   useEffect(() => {
-    if (selectedSession && user && isAdmin) {
+    if (selectedSession && user) {
       fetchMessagesPage(selectedSession);
     }
-  }, [selectedSession, user, isAdmin, fetchMessagesPage]);
+  }, [selectedSession, user, fetchMessagesPage]);
 
   // Handle session selection
   const handleSelectSession = (sessionId: string) => {
@@ -279,7 +279,7 @@ function AdminChatsPageContent() {
           {authError && (
             <Button
               size="sm"
-              onClick={() => {}}
+              onClick={() => window.location.reload()}
               className="bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white shrink-0"
             >
               Σύνδεση ξανά
