@@ -56,13 +56,7 @@ export function AdminAccessDenied() {
                             </p>
                             <button
                                 onClick={handleSignOut}
-                                className="w-full py-3 px-6 rounded-xl font-semibold transition-colors"
-                                style={{
-                                    color: 'var(--theme-text)',
-                                    border: '1px solid var(--theme-glass-border)',
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--theme-glass-bg)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                className="w-full py-3 px-6 rounded-xl font-semibold transition-colors text-[var(--theme-text)] border border-[var(--theme-glass-border)] hover:bg-white/5"
                             >
                                 Αποσύνδεση
                             </button>

@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     TrendingUp,
     Bot,
@@ -25,21 +25,22 @@ interface NavItem {
 
 export function AdminSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
     const { user, signOut } = useAuth();
     const { unreadCount } = useNotifications();
 
     const handleSignOut = async () => {
         await signOut();
-        window.location.href = '/';
+        router.push('/');
     };
 
-    const navItems: NavItem[] = [
+    const navItems = useMemo<NavItem[]>(() => [
         { label: 'Σύνοψη', icon: <TrendingUp className="w-5 h-5" />, href: '/admin' },
         { label: 'Συνομιλίες AI', icon: <Bot className="w-5 h-5" />, href: '/admin/chats' },
         { label: 'Αιτήματα', icon: <Inbox className="w-5 h-5" />, href: '/admin/requests', badge: unreadCount > 0 ? unreadCount : undefined },
         { label: 'Χρήστες', icon: <Users className="w-5 h-5" />, href: '/admin/users' },
         { label: 'Ρυθμίσεις', icon: <Settings className="w-5 h-5" />, href: '/admin/settings' },
-    ];
+    ], [unreadCount]);
 
     const isActive = (href: string) => {
         if (href === '/admin') return pathname === '/admin';
@@ -65,8 +66,7 @@ export function AdminSidebar() {
 
             {/* User card */}
             <div
-                className="mb-6 p-3 rounded-xl flex items-center gap-3"
-                style={{ background: 'rgba(255,255,255,0.05)' }}
+                className="mb-6 p-3 rounded-xl flex items-center gap-3 bg-white/5"
             >
                 <div className="relative shrink-0">
                     {user?.photoURL ? (
@@ -82,7 +82,11 @@ export function AdminSidebar() {
                             {user?.displayName?.[0] || user?.email?.[0] || 'A'}
                         </div>
                     )}
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[var(--theme-accent)] flex items-center justify-center">
+                    <div
+                        className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[var(--theme-accent)] flex items-center justify-center"
+                        role="img"
+                        aria-label="Διαχειριστής"
+                    >
                         <Shield className="w-2.5 h-2.5 text-white" />
                     </div>
                 </div>
@@ -111,26 +115,17 @@ export function AdminSidebar() {
                     const active = isActive(item.href);
                     return (
                         <Link
-                            key={item.label}
+                            key={item.href}
                             href={item.href}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all relative ${
-                                active ? 'text-white' : ''
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                                active
+                                    ? 'text-white'
+                                    : 'text-[var(--theme-text-muted)] hover:bg-white/5 hover:text-[var(--theme-text)]'
                             }`}
-                            style={{
-                                background: active
-                                    ? 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))'
-                                    : 'transparent',
-                                color: active ? 'white' : 'var(--theme-text-muted)',
-                                boxShadow: active ? '0 4px 16px rgba(0, 186, 226, 0.3)' : 'none',
-                            }}
-                            onMouseEnter={(e) => {
-                                if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                                if (!active) e.currentTarget.style.color = 'var(--theme-text)';
-                            }}
-                            onMouseLeave={(e) => {
-                                if (!active) e.currentTarget.style.background = 'transparent';
-                                if (!active) e.currentTarget.style.color = 'var(--theme-text-muted)';
-                            }}
+                            style={active ? {
+                                background: 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))',
+                                boxShadow: '0 4px 16px rgba(0, 186, 226, 0.3)',
+                            } : undefined}
                         >
                             {item.icon}
                             <span className="flex-1">{item.label}</span>
@@ -148,16 +143,7 @@ export function AdminSidebar() {
             <div className="pt-4" style={{ borderTop: '1px solid var(--theme-glass-border)' }}>
                 <button
                     onClick={handleSignOut}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-colors"
-                    style={{ color: 'var(--theme-text-muted)' }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                        e.currentTarget.style.color = 'var(--theme-text)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = 'var(--theme-text-muted)';
-                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-colors text-[var(--theme-text-muted)] hover:bg-white/5 hover:text-[var(--theme-text)]"
                 >
                     <LogOut className="w-5 h-5" />
                     Αποσύνδεση

@@ -32,9 +32,10 @@ export function AdminLayout({ title, children, headerRight }: AdminLayoutProps) 
 
     return (
         /*
-         * Layout: global Header is position:fixed at 100px.
+         * Layout: global Header is position:fixed at height 100px.
          * pt-[100px] offsets content below it.
-         * Sidebar is sticky on lg, fixed on mobile.
+         * top-[116px] on the hamburger = 100px header + 16px breathing room.
+         * Sidebar is sticky on lg (top-[100px]), fixed on mobile.
          */
         <div className="min-h-screen flex bg-[var(--theme-bg-solid)] pt-[100px]">
             {/* Sidebar */}
@@ -78,8 +79,8 @@ export function AdminLayout({ title, children, headerRight }: AdminLayoutProps) 
                     aria-label="Toggle sidebar"
                 >
                     {sidebarOpen
-                        ? <X className="w-5 h-5" style={{ color: 'var(--theme-text)' }} />
-                        : <Menu className="w-5 h-5" style={{ color: 'var(--theme-text)' }} />
+                        ? <X className="w-5 h-5 text-[var(--theme-text)]" />
+                        : <Menu className="w-5 h-5 text-[var(--theme-text)]" />
                     }
                 </button>
 
