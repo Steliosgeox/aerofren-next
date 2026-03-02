@@ -201,16 +201,6 @@ export default async function GuidePage({ params }: GuidePageProps) {
   if (!guide) notFound();
   const lineOccurrences = new Map<string, number>();
   const keyedLines = guide.content.split("\n").map((line) => {
-    const count = (lineOccurrences.get(line) ?? 0) + 1;
-    lineOccurrences.set(line, count);
-    return {
-      line,
-      key: `${line}-${count}`,
-    };
-  });
-
-  const lineOccurrences = new Map<string, number>();
-  const keyedLines = guide.content.split("\n").map((line) => {
     const nextOccurrence = (lineOccurrences.get(line) ?? 0) + 1;
     lineOccurrences.set(line, nextOccurrence);
     return {
