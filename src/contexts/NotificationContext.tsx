@@ -207,10 +207,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     useEffect(() => {
         if (!user || !isAdmin) return;
 
-        pollAdmin();
+        // Delay first poll by 5s to avoid doubling up with admin page's own initial fetch
+        const initialDelay = setTimeout(() => pollAdmin(), 5_000);
         pollIntervalRef.current = setInterval(pollAdmin, 30_000);
 
         return () => {
+            clearTimeout(initialDelay);
             if (pollIntervalRef.current) {
                 clearInterval(pollIntervalRef.current);
                 pollIntervalRef.current = null;

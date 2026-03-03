@@ -12,9 +12,6 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 import { extractBearerToken, getAdminFirestore, isUserAdmin, verifyIdToken } from '@/lib/firebase-admin';
 
-const STATS_CACHE_TTL_MS = 30_000;
-let cachedStats: { data: { totalChats: number; escalatedChats: number; pendingEscalations: number; uniqueUsers: number; todayChats: number }; expiresAt: number } | null = null;
-
 export async function GET(request: NextRequest) {
     try {
         const clientIP = getClientIP(request);
@@ -49,22 +46,11 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Access denied' }, { status: 403 });
         }
 
-        if (cachedStats && cachedStats.expiresAt > Date.now()) {
-            return NextResponse.json(cachedStats.data, {
-                headers: {
-                    'X-RateLimit-Remaining': String(rateLimit.remaining),
-                    'X-Cache': 'HIT',
-                    'Cache-Control': 'private, max-age=30',
-                },
-            });
-        }
-
         const db = getAdminFirestore();
         if (!db) {
             return NextResponse.json({ error: 'Server configuration error' }, { status: 503 });
         }
 
-        const chatsRef = db.collection('chatMessages');
         const sessionsRef = db.collection('chatSessions');
         const escalationsRef = db.collection('escalatedChats');
 
@@ -78,38 +64,13 @@ export async function GET(request: NextRequest) {
             sessionsRef.where('lastMessageAt', '>=', Timestamp.fromDate(today)).count().get(),
         ]);
 
-        let totalChats = totalSessionsSnap.data().count || 0;
+        const totalChats = totalSessionsSnap.data().count || 0;
+
+        // uniqueUsersCount is maintained via Cloud Function on session creation. Returns 0 if not yet initialized.
         let uniqueUsers = 0;
-
-        if (totalChats === 0) {
-            const fallbackSnapshot = await chatsRef.select('sessionId', 'userId').get();
-            const sessionIds = new Set<string>();
-            const userIds = new Set<string>();
-
-            fallbackSnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.sessionId) {
-                    sessionIds.add(data.sessionId as string);
-                }
-                if (data.userId) {
-                    userIds.add(data.userId as string);
-                }
-            });
-
-            totalChats = sessionIds.size;
-            uniqueUsers = userIds.size;
-        } else {
-            const sessionsSnapshot = await sessionsRef.select('userId').get();
-            const userIds = new Set<string>();
-
-            sessionsSnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.userId) {
-                    userIds.add(data.userId as string);
-                }
-            });
-
-            uniqueUsers = userIds.size;
+        const sysStatsDoc = await db.collection('sys_stats').doc('global').get();
+        if (sysStatsDoc.exists && sysStatsDoc.data()?.uniqueUsersCount) {
+            uniqueUsers = sysStatsDoc.data()!.uniqueUsersCount as number;
         }
 
         const data = {
@@ -120,15 +81,9 @@ export async function GET(request: NextRequest) {
             todayChats: todayCountSnap.data().count || 0,
         };
 
-        cachedStats = {
-            data,
-            expiresAt: Date.now() + STATS_CACHE_TTL_MS,
-        };
-
         return NextResponse.json(data, {
             headers: {
                 'X-RateLimit-Remaining': String(rateLimit.remaining),
-                'X-Cache': 'MISS',
                 'Cache-Control': 'private, max-age=30',
             },
         });

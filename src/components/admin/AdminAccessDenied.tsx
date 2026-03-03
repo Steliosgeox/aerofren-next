@@ -27,13 +27,10 @@ export function AdminAccessDenied() {
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-red-500/15">
                     <Shield className="w-8 h-8 text-red-400" />
                 </div>
-                <h2
-                    className="text-2xl font-bold mb-2"
-                    style={{ color: 'var(--theme-text)' }}
-                >
+                <h2 className="text-2xl font-bold mb-2 text-[var(--theme-text)]">
                     Πρόσβαση μόνο για διαχειριστές
                 </h2>
-                <p className="mb-6" style={{ color: 'var(--theme-text-muted)' }}>
+                <p className="mb-6 text-[var(--theme-text-muted)]">
                     {!user
                         ? 'Πρέπει να συνδεθείτε για να δείτε αυτή τη σελίδα.'
                         : 'Ο λογαριασμός σας δεν έχει δικαιώματα διαχειριστή.'}
@@ -48,10 +45,7 @@ export function AdminAccessDenied() {
                         </button>
                     ) : (
                         <>
-                            <p
-                                className="text-sm"
-                                style={{ color: 'var(--theme-text-muted)' }}
-                            >
+                            <p className="text-sm text-[var(--theme-text-muted)]">
                                 Συνδεδεμένος ως: {user.email}
                             </p>
                             <button
@@ -64,8 +58,7 @@ export function AdminAccessDenied() {
                     )}
                     <Link
                         href="/"
-                        className="text-sm hover:underline"
-                        style={{ color: 'var(--theme-accent)' }}
+                        className="text-sm hover:underline text-[var(--theme-accent)]"
                     >
                         Επιστροφή στην αρχική
                     </Link>

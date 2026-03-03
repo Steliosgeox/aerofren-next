@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { HttpError } from "@/services/http";
 import { AdminStats, EscalatedChat, fetchAdminStats, fetchEscalations, resolveEscalation } from "@/services/admin";
 import { AdminLayout } from "@/components/admin";
+import { formatTime } from "@/utils/format";
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -72,15 +73,6 @@ export default function AdminPage() {
     }
   };
 
-  const formatTime = (timestamp: string | Date | null | undefined) => {
-    const date = typeof timestamp === "string"
-      ? new Date(timestamp)
-      : timestamp instanceof Date ? timestamp : new Date();
-    return date.toLocaleString("el-GR", {
-      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
-    });
-  };
-
   const STATUS_LABELS: Record<"pending" | "in_progress" | "resolved", string> = {
     pending: "Σε αναμονή",
     in_progress: "Σε εξέλιξη",
@@ -131,8 +123,7 @@ export default function AdminPage() {
       {/* Error banner */}
       {errorMessage && (
         <div
-          className="mb-6 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[var(--theme-accent)]/10"
-          style={{ border: '1px solid color-mix(in srgb, var(--theme-accent) 30%, transparent)' }}
+          className="mb-6 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[var(--theme-accent)]/10 border border-[var(--theme-accent)]/30"
           role="alert"
         >
           <p className="text-sm text-[var(--theme-text)]">{errorMessage}</p>

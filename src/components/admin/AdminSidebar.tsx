@@ -55,10 +55,10 @@ export function AdminSidebar() {
                     <span className="text-white font-bold text-sm">A</span>
                 </div>
                 <div>
-                    <span className="font-bold text-lg" style={{ color: 'var(--theme-text)' }}>
+                    <span className="font-bold text-lg text-[var(--theme-text)]">
                         AEROFREN
                     </span>
-                    <span className="text-xs block" style={{ color: 'var(--theme-text-muted)' }}>
+                    <span className="text-xs block text-[var(--theme-text-muted)]">
                         Διαχείριση
                     </span>
                 </div>
@@ -91,13 +91,10 @@ export function AdminSidebar() {
                     </div>
                 </div>
                 <div className="min-w-0">
-                    <p
-                        className="text-sm font-medium truncate"
-                        style={{ color: 'var(--theme-text)' }}
-                    >
+                    <p className="text-sm font-medium truncate text-[var(--theme-text)]">
                         {user?.displayName || 'Διαχειριστής'}
                     </p>
-                    <p className="text-xs truncate" style={{ color: 'var(--theme-text-muted)' }}>
+                    <p className="text-xs truncate text-[var(--theme-text-muted)]">
                         {user?.email}
                     </p>
                 </div>
@@ -105,10 +102,7 @@ export function AdminSidebar() {
 
             {/* Nav */}
             <nav className="flex-1 space-y-1">
-                <p
-                    className="text-[10px] font-bold tracking-widest px-4 mb-2"
-                    style={{ color: 'var(--theme-text-muted)' }}
-                >
+                <p className="text-[10px] font-bold tracking-widest px-4 mb-2 text-[var(--theme-text-muted)]">
                     ΠΛΟΗΓΗΣΗ
                 </p>
                 {navItems.map((item) => {
@@ -140,7 +134,7 @@ export function AdminSidebar() {
             </nav>
 
             {/* Sign out */}
-            <div className="pt-4" style={{ borderTop: '1px solid var(--theme-glass-border)' }}>
+            <div className="pt-4 border-t border-[var(--theme-glass-border)]">
                 <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-colors text-[var(--theme-text-muted)] hover:bg-white/5 hover:text-[var(--theme-text)]"

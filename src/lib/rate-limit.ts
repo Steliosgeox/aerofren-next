@@ -15,11 +15,15 @@ interface RateLimitConfig {
     maxRequests: number;   // Max requests per window
 }
 
-// In-memory store (resets on server restart - fine for single instance)
-// For multi-instance, use Redis
+// ⚠️ SERVERLESS LIMITATION: This in-memory store is per-function-instance.
+// On Vercel, each serverless invocation may run in a different instance,
+// making this rate limiter "best-effort" only — it works for warm instances
+// but resets on cold starts and does NOT share state across instances.
+// For production-grade rate limiting, migrate to Upstash Redis:
+// https://upstash.com/docs/redis/sdks/ratelimit-ts/overview
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-// Cleanup old entries every 5 minutes
+// Cleanup old entries every 5 minutes (note: this timer is per-instance on serverless)
 if (typeof setInterval !== 'undefined') {
     setInterval(() => {
         const now = Date.now();

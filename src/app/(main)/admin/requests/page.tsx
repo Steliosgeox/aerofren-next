@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/admin';
+import { formatTime } from '@/utils/format';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     EscalatedChat, fetchEscalations, resolveEscalation,
@@ -39,10 +40,6 @@ function StatusBadge({ status, type }: { status: string; type: 'escalation' | 'c
     );
 }
 
-function formatTime(ts: string | Date | null | undefined) {
-    const d = typeof ts === 'string' ? new Date(ts) : ts instanceof Date ? ts : new Date();
-    return d.toLocaleString('el-GR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
 
 // ── ESCALATION DETAIL ──────────────────────────────────────────────────────
 function EscalationDetail({ chat, onResolve }: { chat: EscalatedChat; onResolve: () => void }) {
@@ -207,9 +204,14 @@ function RequestsPageContent() {
     // Auto-mark contact as read when selected
     const handleContactStatusChange = useCallback(async (id: string, status: ContactSubmission['status']) => {
         if (!user) return;
-        await updateContactStatus(user, id, status);
-        setContacts((prev) => prev.map((c) => c.id === id ? { ...c, status } : c));
-        setSelectedContact((prev) => prev?.id === id ? { ...prev, status } : prev);
+        try {
+            await updateContactStatus(user, id, status);
+            setContacts((prev) => prev.map((c) => c.id === id ? { ...c, status } : c));
+            setSelectedContact((prev) => prev?.id === id ? { ...prev, status } : prev);
+        } catch (err) {
+            console.error('[RequestsPage] Failed to update contact status:', err);
+            setError('Αποτυχία ενημέρωσης κατάστασης. Δοκιμάστε ξανά.');
+        }
     }, [user]);
 
     useEffect(() => {
@@ -254,8 +256,7 @@ function RequestsPageContent() {
         <AdminLayout title="Αιτήματα" headerRight={refreshButton}>
             {error && (
                 <div
-                    className="mb-5 p-4 rounded-xl text-sm bg-[var(--theme-accent)]/10"
-                    style={{ border: '1px solid color-mix(in srgb, var(--theme-accent) 30%, transparent)', color: 'var(--theme-text)' }}
+                    className="mb-5 p-4 rounded-xl text-sm bg-[var(--theme-accent)]/10 border border-[var(--theme-accent)]/30 text-[var(--theme-text)]"
                 >
                     {error}
                 </div>
@@ -330,15 +331,11 @@ function RequestsPageContent() {
                                 <button
                                     key={esc.sessionId}
                                     onClick={() => setSelectedEscalation(esc)}
-                                    className="w-full p-4 text-left transition-colors hover:bg-white/3"
-                                    style={{
-                                        background: selectedEscalation?.sessionId === esc.sessionId
-                                            ? 'color-mix(in srgb, var(--theme-accent) 15%, transparent)'
-                                            : 'transparent',
-                                        borderLeft: selectedEscalation?.sessionId === esc.sessionId
-                                            ? '3px solid var(--theme-accent)'
-                                            : '3px solid transparent',
-                                    }}
+                                    className={`w-full p-4 text-left transition-colors hover:bg-white/3 ${
+                                        selectedEscalation?.sessionId === esc.sessionId
+                                            ? 'bg-[var(--theme-accent)]/15 border-l-[3px] border-l-[var(--theme-accent)]'
+                                            : 'border-l-[3px] border-l-transparent'
+                                    }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-sm truncate" style={{ color: 'var(--theme-text)' }}>
@@ -368,15 +365,11 @@ function RequestsPageContent() {
                                 <button
                                     key={contact.id}
                                     onClick={() => setSelectedContact(contact)}
-                                    className="w-full p-4 text-left transition-colors hover:bg-white/3"
-                                    style={{
-                                        background: selectedContact?.id === contact.id
-                                            ? 'color-mix(in srgb, var(--theme-accent) 15%, transparent)'
-                                            : 'transparent',
-                                        borderLeft: selectedContact?.id === contact.id
-                                            ? '3px solid var(--theme-accent)'
-                                            : '3px solid transparent',
-                                    }}
+                                    className={`w-full p-4 text-left transition-colors hover:bg-white/3 ${
+                                        selectedContact?.id === contact.id
+                                            ? 'bg-[var(--theme-accent)]/15 border-l-[3px] border-l-[var(--theme-accent)]'
+                                            : 'border-l-[3px] border-l-transparent'
+                                    }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-sm truncate" style={{ color: 'var(--theme-text)' }}>

@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
         const snapshot = await db
             .collection('escalatedChats')
             .orderBy('escalatedAt', 'desc')
+            .limit(50)
             .get();
 
         const escalations = snapshot.docs.map((doc) => {

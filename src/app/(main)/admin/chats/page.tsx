@@ -35,6 +35,7 @@ import {
   resolveEscalation,
 } from "@/services/admin";
 import { AdminLayout } from "@/components/admin";
+import { formatTime } from "@/utils/format";
 
 function AdminChatsPageContent() {
   const searchParams = useSearchParams();
@@ -215,22 +216,6 @@ function AdminChatsPageContent() {
   // Get current session info
   const currentSession = sessions.find((s) => s.sessionId === selectedSession);
 
-  // Format timestamp
-  const formatTime = (date: string | Date | null | undefined) => {
-    const d =
-      typeof date === "string"
-        ? new Date(date)
-        : date instanceof Date
-          ? date
-          : new Date();
-    return d.toLocaleString("el-GR", {
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   // Export chat to CSV
   const exportToCSV = () => {
     if (!messages.length) return;
@@ -239,7 +224,7 @@ function AdminChatsPageContent() {
     const rows = messages
       .map((msg) => {
         const timestamp = msg.timestamp || new Date().toISOString();
-        return `"${timestamp}","${roleLabel(msg.role)}","${msg.content.replace(/"/g, '""')}","${msg.userEmail || "Ανώνυμος"}"`;
+        return `"${timestamp}","${roleLabel(msg.role)}","${msg.content.replace(/"/g, '""').replace(/\n/g, ' ').replace(/\r/g, '')}","${msg.userEmail || "Ανώνυμος"}"`;
       })
       .join("\n");
 
@@ -322,7 +307,7 @@ function AdminChatsPageContent() {
                         key={session.sessionId}
                         onClick={() => handleSelectSession(session.sessionId)}
                         className={`w-full p-4 text-left hover:bg-[var(--theme-glass-bg)] transition-colors ${selectedSession === session.sessionId
-                          ? "bg-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)] border-l-4 border-[var(--theme-accent)]"
+                          ? "bg-[var(--theme-accent)]/20 border-l-4 border-[var(--theme-accent)]"
                           : ""
                           }`}
                       >

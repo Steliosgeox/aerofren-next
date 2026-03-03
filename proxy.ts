@@ -44,6 +44,31 @@ function buildCspHeader(nonce: string) {
 }
 
 export function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // Protect /admin/* routes: prevent CDN caching and add security headers.
+    // Full auth guard requires Firebase session cookies (server-side sessions).
+    // Client-side auth is enforced by AdminLayout.tsx.
+    // TODO: Implement Firebase session cookies for proper server-side auth guard.
+    if (pathname.startsWith('/admin')) {
+        const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+        const cspHeader = buildCspHeader(nonce);
+
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set('x-nonce', nonce);
+        requestHeaders.set('Content-Security-Policy', cspHeader);
+
+        const response = NextResponse.next({
+            request: { headers: requestHeaders },
+        });
+
+        response.headers.set('Content-Security-Policy', cspHeader);
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
+        return response;
+    }
+
     const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
     const cspHeader = buildCspHeader(nonce);
 
