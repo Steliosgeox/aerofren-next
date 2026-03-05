@@ -214,11 +214,14 @@ function RequestsPageContent() {
         }
     }, [user]);
 
+    const selectedContactId = selectedContact?.id;
+    const selectedContactStatus = selectedContact?.status;
+
     useEffect(() => {
-        if (selectedContact && selectedContact.status === 'new') {
-            handleContactStatusChange(selectedContact.id, 'read');
+        if (selectedContactId && selectedContactStatus === 'new') {
+            handleContactStatusChange(selectedContactId, 'read');
         }
-    }, [selectedContact?.id, selectedContact?.status, handleContactStatusChange]);
+    }, [selectedContactId, selectedContactStatus, handleContactStatusChange]);
 
     const handleResolveEscalation = async (sessionId: string) => {
         if (!user) return;
