@@ -1,6 +1,5 @@
 import type { AuthUser, JsonObject } from '@/services/http';
-import { saveChatMessage, type ChatUser } from '@/lib/firebase';
-import { fetchWithAuth } from '@/services/http';
+import { fetchJson, fetchWithAuth } from '@/services/http';
 
 export type EscalationResponse = JsonObject & {
     success: boolean;
@@ -8,13 +7,40 @@ export type EscalationResponse = JsonObject & {
     alreadyEscalated?: boolean;
 };
 
-export async function persistChatMessage(
-    sessionId: string,
-    role: 'user' | 'assistant',
-    content: string,
-    user?: ChatUser | null
-): Promise<string | null> {
-    return saveChatMessage(sessionId, role, content, user);
+export interface ChatCompletionRequest {
+    message: string;
+    sessionId?: string;
+    history?: Array<{
+        role: 'user' | 'assistant';
+        content: string;
+    }>;
+}
+
+export type ChatCompletionResponse = JsonObject & {
+    response: string;
+    sessionId: string;
+    error?: string;
+    persisted?: boolean;
+    traceId?: string;
+    persistenceError?: string;
+};
+
+export async function requestChatCompletion(
+    user: AuthUser | null,
+    payload: ChatCompletionRequest
+): Promise<ChatCompletionResponse> {
+    const headers = new Headers({ 'Content-Type': 'application/json' });
+
+    if (user) {
+        const token = await user.getIdToken();
+        headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return fetchJson<ChatCompletionResponse>('/api/chat', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+    });
 }
 
 export async function requestEscalation(
@@ -27,3 +53,4 @@ export async function requestEscalation(
         body: JSON.stringify({ sessionId }),
     });
 }
+

@@ -6,7 +6,10 @@ export interface AdminStats {
     escalatedChats: number;
     pendingEscalations: number;
     uniqueUsers: number;
+    uniqueUsersInitialized?: boolean;
+    uniqueUsersSource?: 'sys_stats' | 'chat_users' | 'uninitialized';
     todayChats: number;
+    traceId?: string;
 }
 
 export interface EscalatedChat {

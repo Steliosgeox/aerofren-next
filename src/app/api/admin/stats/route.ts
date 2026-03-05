@@ -8,11 +8,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
 import { Timestamp } from 'firebase-admin/firestore';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 import { extractBearerToken, getAdminFirestore, isUserAdmin, verifyIdToken } from '@/lib/firebase-admin';
+import { selectUniqueUsersMetric } from '@/lib/admin/stats-utils';
 
 export async function GET(request: NextRequest) {
+    const traceId = randomUUID();
     try {
         const clientIP = getClientIP(request);
         const rateLimit = checkRateLimit(`adminStats:${clientIP}`, RATE_LIMITS.adminStats);
@@ -66,29 +69,58 @@ export async function GET(request: NextRequest) {
 
         const totalChats = totalSessionsSnap.data().count || 0;
 
-        // uniqueUsersCount is maintained via Cloud Function on session creation. Returns 0 if not yet initialized.
-        let uniqueUsers = 0;
+        // Resolve unique users from server-maintained sys_stats first; fallback to chatUsers count.
+        // If both are empty, expose "uninitialized" to avoid silently misleading zeros.
         const sysStatsDoc = await db.collection('sys_stats').doc('global').get();
-        if (sysStatsDoc.exists && sysStatsDoc.data()?.uniqueUsersCount) {
-            uniqueUsers = sysStatsDoc.data()!.uniqueUsersCount as number;
-        }
+        const sysStatsUniqueUsers = sysStatsDoc.exists
+            ? (sysStatsDoc.data()?.uniqueUsersCount as number | null | undefined) ?? null
+            : null;
+        const chatUsersCountSnap = await db.collection('chatUsers').count().get();
+        const uniqueUsersMetric = selectUniqueUsersMetric({
+            sysStatsUniqueUsersCount: sysStatsUniqueUsers,
+            chatUsersCount: chatUsersCountSnap.data().count || 0,
+        });
 
         const data = {
             totalChats,
             escalatedChats: escalatedCountSnap.data().count || 0,
             pendingEscalations: pendingCountSnap.data().count || 0,
-            uniqueUsers,
+            uniqueUsers: uniqueUsersMetric.uniqueUsers,
+            uniqueUsersInitialized: uniqueUsersMetric.initialized,
+            uniqueUsersSource: uniqueUsersMetric.source,
             todayChats: todayCountSnap.data().count || 0,
+            traceId,
         };
+
+        console.info(
+            '[admin.stats] read_ok',
+            JSON.stringify({
+                traceId,
+                totalChats: data.totalChats,
+                todayChats: data.todayChats,
+                escalatedChats: data.escalatedChats,
+                pendingEscalations: data.pendingEscalations,
+                uniqueUsers: data.uniqueUsers,
+                uniqueUsersInitialized: data.uniqueUsersInitialized,
+                uniqueUsersSource: data.uniqueUsersSource,
+            })
+        );
 
         return NextResponse.json(data, {
             headers: {
                 'X-RateLimit-Remaining': String(rateLimit.remaining),
+                'X-Trace-Id': traceId,
                 'Cache-Control': 'private, max-age=30',
             },
         });
     } catch (error) {
-        console.error('Admin stats API error:', error);
+        console.error(
+            '[admin.stats] read_failed',
+            JSON.stringify({
+                traceId,
+                error: error instanceof Error ? error.message : String(error),
+            })
+        );
         return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
     }
 }

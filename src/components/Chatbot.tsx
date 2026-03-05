@@ -32,7 +32,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { gsap } from '@/lib/gsap/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCookieConsent } from '@/components/cookies/CookieConsentProvider';
-import { persistChatMessage, requestEscalation } from '@/services/chat';
+import { requestChatCompletion, requestEscalation } from '@/services/chat';
 import Link from 'next/link';
 import './Chatbot.scss';
 
@@ -41,12 +41,6 @@ interface Message {
   id: string;
   type: 'user' | 'ai';
   content: string;
-}
-
-interface ChatResponse {
-  response: string;
-  sessionId: string;
-  error?: string;
 }
 
 // Storage key
@@ -221,22 +215,39 @@ export function Chatbot() {
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
 
-    // Save user message to Firestore
-    persistChatMessage(sessionId, 'user', messageText, user).catch(console.error);
-
     try {
       const history = messages.slice(-10).map((msg) => ({
         role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
         content: msg.content,
       }));
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageText, sessionId, history }),
+      const data = await requestChatCompletion(user, {
+        message: messageText,
+        sessionId,
+        history,
       });
 
-      const data: ChatResponse = await response.json();
+      if (data.sessionId && data.sessionId !== sessionId) {
+        setSessionId(data.sessionId);
+        if (allowFunctional && cookieConsentReady) {
+          try {
+            localStorage.setItem(STORAGE_KEY, data.sessionId);
+          } catch (error) {
+            console.warn('Failed to persist updated sessionId', error);
+          }
+        }
+      }
+
+      if (data.persisted === false) {
+        console.warn(
+          '[chatbot] server persistence unavailable',
+          JSON.stringify({
+            sessionId: data.sessionId,
+            traceId: data.traceId ?? null,
+            persistenceError: data.persistenceError ?? null,
+          })
+        );
+      }
 
       const aiContent = data.response || 'Λυπούμαστε, δεν μπορέσαμε να απαντήσουμε. Παρακαλούμε δοκιμάστε ξανά.';
 
@@ -247,9 +258,6 @@ export function Chatbot() {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-
-      // Save AI response to Firestore
-      persistChatMessage(sessionId, 'assistant', aiContent, user).catch(console.error);
     } catch (error) {
       console.error('Chat error:', error);
       const errorContent = 'Παρουσιάστηκε πρόβλημα. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.';
@@ -259,13 +267,10 @@ export function Chatbot() {
         content: errorContent,
       };
       setMessages((prev) => [...prev, errorMessage]);
-
-      // Save error message to Firestore too
-      persistChatMessage(sessionId, 'assistant', errorContent, user).catch(console.error);
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, randomID, sessionId, user]);
+  }, [allowFunctional, cookieConsentReady, input, isLoading, messages, randomID, sessionId, user]);
 
   // Handle Enter key
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -304,7 +309,6 @@ export function Chatbot() {
           content: `✅ **Το αίτημά σας καταχωρήθηκε.**\n\nΈνας εκπρόσωπός μας θα επικοινωνήσει σύντομα στο **${user.email}**.\n\nΕναλλακτικά, καλέστε μας στο **210 3461645**.`,
         };
         setMessages((prev) => [...prev, confirmationMessage]);
-        persistChatMessage(sessionId, 'assistant', confirmationMessage.content, user).catch(console.error);
       } else {
         setEscalationStatus('error');
       }

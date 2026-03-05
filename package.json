@@ -10,7 +10,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "analyze": "cross-env ANALYZE=true next build"
+    "analyze": "cross-env ANALYZE=true next build",
+    "backfill:chat-sessions": "node scripts/backfill-chat-sessions.cjs",
+    "check:chat-session-drift": "node scripts/check-chat-session-drift.cjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

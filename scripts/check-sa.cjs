@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const lines = fs.readFileSync('.env.local', 'utf8').split('\n');
 const line = lines.find(l => l.startsWith('FIREBASE_SERVICE_ACCOUNT='));

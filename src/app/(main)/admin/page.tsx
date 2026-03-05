@@ -102,7 +102,7 @@ export default function AdminPage() {
     },
     {
       label: "Μοναδικοί χρήστες",
-      value: stats.uniqueUsers.toString(),
+      value: stats.uniqueUsersInitialized === false ? "—" : stats.uniqueUsers.toString(),
       icon: <Users className="w-6 h-6" />,
     },
   ] : [];
