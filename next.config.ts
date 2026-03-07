@@ -58,6 +58,25 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // ── Immutable cache for video loops + sprite sheets (1 year) ──────────
+      {
+        source: "/about-us/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/videos/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
     ];
   },
   experimental: {
