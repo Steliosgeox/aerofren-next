@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { gsap, useGSAP, EASE } from '@/lib/gsap';
+import { gsap, useGSAP, EASE, ScrollTrigger } from '@/lib/gsap';
 import CinematicBackgroundLine from './CinematicBackgroundLine';
 import VideoBackground, { VideoBackgroundHandle } from './VideoBackground';
 
@@ -18,8 +18,8 @@ const HISTORY_SECTIONS = [
     sectionNum: '01',
     year: '1980',
     tag: 'Ίδρυση',
-    heading: 'Μια Ιστορία\nΕξειδίκευσης\nκαι Εμπιστοσύνης',
-    body: 'Η διαδρομή της Aerofren ξεκίνησε το 1980 από τον αείμνηστο Βασίλειο Κουτελίδη, ο οποίος μετέφερε στην Ελλάδα την πολύτιμη τεχνογνωσία που απέκτησε στη Γερμανία πάνω στα συστήματα αερόφρενων φορτηγών – μια εξειδίκευση που χάρισε και το όνομα στην επιχείρηση.',
+    heading: 'Μια Πορεία\nΕξειδίκευσης\nκαι Αξιοπιστίας',
+    body: 'Η διαδρομή της Aerofren ξεκίνησε το 1980 από τον ιδρυτή της Βασίλειο Κουτελίδη, μεταφέροντας στην Ελλάδα την πολύτιμη τεχνογνωσία που εξέλισσε στη Γερμανία πάνω στα συστήματα αερόφρενων επαγγελματικών οχημάτων.',
     align: 'left',
   },
   {
@@ -27,8 +27,8 @@ const HISTORY_SECTIONS = [
     sectionNum: '02',
     year: '2000+',
     tag: 'Εξέλιξη',
-    heading: 'Εξέλιξη\nκαι Ανάπτυξη',
-    body: 'Με την πάροδο των ετών, η Aerofren εξελίχθηκε δυναμικά, εντάσσοντας στο δυναμικό της ένα ευρύ φάσμα προϊόντων πεπιεσμένου αέρα και προηγμένων συστημάτων επεξεργασίας νερού. Σήμερα, η επιχείρηση συνεχίζει την επιτυχημένη πορεία της υπό τη διεύθυνση της κόρης του, Κατερίνας Κουτελίδου.',
+    heading: 'Σταθερή\nΑνάπτυξη',
+    body: 'Με την πάροδο των ετών, η Aerofren εξελίχθηκε σε έναν ολοκληρωμένο B2B προμηθευτή, εντάσσοντας στο δυναμικό της ένα ευρύ φάσμα προϊόντων πεπιεσμένου αέρα. Σήμερα, η επιχείρηση συνεχίζει την επιτυχημένη πορεία της υπό τη διεύθυνση της Κατερίνας Κουτελίδου.',
     align: 'right',
   },
   {
@@ -36,17 +36,17 @@ const HISTORY_SECTIONS = [
     sectionNum: '03',
     year: 'Σήμερα',
     tag: 'Χώρος',
-    heading: 'Νέος χώρος,\nίδιο μεράκι',
-    body: 'Στον νέο, καλαίσθητο χώρο μας στο Μοσχάτο (Χρυσοστόμου Σμύρνης 26), προσφέρουμε εξειδικευμένες λύσεις με προϊόντα κορυφαίων πιστοποιημένων οίκων του εξωτερικού, διαθέσιμα άμεσα ή κατόπιν παραγγελίας.',
+    heading: 'Σύγχρονες\nΕγκαταστάσεις',
+    body: 'Στον νέο, πλήρως ανανεωμένο χώρο μας στο Μοσχάτο (Χρυσοστόμου Σμύρνης 26), προσφέρουμε εξειδικευμένες λύσεις με προϊόντα κορυφαίων πιστοποιημένων οίκων του εξωτερικού, επιτυγχάνοντας άμεση εξυπηρέτηση.',
     align: 'left',
   },
   {
     id: 'tribute',
     sectionNum: '04',
     year: 'Πάντα',
-    tag: 'Τιμή',
-    heading: 'Τιμή\nστον Ιδρυτή',
-    body: 'Λειτουργούμε με το ίδιο μεράκι και την αγάπη που μας κληροδότησε ο ιδρυτής μας, στον οποίο είναι αφιερωμένη η καθημερινή μας προσπάθεια. Αυτό αποτελεί έναν ελάχιστο φόρο τιμής στη μνήμη και το έργο του Βασιλείου Κουτελίδη.',
+    tag: 'Αρχές',
+    heading: 'Αμετάβλητες\nΑξίες',
+    body: 'Λειτουργούμε με τον ίδιο επαγγελματισμό και τη συνέπεια που μας κληροδότησε ο ιδρυτής μας. Η δική του δέσμευση στην ποιότητα αποτελεί τον ακρογωνιαίο λίθο για την καθημερινή μας προσπάθεια.',
     align: 'right',
   },
 ] as const;
@@ -56,54 +56,54 @@ const PHILOSOPHY_SECTIONS = [
     id: 'precision',
     sectionNum: '05',
     tag: 'Αποστολή',
-    heading: 'Δεν προμηθεύουμε\nαπλώς εξαρτήματα.',
-    accent: 'Παραδίδουμε ακρίβεια.',
-    body: 'Από το 1980, η AEROFREN είναι ο αξιόπιστος B2B συνεργάτης για επαγγελματίες που απαιτούν τελειότητα στα πνευματικά και υδραυλικά εξαρτήματα.',
+    heading: 'Δεν εμπορευόμαστε\nαπλώς εξαρτήματα.',
+    accent: 'Παρέχουμε σωστές λύσεις.',
+    body: 'Από το 1980, η AEROFREN αποτελεί τον πλέον αξιόπιστο συνεργάτη για τους ελεύθερους επαγγελματίες και τη βιομηχανία στον τομέα των πνευματικών συστημάτων.',
     align: 'left',
   },
   {
     id: 'durability',
     sectionNum: '06',
     tag: 'Ποιότητα',
-    heading: 'Εξαρτήματα που\nαντέχουν δεκαετίες.',
-    accent: 'Χρόνο με τον χρόνο.',
-    body: 'Premium ρακόρ ορείχαλκου. Βαλβίδες βιομηχανικών προδιαγραφών. Πιστοποιημένοι σωλήνες. Υλικά σχεδιασμένα να αποδίδουν υπό πίεση.',
+    heading: 'Εξαρτήματα με\nαντοχή στο χρόνο.',
+    accent: 'Σταθερή απόδοση.',
+    body: 'Υψηλής ποιότητας ρακόρ ορείχαλκου. Πιστοποιημένες βαλβίδες και σωληνώσεις. Υλικά κατασκευασμένα για να αποδίδουν άριστα κάτω από απαιτητικές συνθήκες εργασίας.',
     align: 'right',
   },
   {
     id: 'systematic',
     sectionNum: '07',
-    tag: 'Σύστημα',
-    heading: 'Συστηματική\nπροσέγγιση.',
-    accent: 'Απρόσκοπτη ενσωμάτωση.',
-    body: 'Από πνευματικούς κυλίνδρους έως ολοκληρωμένα συστήματα επεξεργασίας αέρα, ο κατάλογός μας μειώνει την πολυπλοκότητα στις εγκαταστάσεις σας.',
+    tag: 'Εφαρμογή',
+    heading: 'Συστηματική\nΠροσέγγιση.',
+    accent: 'Εύκολη προσαρμογή.',
+    body: 'Ο εκτενής κατάλογός μας είναι δομημένος με τέτοιο τρόπο ώστε να βρίσκετε άμεσα το κατάλληλο εξάρτημα, μειώνοντας την πολυπλοκότητα στην εγκατάσταση.',
     align: 'left',
   },
   {
     id: 'silent',
     sectionNum: '08',
     tag: 'Αξιοπιστία',
-    heading: 'Προϊόντα που\nδουλεύουν αθόρυβα.',
-    accent: 'Στο παρασκήνιο.',
-    body: 'Τα καλύτερα εξαρτήματα είναι εκείνα που ξεχνάς ότι υπάρχουν. Τα ρακόρ και οι βαλβίδες μας λειτουργούν με απόλυτη αξιοπιστία.',
+    heading: 'Λειτουργία\nχωρίς προβλήματα.',
+    accent: 'Απόλυτη σιγουριά.',
+    body: 'Η πραγματική ποιότητα φαίνεται στην απροβλημάτιστη λειτουργία. Τα εξαρτήματα που διαθέτουμε προσφέρουν ακριβώς αυτό: ξεγνοιασιά μετά την τοποθέτηση.',
     align: 'right',
   },
   {
     id: 'expertise',
     sectionNum: '09',
     tag: 'Τεχνογνωσία',
-    heading: 'Η τεχνογνωσία\nείναι ο μοχλός.',
-    accent: '35+ χρόνια στη διάθεσή σας.',
-    body: 'Δεν πουλάμε απλώς προϊόντα — προσφέρουμε λύσεις, καθοδήγηση και υποστήριξη που κάνουν τη διαφορά.',
+    heading: 'Με κινητήριο δύναμη\nτην εμπειρία.',
+    accent: '40+ χρόνια στο πλευρό σας.',
+    body: 'Δεν εκτελούμε απλώς παραγγελίες. Προσφέρουμε τεχνική καθοδήγηση και ουσιαστική υποστήριξη που κάνουν την πραγματική διαφορά στο τελικό αποτέλεσμα.',
     align: 'left',
   },
   {
     id: 'professionals',
     sectionNum: '10',
     tag: 'Συνεργασία',
-    heading: 'Φτιαγμένα για\nεπαγγελματίες.',
-    accent: 'Από επαγγελματίες.',
-    body: 'Κάθε εγκαταστάτης, μηχανικός και βιομηχανικός πελάτης που εξυπηρετούμε γίνεται συνεργάτης. Η επιτυχία σας είναι το μέτρο της ποιότητάς μας.',
+    heading: 'Από επαγγελματίες,\nγια επαγγελματίες.',
+    accent: 'Αμοιβαία εμπιστοσύνη.',
+    body: 'Κάθε κατασκευαστής, μηχανικός και τεχνικός που μας εμπιστεύεται αντιμετωπίζεται ως σταθερός συνεργάτης. Η δική σας επιτυχία διασφαλίζει τη δική μας πορεία.',
     align: 'right',
   },
 ] as const;
@@ -134,133 +134,96 @@ export default function AboutCinematicPage() {
       ).matches;
       if (prefersReducedMotion) return;
 
-      /* Section number ghost — atmospheric fade in */
-      gsap.utils.toArray<HTMLElement>('.about-section-num').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { opacity: 0, y: 40 },
-          {
-            opacity: 1,
-            y: 0,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: el.closest('.about-section') ?? el,
-              start: 'top 85%',
-              end: 'top 35%',
-              scrub: 1,
-            },
-          }
+      /* ── HELPER: cinematic cascade per about-section ──────────── */
+      const buildSectionTl = (section: Element) => {
+        const tl = gsap.timeline({ paused: true });
+        const num = section.querySelector<HTMLElement>('.about-section-num');
+        const tag = section.querySelector<HTMLElement>('.about-tag');
+        const heading = section.querySelector<HTMLElement>('.about-heading');
+        const accent = section.querySelector<HTMLElement>('.about-accent');
+        const body = section.querySelector<HTMLElement>('.about-body');
+
+        /* 1. Ghost number — emerges from blur + tiny scale */
+        if (num) tl.fromTo(num,
+          { opacity: 0, scale: 0.5, filter: 'blur(24px)' },
+          { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 2.0, ease: 'power4.out' },
+          0
         );
+
+        /* 2. Tag pill — skew-stamp (like a badge being pressed) */
+        if (tag) tl.fromTo(tag,
+          { opacity: 0, x: -18, skewX: -10 },
+          { opacity: 1, x: 0, skewX: 0, duration: 0.7, ease: 'power3.out' },
+          0.25
+        );
+
+        /* 3. Heading — clip-path blade wipe DOWN + blur-to-sharp */
+        if (heading) tl.fromTo(heading,
+          { opacity: 0, clipPath: 'inset(0% 0% 100% 0%)', filter: 'blur(14px)', y: 20 },
+          { opacity: 1, clipPath: 'inset(0% 0% 0% 0%)', filter: 'blur(0px)', y: 0, duration: 1.15, ease: 'power4.out' },
+          0.35
+        );
+
+        /* 4. Accent line — horizontal left-to-right reveal */
+        if (accent) tl.fromTo(accent,
+          { opacity: 0, clipPath: 'inset(0% 100% 0% 0%)', filter: 'blur(6px)' },
+          { opacity: 1, clipPath: 'inset(0% 0% 0% 0%)', filter: 'blur(0px)', duration: 1.0, ease: 'power3.out' },
+          0.7
+        );
+
+        /* 5. Body text — soft upward blur-fade */
+        if (body) tl.fromTo(body,
+          { opacity: 0, y: 22, filter: 'blur(5px)' },
+          { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.1, ease: 'power3.out' },
+          0.85
+        );
+
+        return tl;
+      };
+
+      /* ── SECTION REVEALS — triggers at 52% so effect is fully visible ── */
+      gsap.utils.toArray<HTMLElement>('.about-section').forEach((section) => {
+        const tl = buildSectionTl(section);
+        ScrollTrigger.create({
+          trigger: section,
+          start: 'top 52%',
+          onEnter: () => tl.play(),
+          onLeave: () => tl.reverse(),
+          onEnterBack: () => tl.play(),
+          onLeaveBack: () => tl.reverse(),
+        });
       });
 
-      /* Tag pill — snaps in */
-      gsap.utils.toArray<HTMLElement>('.about-tag').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { opacity: 0, scale: 0.85, x: -10 },
-          {
-            opacity: 1,
-            scale: 1,
-            x: 0,
-            ease: EASE.smooth,
-            scrollTrigger: {
-              trigger: el.closest('.about-section') ?? el,
-              start: 'top 80%',
-              end: 'top 50%',
-              scrub: 0.8,
-            },
-          }
-        );
-      });
-
-      /* Heading — wipes up */
-      gsap.utils.toArray<HTMLElement>('.about-heading').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { opacity: 0, y: 70 },
-          {
-            opacity: 1,
-            y: 0,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: el.closest('.about-section') ?? el,
-              start: 'top 78%',
-              end: 'top 42%',
-              scrub: 1.2,
-            },
-          }
-        );
-      });
-
-      /* Accent line (philosophy) */
-      gsap.utils.toArray<HTMLElement>('.about-accent').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { opacity: 0, y: 50 },
-          {
-            opacity: 1,
-            y: 0,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: el.closest('.about-section') ?? el,
-              start: 'top 74%',
-              end: 'top 40%',
-              scrub: 1,
-            },
-          }
-        );
-      });
-
-      /* Body text */
-      gsap.utils.toArray<HTMLElement>('.about-body').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { opacity: 0, y: 35 },
-          {
-            opacity: 1,
-            y: 0,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: el.closest('.about-section') ?? el,
-              start: 'top 72%',
-              end: 'top 38%',
-              scrub: 0.9,
-            },
-          }
-        );
-      });
-
-      /* Hero elements — stagger on load */
+      /* ── HERO ELEMENTS — blur-stagger on load ────────────────────────── */
       gsap.fromTo(
         '.about-hero-content > *',
-        { opacity: 0, y: 60 },
+        { opacity: 0, y: 60, filter: 'blur(10px)' },
         {
           opacity: 1,
           y: 0,
-          duration: 1.4,
-          stagger: 0.12,
+          filter: 'blur(0px)',
+          duration: 1.5,
+          stagger: 0.14,
           ease: EASE.smooth,
-          delay: 0.2,
+          delay: 0.3,
         }
       );
 
-      /* Divider text */
-      gsap.fromTo(
-        '.about-divider-inner',
-        { opacity: 0, y: 40, scale: 0.97 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.about-divider',
-            start: 'top 70%',
-            end: 'top 40%',
-            scrub: 1,
-          },
-        }
-      );
+      /* ── DIVIDER ─────────────────────────────────────────────────────── */
+      const dividerTl = gsap.timeline({ paused: true })
+        .fromTo(
+          '.about-divider-inner',
+          { opacity: 0, y: 50, scale: 0.92, filter: 'blur(12px)' },
+          { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 1.6, ease: 'power4.out' }
+        );
+      ScrollTrigger.create({
+        trigger: '.about-divider',
+        start: 'top 55%',
+        onEnter: () => dividerTl.play(),
+        onLeave: () => dividerTl.reverse(),
+        onEnterBack: () => dividerTl.play(),
+        onLeaveBack: () => dividerTl.reverse(),
+      });
       /* Canvas scrub — submerge (above → underwater) */
       const submergeProgress = { v: 0 };
       gsap.to(submergeProgress, {
@@ -386,7 +349,7 @@ export default function AboutCinematicPage() {
           justifyContent: 'center',
           position: 'relative',
           zIndex: 2,
-          padding: '0 clamp(1.5rem, 6vw, 8rem)',
+          padding: 'calc(100px + 4vh) clamp(1.5rem, 6vw, 8rem) 4vh',
         }}
       >
         <div
@@ -440,8 +403,8 @@ export default function AboutCinematicPage() {
               opacity: 0,
             }}
           >
-            Τεσσερις δεκαετίες αφοσίωσης στην τεχνική ακρίβεια, στην ποιότητα
-            και στις ανθρώπινες αξίες που κληροδότησε ο ιδρυτής μας.
+            Τέσσερις δεκαετίες αφοσίωσης στην τεχνική αρτιότητα, την ποιότητα
+            και τον σεβασμό στον συνεργάτη, που αποτελούν τις σταθερές αξίες μας.
           </p>
 
           {/* Dive Deeper animated scroll cue */}
@@ -461,7 +424,7 @@ export default function AboutCinematicPage() {
               fontFamily: 'var(--font-dm-sans), sans-serif',
               fontWeight: 500,
             }}>
-              Κατέβα βαθύτερα
+              Περιηγηθείτε
             </span>
             <svg
               width="18"

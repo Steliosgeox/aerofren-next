@@ -141,9 +141,9 @@ export default function AdminPage() {
       {/* Stats Grid — 5 cards */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         {isLoading ? (
-          Array.from({ length: 5 }).map((_, i) => (
+          Array.from({ length: 5 }, (_, slotId) => `admin-stat-skeleton-${slotId}`).map((slotKey) => (
             <div
-              key={i}
+              key={slotKey}
               className="rounded-xl p-6 animate-pulse bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)]"
             >
               <div className="w-12 h-12 rounded-xl bg-white/10 mb-4" />

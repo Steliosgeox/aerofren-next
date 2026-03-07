@@ -134,6 +134,7 @@ export function GlassNavigation({
         {items.map((item, index) => (
           <React.Fragment key={item.path}>
             <input
+              suppressHydrationWarning
               type="radio"
               name={`nav-${id}`}
               id={`glass-nav-${id}-${index}`}
@@ -141,14 +142,12 @@ export function GlassNavigation({
               readOnly
             />
             <label
+              suppressHydrationWarning
               htmlFor={`glass-nav-${id}-${index}`}
               className={item.hasDropdown ? "dropdown-indicator" : ""}
               onClick={() => onItemClick?.(item)}
               onMouseEnter={() =>
                 item.hasDropdown && onDropdownHover?.(item, true)
-              }
-              onMouseLeave={() =>
-                item.hasDropdown && onDropdownHover?.(item, false)
               }
               {...(item.hasDropdown ? { 'aria-haspopup': 'true', 'aria-expanded': dropdownOpen } : {})}
             >

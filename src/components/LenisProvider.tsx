@@ -11,14 +11,14 @@ import gsap from "gsap";
  * Replaces GSAP ScrollSmoother with Lenis smooth scrolling.
  * Uses native scroll (no DOM wrapper transform) — eliminates the full-page GPU composite layer.
  *
- * GSAP Integration (frame-perfect):
+ * GSAP Integration (frame-perfect when needed):
  * - autoRaf: false         — Lenis's own RAF is disabled
  * - gsap.ticker.add()     — GSAP drives Lenis, ensuring they share the same animation frame
  * - lenis.on('scroll')    — ScrollTrigger is notified immediately after each Lenis scroll update
  * - gsap.ticker.lagSmoothing(0) — prevents GSAP from skipping frames under load (would cause jumps)
  *
- * This eliminates the scroll-position desync that caused ScrollAnimation
- * to pin too early while HorizontalGallery was still active.
+ * Routes that do not use ScrollTrigger can opt into the lightweight mode,
+ * where Lenis uses its own RAF and no GSAP scroll sync is mounted.
  */
 
 /**
@@ -51,7 +51,13 @@ function GsapSync() {
   return null;
 }
 
-export default function LenisProvider({ children }: { children: ReactNode }) {
+export default function LenisProvider({
+  children,
+  syncWithGsap = true,
+}: {
+  children: ReactNode;
+  syncWithGsap?: boolean;
+}) {
   const prefersReducedMotion =
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -61,8 +67,8 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
     <ReactLenis
       root
       options={{
-        // CRITICAL: disable Lenis's own RAF — GSAP's ticker drives it instead
-        autoRaf: false,
+        // Only disable Lenis RAF when GSAP is explicitly driving the scroll loop.
+        autoRaf: !syncWithGsap,
         lerp: prefersReducedMotion ? 1 : 0.08,
         duration: prefersReducedMotion ? 0 : 1.2,
         easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -71,7 +77,7 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
         gestureOrientation: "vertical",
       }}
     >
-      <GsapSync />
+      {syncWithGsap ? <GsapSync /> : null}
       {children}
     </ReactLenis>
   );

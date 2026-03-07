@@ -1,23 +1,23 @@
 import { Metadata } from "next";
-import { getTotalProductCount } from "@/data/categories";
 import { ProductsPageContent } from "@/components/catalog/ProductsPageContent";
+import { getProductShowcaseCount } from "@/data/product-showcase";
+
+const productCount = getProductShowcaseCount();
 
 export const metadata: Metadata = {
-  title: "Κατάλογος Προϊόντων | AEROFREN",
+  title: "Προϊόντα για Δίκτυα Αέρα & Νερού | AEROFREN",
   description:
-    "Ανακαλύψτε την πλήρη γκάμα εξαρτημάτων νερού και αέρα της AEROFREN. Ρακόρ, βαλβίδες, σωλήνες, πνευματικά εξαρτήματα και πολλά άλλα.",
+    `Εξερευνήστε ${productCount} επιλεγμένα προϊόντα AEROFREN για δίκτυα αέρα και νερού και επικοινωνήστε μαζί μας για άμεση εξυπηρέτηση.`,
   alternates: {
     canonical: "https://aerofren.gr/products",
   },
   openGraph: {
-    title: "Κατάλογος Προϊόντων | AEROFREN",
+    title: "Προϊόντα για Δίκτυα Αέρα & Νερού | AEROFREN",
     description:
-      "Πλήρης κατάλογος εξαρτημάτων νερού και αέρα. B2B προμηθευτής στην Ελλάδα.",
+      "Premium δημόσια παρουσίαση προϊόντων με contact-first εξυπηρέτηση για επαγγελματίες.",
   },
 };
 
 export default function ProductsPage() {
-  const totalProducts = getTotalProductCount();
-
-  return <ProductsPageContent totalProducts={totalProducts} />;
+  return <ProductsPageContent />;
 }

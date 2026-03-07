@@ -361,8 +361,8 @@ export function Chatbot() {
     };
   }, [hasMessages]);
 
-  // Simple scroll handling - normalizeScroll is now disabled in SmoothScrollProvider
-  // so we only need to stop propagation, not intercept all events
+  // Keep wheel input inside the chatbot scroller so the route-level Lenis shell
+  // does not consume the event while the user is reading a conversation.
   useEffect(() => {
     const scroller = chatScrollerRef.current;
     if (!scroller) return;

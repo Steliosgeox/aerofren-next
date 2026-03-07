@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo, useSyncExternalStore } from "react";
-import { categories } from "@/data/categories";
+import { productShowcaseItems } from "@/data/product-showcase";
 import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
 import GlassSurface from "./ui/GlassSurface";
@@ -16,18 +16,7 @@ import {
   Phone,
   Home,
   ArrowRight,
-  Plug,
-  Wrench,
-  Link as LinkIcon,
-  CircleDot,
-  Disc,
-  Gauge,
-  Cog,
-  Cylinder,
-  Wind,
   Package,
-  Droplet,
-  Hammer,
   User,
   LogIn,
   LogOut,
@@ -35,25 +24,10 @@ import {
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 
-const iconMap: Record<string, React.ReactNode> = {
-  plug: <Plug className="w-5 h-5" />,
-  wrench: <Wrench className="w-5 h-5" />,
-  link: <LinkIcon className="w-5 h-5" />,
-  tube: <CircleDot className="w-5 h-5" />,
-  valve: <Disc className="w-5 h-5" />,
-  gauge: <Gauge className="w-5 h-5" />,
-  cog: <Cog className="w-5 h-5" />,
-  cylinder: <Cylinder className="w-5 h-5" />,
-  wind: <Wind className="w-5 h-5" />,
-  package: <Package className="w-5 h-5" />,
-  droplet: <Droplet className="w-5 h-5" />,
-  tool: <Hammer className="w-5 h-5" />,
-};
-
 const navItems = [
   { name: "Αρχική", path: "/" },
   { name: "Προϊόντα", path: "/products", hasDropdown: true },
-  { name: "Η Εταιρεία", path: "/about" },
+  { name: "Ποιοι είμαστε", path: "/about" },
   { name: "Επικοινωνία", path: "/contact" },
 ];
 
@@ -209,7 +183,6 @@ function HeaderComponent() {
     });
 
     return () => {
-      // Kill ScrollTrigger first, then the tween
       scrollTrigger.kill();
       showAnim.kill();
     };
@@ -223,7 +196,7 @@ function HeaderComponent() {
 
     const handleScroll = () => {
       const y = window.scrollY;
-      if (Math.abs(y - lastY) < 10) return; // Ignore < 10px changes
+      if (Math.abs(y - lastY) < 10) return;
       if (!ticking) {
         rafId = requestAnimationFrame(() => {
           setIsScrolled(y > 20);
@@ -277,11 +250,10 @@ function HeaderComponent() {
     strokeWidth: 1.6,
   } as const;
 
-
-
   const handleMegaMenuEnter = useCallback(() => {
     if (megaMenuTimeoutRef.current) {
       clearTimeout(megaMenuTimeoutRef.current);
+      megaMenuTimeoutRef.current = null;
     }
     setMegaMenuOpen(true);
   }, []);
@@ -289,7 +261,7 @@ function HeaderComponent() {
   const handleMegaMenuLeave = useCallback(() => {
     megaMenuTimeoutRef.current = setTimeout(() => {
       setMegaMenuOpen(false);
-    }, 150);
+    }, 200);
   }, []);
 
   const handleNavDropdownHover = useCallback((
@@ -436,73 +408,102 @@ function HeaderComponent() {
 
             {/* Desktop Navigation with Glass Effect - Grid Centered */}
             <div className="hidden xl:flex justify-self-center z-10">
-              <nav
-                className="flex items-center relative"
+              {/*
+                Unified hover zone: the wrapper div owns BOTH the nav pill AND
+                the dropdown panel — there is NO dead zone between them.
+                The invisible bridge div (h-4) also covers the visual gap so
+                moving the mouse down from the pill to the panel never leaves
+                the hover zone.
+              */}
+              <div
                 ref={megaMenuRef}
+                className="relative"
+                onMouseEnter={handleMegaMenuEnter}
                 onMouseLeave={handleMegaMenuLeave}
               >
-                <UnifiedHeaderMenu
-                  navItems={navItems}
-                  onDropdownHover={handleNavDropdownHover}
-                  dropdownOpen={megaMenuOpen}
-                />
+                <nav className="flex items-center" aria-label="Primary navigation">
+                  <UnifiedHeaderMenu
+                    navItems={navItems}
+                    onDropdownHover={handleNavDropdownHover}
+                    dropdownOpen={megaMenuOpen}
+                  />
+                </nav>
+
+                {/* Invisible bridge — fills the gap between pill bottom and dropdown top */}
+                {megaMenuOpen && (
+                  <div className="absolute top-full left-0 right-0 h-4" aria-hidden="true" />
+                )}
 
                 {/* Mega Menu for Products */}
                 {megaMenuOpen && (
                   <div
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-3 max-w-[800px] w-[90vw] xl:w-[800px] rounded-2xl overflow-hidden"
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[820px] rounded-2xl overflow-hidden"
                     role="menu"
-                    aria-label="Κατηγορίες προϊόντων"
+                    aria-label="Προτεινόμενα προϊόντα"
                     style={MEGA_MENU_STYLES}
-                    onMouseEnter={handleMegaMenuEnter}
-                    onMouseLeave={handleMegaMenuLeave}
                   >
                     <div className="p-6">
                       {/* Header */}
-                      <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: '1px solid var(--theme-glass-border)' }}>
-                        <h3 className="font-bold" style={{ color: 'var(--theme-text)' }}>
-                          Κατηγορίες προϊόντων
+                      <div className="flex items-center justify-between mb-5 pb-4" style={{ borderBottom: '1px solid var(--theme-glass-border)' }}>
+                        <h3 className="font-bold text-lg" style={{ color: 'var(--theme-text)' }}>
+                          Προτεινόμενα προϊόντα
                         </h3>
                         <Link
                           href="/products"
                           className="text-sm font-semibold hover:underline flex items-center gap-1"
                           style={{ color: 'var(--theme-accent)' }}
+                          onClick={() => setMegaMenuOpen(false)}
                         >
                           Δείτε όλα
                           <ArrowRight className="w-4 h-4" />
                         </Link>
                       </div>
 
-                      {/* Categories Grid */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {categories.slice(0, 12).map((category) => (
+                      <div className="mb-5 grid gap-1">
+                        <p className="text-xs uppercase tracking-[0.28em]" style={{ color: "var(--theme-text-muted)" }}>
+                          Δημοφιλείς Κατηγορίες
+                        </p>
+                        <p className="text-sm leading-6" style={{ color: "var(--theme-text-muted)" }}>
+                          Ανακαλύψτε επιλεγμένα προϊόντα. Μεταβείτε στον κατάλογο για αναλυτικά τεχνικά χαρακτηριστικά, άμεση παραγγελία και τεχνική υποστήριξη.
+                        </p>
+                      </div>
+
+                      {/* Product Grid */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {productShowcaseItems.slice(0, 6).map((product) => (
                           <Link
-                            key={category.id}
-                            href={`/products/${category.slug}`}
+                            key={product.id}
+                            href={`/products#${product.slug}`}
                             role="menuitem"
-                            className="flex items-center gap-3 p-3 rounded-xl transition-colors group"
-                            style={{ ['--hover-bg' as string]: 'var(--theme-glass-bg)' }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--theme-glass-bg)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                            className="group flex items-center gap-3 rounded-xl border border-transparent p-3 transition-all duration-150"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'var(--theme-glass-bg)';
+                              e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--theme-accent) 22%, transparent)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.borderColor = 'transparent';
+                            }}
                             onClick={() => setMegaMenuOpen(false)}
                           >
-                            <div
-                              className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform`}
-                            >
-                              {iconMap[category.icon] || (
-                                <Package className="w-5 h-5" />
-                              )}
+                            <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden border border-[var(--theme-glass-border)] bg-[color-mix(in_srgb,var(--c-glass)_60%,transparent)]">
+                              <Image
+                                src={product.image}
+                                alt={product.nameEl}
+                                fill
+                                sizes="56px"
+                                className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-110"
+                              />
                             </div>
                             <div className="min-w-0">
                               <span
-                                className="font-semibold text-sm block truncate transition-colors"
+                                className="font-semibold text-sm block truncate"
                                 style={{ color: 'var(--theme-text)' }}
                               >
-                                {category.nameEl}
+                                {product.nameEl}
                               </span>
-                              <span style={{ color: 'var(--theme-text-muted)', fontSize: '0.75rem' }}>
-                                {category.productCount.toLocaleString("el-GR")}{" "}
-                                προϊόντα
+                              <span className="text-xs" style={{ color: 'var(--theme-text-muted)' }}>
+                                {product.tagEl}
                               </span>
                             </div>
                           </Link>
@@ -510,9 +511,9 @@ function HeaderComponent() {
                       </div>
 
                       {/* Footer CTA */}
-                      <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--theme-glass-border)' }}>
+                      <div className="mt-5 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--theme-glass-border)' }}>
                         <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
-                          Δεν βρίσκετε αυτό που χρειάζεστε;
+                          Δεν βλέπετε το προϊόν που αναζητάτε;
                         </p>
                         <a
                           href="tel:2103461645"
@@ -526,7 +527,7 @@ function HeaderComponent() {
                     </div>
                   </div>
                 )}
-              </nav>
+              </div>
             </div>
 
             {/* Desktop CTA - Theme Switcher + Notifications + User - Right Side Grid */}

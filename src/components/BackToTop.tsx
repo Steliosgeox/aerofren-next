@@ -10,13 +10,14 @@ import { ArrowUp } from "lucide-react";
  * 
  * Premium floating "Back to Top" with:
  * - Theme-aware glassmorphism (dark/light/dim)
- * - GSAP smooth scroll and animations
+ * - Lenis scroll-to-top with GSAP visibility animation
  * - Hover expand with text reveal
  * 
  * Lines reduced: 338 → ~150
  */
 export function BackToTop() {
     const [isVisible, setIsVisible] = useState(false);
+    const [isProductWindowOpen, setIsProductWindowOpen] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const tweenRef = useRef<gsap.core.Tween | null>(null);
     const lenis = useLenis();
@@ -41,24 +42,37 @@ export function BackToTop() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    useEffect(() => {
+        const handleProductWindowToggle = (event: Event) => {
+            const customEvent = event as CustomEvent<{ open?: boolean }>;
+            setIsProductWindowOpen(Boolean(customEvent.detail?.open));
+        };
+
+        window.addEventListener("product-window-toggle", handleProductWindowToggle as EventListener);
+        return () =>
+            window.removeEventListener("product-window-toggle", handleProductWindowToggle as EventListener);
+    }, []);
+
     // GSAP visibility animation
     useEffect(() => {
         if (!buttonRef.current) return;
         tweenRef.current?.kill();
 
+        const shouldShow = isVisible && !isProductWindowOpen;
+
         tweenRef.current = gsap.to(buttonRef.current, {
-            opacity: isVisible ? 1 : 0,
-            scale: isVisible ? 1 : 0.8,
-            y: isVisible ? 0 : 20,
-            duration: isVisible ? 0.4 : 0.3,
-            ease: isVisible ? "back.out(1.7)" : "power2.in",
+            opacity: shouldShow ? 1 : 0,
+            scale: shouldShow ? 1 : 0.8,
+            y: shouldShow ? 0 : 20,
+            duration: shouldShow ? 0.4 : 0.3,
+            ease: shouldShow ? "back.out(1.7)" : "power2.in",
         });
 
         return () => {
             tweenRef.current?.kill();
             tweenRef.current = null;
         };
-    }, [isVisible]);
+    }, [isVisible, isProductWindowOpen]);
 
     const handleClick = () => {
         if (lenis) {
@@ -83,7 +97,7 @@ export function BackToTop() {
     return (
         <div
             className="back-to-top fixed left-1/2 -translate-x-1/2 z-[9999]"
-            style={{ pointerEvents: isVisible ? "auto" : "none" }}
+            style={{ pointerEvents: isVisible && !isProductWindowOpen ? "auto" : "none" }}
         >
             <button
                 ref={buttonRef}

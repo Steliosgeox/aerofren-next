@@ -5,9 +5,14 @@ import { usePathname } from 'next/navigation';
 import LenisProvider from '@/components/LenisProvider';
 
 const DISABLE_SMOOTH_SCROLL_PREFIXES = ['/admin', '/login', '/signup'];
+const LIGHTWEIGHT_LENIS_PREFIXES = ['/contact'];
 
-function shouldDisableSmoothScroll(pathname: string): boolean {
+export function shouldDisableSmoothScroll(pathname: string): boolean {
     return DISABLE_SMOOTH_SCROLL_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+export function shouldUseLightweightLenis(pathname: string): boolean {
+    return LIGHTWEIGHT_LENIS_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 export function RouteScrollShell({ children }: { children: React.ReactNode }) {
@@ -17,5 +22,5 @@ export function RouteScrollShell({ children }: { children: React.ReactNode }) {
         return <>{children}</>;
     }
 
-    return <LenisProvider>{children}</LenisProvider>;
+    return <LenisProvider syncWithGsap={!shouldUseLightweightLenis(pathname)}>{children}</LenisProvider>;
 }

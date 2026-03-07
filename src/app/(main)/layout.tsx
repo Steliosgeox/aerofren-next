@@ -14,8 +14,8 @@ export default function MainLayout({
   return (
     <>
       {/* ============================================
-        FIXED BACKGROUNDS - Outside smooth scroll
-        These use position: fixed and must be outside SmoothScrollProvider
+        FIXED BACKGROUNDS - Outside the scroll shell
+        These use position: fixed and must stay outside the Lenis root
         ============================================ */}
 
       {/* Global waves background (z-index: -1) */}
@@ -28,7 +28,7 @@ export default function MainLayout({
         {/* Header - Fixed for accessibility */}
         <Header />
 
-        {/* ScrollSmoother wrapper for buttery smooth scrolling */}
+        {/* Lenis scroll shell keeps motion smooth without ScrollSmoother's heavy wrapper */}
         <RouteScrollShell>
           <main className="min-h-screen">{children}</main>
           <Footer currentYear={currentYear} />

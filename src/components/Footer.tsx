@@ -44,7 +44,7 @@ interface TrustBadge {
 const NAV_ITEMS: NavItem[] = [
   { name: "Αρχική", path: "/" },
   { name: "Προϊόντα", path: "/products" },
-  { name: "Η Εταιρεία", path: "/about" },
+  { name: "Ποιοι είμαστε", path: "/about" },
   { name: "Επικοινωνία", path: "/contact" },
   { name: "Συχνές Ερωτήσεις", path: "/faq" },
   { name: "Γλωσσάριο", path: "/glossary" },

@@ -4,11 +4,15 @@ import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  getProductShowcaseCount,
+  productShowcaseNavigationItems,
+} from "@/data/product-showcase";
 import { debounce } from "@/lib/debounce";
 
 /**
  * HorizontalGallery Component - ROCK SOLID Cross-Device Version
- * 
+ *
  * Features:
  * - Works on ALL devices: Desktop, Tablet, Mobile
  * - Works on ALL browsers: Chrome, Safari, Firefox, Edge
@@ -18,81 +22,8 @@ import { debounce } from "@/lib/debounce";
  * - Responsive: Horizontal scroll (desktop), Overflow scroll (tablet), Grid (mobile)
  */
 
-// Real AEROFREN product categories with actual images
-const galleryCategories = [
-  {
-    src: "/images/categories/pneumatic-valves.jpg",
-    alt: "Πνευματικές βαλβίδες",
-    label: "Πνευματικές βαλβίδες",
-    href: "/products?category=pneumatic-valves"
-  },
-  {
-    src: "/images/categories/push-in-fittings.jpg",
-    alt: "Ρακόρ ταχυσύνδεσης",
-    label: "Ρακόρ ταχυσύνδεσης",
-    href: "/products?category=push-in-fittings"
-  },
-  {
-    src: "/images/categories/thread-fittings.jpg",
-    alt: "Σπειρωτά εξαρτήματα",
-    label: "Σπειρωτά εξαρτήματα",
-    href: "/products?category=thread-fittings"
-  },
-  {
-    src: "/images/categories/cylinders-sensors.jpg",
-    alt: "Κύλινδροι & αισθητήρες",
-    label: "Κύλινδροι & αισθητήρες",
-    href: "/products?category=cylinders-sensors"
-  },
-  {
-    src: "/images/categories/hoses-pipes.jpg",
-    alt: "Σωλήνες & σπιράλ",
-    label: "Σωλήνες & σπιράλ",
-    href: "/products?category=hoses-pipes"
-  },
-  {
-    src: "/images/categories/ball-valves.jpg",
-    alt: "Σφαιρικές βάνες",
-    label: "Σφαιρικές βάνες",
-    href: "/products?category=ball-valves"
-  },
-  {
-    src: "/images/categories/pressure-regulators.jpg",
-    alt: "Ρυθμιστές πίεσης",
-    label: "Ρυθμιστές πίεσης",
-    href: "/products?category=pressure-regulators"
-  },
-  {
-    src: "/images/categories/air-tools.jpg",
-    alt: "Αεροεργαλεία",
-    label: "Αεροεργαλεία",
-    href: "/products?category=air-tools"
-  },
-  {
-    src: "/images/categories/couplings.jpg",
-    alt: "Ζεύκτες αέρος",
-    label: "Ζεύκτες αέρος",
-    href: "/products?category=couplings"
-  },
-  {
-    src: "/images/categories/water-filtration.jpg",
-    alt: "Φίλτρα & λιπαντήρες",
-    label: "Φίλτρα & λιπαντήρες",
-    href: "/products?category=water-filtration"
-  },
-  {
-    src: "/images/categories/industrial-supplies.jpg",
-    alt: "Βιομηχανικά αναλώσιμα",
-    label: "Βιομηχανικά αναλώσιμα",
-    href: "/products?category=industrial-supplies"
-  },
-  {
-    src: "/images/categories/installation-accessories.jpg",
-    alt: "Βοηθητικά εξαρτήματα",
-    label: "Βοηθητικά εξαρτήματα",
-    href: "/products?category=installation-accessories"
-  },
-];
+const galleryProducts = productShowcaseNavigationItems;
+const showcaseCount = getProductShowcaseCount();
 
 export default function HorizontalGallery() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -101,27 +32,20 @@ export default function HorizontalGallery() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Detect device type on mount - debounced to prevent layout thrashing
   useEffect(() => {
     setIsMounted(true);
     const checkDesktop = () => {
       setIsDesktop(window.innerWidth >= 1024);
     };
-    // Create debounced version for resize events (100ms delay)
     const debouncedCheckDesktop = debounce(checkDesktop, 100);
-
-    // Run immediately on mount
     checkDesktop();
     window.addEventListener("resize", debouncedCheckDesktop, { passive: true });
-
     return () => {
       debouncedCheckDesktop.cancel();
       window.removeEventListener("resize", debouncedCheckDesktop);
     };
   }, []);
 
-  // CRITICAL: useLayoutEffect for cleanup - runs synchronously before React commits DOM changes
-  // This prevents "removeChild" errors from GSAP's pinned elements
   useLayoutEffect(() => {
     return () => {
       if (scrollTriggerRef.current) {
@@ -131,7 +55,6 @@ export default function HorizontalGallery() {
     };
   }, []);
 
-  // GSAP animations - only on desktop, with dynamic import
   useEffect(() => {
     if (!isMounted || !isDesktop) return;
 
@@ -143,16 +66,13 @@ export default function HorizontalGallery() {
     let resizeHandler: (() => void) | null = null;
     let initTimer: NodeJS.Timeout | null = null;
 
-    // Dynamic import GSAP to avoid SSR issues
     const initGSAP = async () => {
       try {
         const { gsap, ScrollTrigger } = await import("@/lib/gsap/client");
 
-        // Calculate scroll distance
         const getScrollLength = () => strip.scrollWidth - window.innerWidth;
         let horizontalScrollLength = getScrollLength();
 
-        // Create horizontal scroll animation - store in ref for cleanup
         scrollTriggerRef.current = ScrollTrigger.create({
           trigger: section,
           pin: true,
@@ -168,7 +88,6 @@ export default function HorizontalGallery() {
           },
         });
 
-        // Refresh on resize - DEBOUNCED to prevent layout thrashing
         resizeHandler = () => {
           horizontalScrollLength = getScrollLength();
           if (resizeTimeout) clearTimeout(resizeTimeout);
@@ -176,22 +95,18 @@ export default function HorizontalGallery() {
         };
 
         window.addEventListener("resize", resizeHandler);
-        // Initial refresh with slight delay
         setTimeout(() => ScrollTrigger.refresh(), 100);
       } catch {
         console.warn("GSAP not available, falling back to CSS scroll");
       }
     };
 
-    // Small delay to ensure DOM is ready
     initTimer = setTimeout(initGSAP, 100);
 
     return () => {
       if (initTimer) clearTimeout(initTimer);
       if (resizeTimeout) clearTimeout(resizeTimeout);
       if (resizeHandler) window.removeEventListener("resize", resizeHandler);
-      // Kill ScrollTrigger on dependency change (e.g., isDesktop toggle)
-      // to prevent orphaned instances when useEffect re-runs
       if (scrollTriggerRef.current) {
         scrollTriggerRef.current.kill();
         scrollTriggerRef.current = null;
@@ -199,16 +114,84 @@ export default function HorizontalGallery() {
     };
   }, [isMounted, isDesktop]);
 
+  // Elegant GSAP scroll entrance animation for the text & gallery container
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    let textStRef: ScrollTrigger | null = null;
+    let galleryStRef: ScrollTrigger | null = null;
+
+    const initTextAnimation = async () => {
+      try {
+        const { gsap, ScrollTrigger } = await import("@/lib/gsap/client");
+        
+        // 1. Text stagger reveal for the header
+        const headerElements = document.querySelectorAll('.gallery-label, .gallery-heading, .gallery-subheading');
+        if (headerElements.length > 0) {
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: '.gallery-header',
+              start: 'top 85%',
+              toggleActions: 'play none none reverse',
+            }
+          });
+          
+          tl.fromTo(
+            headerElements,
+            { opacity: 0, y: 30, rotationX: 10, transformOrigin: 'top center' },
+            {
+              opacity: 1,
+              y: 0,
+              rotationX: 0,
+              duration: 1.2,
+              stagger: 0.15,
+              ease: 'power3.out',
+            }
+          );
+          textStRef = tl.scrollTrigger ?? null;
+        }
+
+        // 2. Smooth fade line up for the gallery strip itself
+        const strip = document.querySelector('.horiz-gallery-wrapper');
+        if (strip) {
+          const tl2 = gsap.timeline({
+            scrollTrigger: {
+              trigger: strip,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            }
+          });
+          
+          tl2.fromTo(
+            strip,
+            { opacity: 0, y: 40 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 1.4,
+              ease: 'power4.out',
+            }
+          );
+          galleryStRef = tl2.scrollTrigger ?? null;
+        }
+      } catch (err) {
+        console.warn('GSAP text animation fallback to CSS');
+      }
+    };
+    
+    // Give DOM a tick to paint
+    const timer = setTimeout(initTextAnimation, 50);
+
+    return () => {
+      clearTimeout(timer);
+      if (textStRef) textStRef.kill();
+      if (galleryStRef) galleryStRef.kill();
+    };
+  }, [isMounted]);
+
   return (
     <>
-      {/* Cross-Browser CSS - Works EVERYWHERE */}
       <style jsx global>{`
-        /* ============================================
-           HORIZONTAL GALLERY - ROCK SOLID VERSION
-           Tested: Chrome, Safari, Firefox, Edge
-           Tested: iOS Safari, Android Chrome
-           ============================================ */
-        
         #portfolio {
           position: relative;
           overflow: hidden;
@@ -221,7 +204,6 @@ export default function HorizontalGallery() {
           margin: 0 auto;
         }
 
-        /* GALLERY HEADER */
         .gallery-header {
           padding: 80px 48px 40px;
           text-align: left;
@@ -257,14 +239,10 @@ export default function HorizontalGallery() {
           margin: 0;
         }
 
-        /* ============================================
-           GALLERY STRIP - CROSS DEVICE
-           ============================================ */
-        
         .horiz-gallery-wrapper {
           position: relative;
           width: 100%;
-          overflow: visible; /* Let scroll work */
+          overflow: visible;
         }
 
         .horiz-gallery-strip {
@@ -272,71 +250,54 @@ export default function HorizontalGallery() {
           flex-wrap: nowrap;
           gap: 1.25rem;
           padding: 40px 48px 60px;
-          /* CRITICAL: Do NOT set transform here - GSAP handles it on desktop */
         }
 
-        /* ============================================
-           PRODUCT CARDS - ALWAYS VISIBLE
-           CRITICAL: opacity: 1 !important ensures visibility
-           ============================================ */
-        
         .product-card-wrap {
           width: 300px;
           min-width: 280px;
           max-width: 340px;
           flex-shrink: 0;
-          /* No perspective on mobile - causes Safari issues */
         }
 
         .product-card {
           position: relative;
           display: block;
           width: 100%;
-          aspect-ratio: 4 / 3;
+          aspect-ratio: 3 / 4;
           border-radius: 16px;
           overflow: hidden;
           text-decoration: none;
-          
-          /* ALWAYS VISIBLE - This is critical */
           opacity: 1 !important;
           visibility: visible !important;
-          
-          /* Dark Glassmorphism - Cross browser */
           background: linear-gradient(
             145deg,
             rgba(15, 25, 45, 0.85) 0%,
             rgba(10, 18, 35, 0.95) 100%
           );
-          
-          /* Safari-safe blur */
           -webkit-backdrop-filter: blur(20px);
           backdrop-filter: blur(20px);
-          
           border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 
+          box-shadow:
             0 8px 32px rgba(0, 30, 80, 0.25),
             0 2px 8px rgba(0, 0, 0, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
-          
-          transition: 
+          transition:
             box-shadow 0.4s ease,
             border-color 0.4s ease,
             transform 0.4s ease;
         }
 
-        /* Hover - Desktop only (via media query) */
         @media (hover: hover) and (pointer: fine) {
           .product-card:hover {
             border-color: rgba(0, 102, 204, 0.4);
             transform: translateY(-4px);
-            box-shadow: 
+            box-shadow:
               0 20px 48px rgba(0, 80, 160, 0.35),
               0 8px 24px rgba(0, 102, 204, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.08);
           }
         }
 
-        /* IMAGE CONTAINER */
         .product-card-image-wrap {
           position: absolute;
           inset: 0;
@@ -361,7 +322,6 @@ export default function HorizontalGallery() {
           }
         }
 
-        /* GRADIENT OVERLAY */
         .product-card-overlay {
           position: absolute;
           inset: 0;
@@ -375,7 +335,6 @@ export default function HorizontalGallery() {
           pointer-events: none;
         }
 
-        /* CONTENT */
         .product-card-content {
           position: absolute;
           bottom: 0;
@@ -395,7 +354,6 @@ export default function HorizontalGallery() {
           text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
-        /* SHINE EFFECT */
         .product-card-shine {
           position: absolute;
           inset: 0;
@@ -425,10 +383,6 @@ export default function HorizontalGallery() {
           100% { transform: translateX(100%); }
         }
 
-        /* ============================================
-           CTA CARD
-           ============================================ */
-        
         .product-card-wrap.cta-wrap .product-card {
           background: linear-gradient(
             145deg,
@@ -478,11 +432,7 @@ export default function HorizontalGallery() {
           transition: all 0.3s ease;
         }
 
-        /* ============================================
-           RESPONSIVE BREAKPOINTS
-           ============================================ */
-        
-        /* LARGE DESKTOP (1440px+) - GSAP Horizontal Scroll */
+        /* LARGE DESKTOP (1440px+) */
         @media (min-width: 1440px) {
           .product-card-wrap {
             width: 22vw;
@@ -491,7 +441,7 @@ export default function HorizontalGallery() {
           }
         }
 
-        /* DESKTOP (1024px - 1439px) - GSAP Horizontal Scroll */
+        /* DESKTOP (1024px – 1439px) */
         @media (min-width: 1024px) and (max-width: 1439px) {
           .product-card-wrap {
             width: 26vw;
@@ -500,7 +450,7 @@ export default function HorizontalGallery() {
           }
         }
 
-        /* TABLET (768px - 1023px) - Native Overflow Scroll */
+        /* TABLET (768px – 1023px) */
         @media (min-width: 768px) and (max-width: 1023px) {
           .gallery-header {
             padding: 60px 32px 32px;
@@ -509,14 +459,14 @@ export default function HorizontalGallery() {
           .horiz-gallery-wrapper {
             overflow-x: auto;
             overflow-y: hidden;
-            -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
+            -webkit-overflow-scrolling: touch;
             scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
           }
 
           .horiz-gallery-wrapper::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+            display: none;
           }
 
           .horiz-gallery-strip {
@@ -531,7 +481,7 @@ export default function HorizontalGallery() {
           }
         }
 
-        /* MOBILE (< 768px) - Vertical Grid */
+        /* MOBILE (< 768px) */
         @media (max-width: 767px) {
           #portfolio {
             padding-bottom: 40px;
@@ -543,7 +493,7 @@ export default function HorizontalGallery() {
           }
 
           .gallery-subheading {
-            display: none; /* Hide "drag to explore" on mobile */
+            display: none;
           }
 
           .horiz-gallery-wrapper {
@@ -556,7 +506,7 @@ export default function HorizontalGallery() {
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             padding: 0;
-            transform: none !important; /* Override any GSAP transforms */
+            transform: none !important;
           }
 
           .product-card-wrap {
@@ -566,7 +516,7 @@ export default function HorizontalGallery() {
           }
 
           .product-card {
-            aspect-ratio: 1 / 1; /* Square on mobile */
+            aspect-ratio: 3 / 4;
           }
 
           .product-card-label-el {
@@ -612,42 +562,32 @@ export default function HorizontalGallery() {
         }
       `}</style>
 
-      {/* HTML Structure */}
       <section id="portfolio" ref={sectionRef}>
         <div className="gallery-container">
-          {/* Header */}
           <div className="gallery-header">
-            <span className="gallery-label">ΚΑΤΗΓΟΡΙΕΣ ΠΡΟΪΟΝΤΩΝ</span>
-            <h2 className="gallery-heading">Ανακαλύψτε τα Προϊόντα μας</h2>
-            <p className="gallery-subheading">Σύρετε για να περιηγηθείτε στις κατηγορίες</p>
+            <span className="gallery-label">Κατάλογος Προϊόντων</span>
+            <h2 className="gallery-heading">Εξαρτήματα υψηλών προδιαγραφών</h2>
+            <p className="gallery-subheading">Σύρτε για να δείτε όλα τα προϊόντα μας</p>
           </div>
 
-          {/* Gallery */}
           <div className="horiz-gallery-wrapper">
             <div ref={stripRef} className="horiz-gallery-strip">
-              {galleryCategories.map((item) => (
-                <div key={item.href} className="product-card-wrap">
+              {galleryProducts.map((item) => (
+                <div key={item.id} className="product-card-wrap">
                   <Link href={item.href} className="product-card">
-                    {/* Image */}
                     <div className="product-card-image-wrap">
                       <Image
-                        src={item.src}
-                        alt={item.alt}
+                        src={item.image}
+                        alt={item.nameEl}
                         fill
                         className="product-card-image"
                         sizes="(max-width: 767px) 50vw, (max-width: 1023px) 45vw, (max-width: 1439px) 26vw, 22vw"
                       />
                     </div>
-
-                    {/* Gradient overlay */}
                     <div className="product-card-overlay" />
-
-                    {/* Shine effect */}
                     <div className="product-card-shine" />
-
-                    {/* Content */}
                     <div className="product-card-content">
-                      <span className="product-card-label-el">{item.label}</span>
+                      <span className="product-card-label-el">{item.nameEl}</span>
                     </div>
                   </Link>
                 </div>
@@ -657,10 +597,10 @@ export default function HorizontalGallery() {
               <div className="product-card-wrap cta-wrap">
                 <Link href="/products" className="product-card">
                   <div className="cta-content">
-                    <span className="cta-number">12</span>
-                    <span className="cta-text">Κατηγορίες</span>
+                    <span className="cta-number">{showcaseCount}</span>
+                    <span className="cta-text">Κατηγορίες Προϊόντων</span>
                     <span className="cta-action">
-                      Δείτε όλες
+                      Δείτε τον κατάλογο
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M5 12h14M12 5l7 7-7 7" />
                       </svg>

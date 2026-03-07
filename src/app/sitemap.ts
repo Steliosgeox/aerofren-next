@@ -1,13 +1,11 @@
 import type { MetadataRoute } from "next";
-import { categories } from "@/data/categories";
 import { RESOURCE_GUIDE_SLUGS } from "@/lib/constants/aerofren";
 
 /**
  * Dynamic sitemap for AEROFREN
  * Generates URLs for all public pages including:
- * - Static pages (home, about, contact, products index)
- * - Dynamic category pages (12 categories)
- * - Dynamic subcategory pages (~66 subcategories)
+ * - Static pages (home, about, contact, products)
+ * - Resource guide detail pages
  */
 const CATALOG_LAST_UPDATED = new Date("2026-02-27");  // Update when catalog changes
 const SITE_LAUNCHED = new Date("2025-01-01");         // Approximate launch date
@@ -91,23 +89,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
     ];
 
-    // Category pages
-    const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
-        url: `${baseUrl}/products/${cat.slug}`,
-        lastModified: CATALOG_LAST_UPDATED,
-        changeFrequency: "weekly" as const,
-        priority: 0.8,
-    }));
-
-    // Subcategory pages
-    const subcategoryPages: MetadataRoute.Sitemap = categories.flatMap((cat) =>
-        cat.subcategories.map((sub) => ({
-            url: `${baseUrl}/products/${cat.slug}/${sub.slug}`,
-            lastModified: CATALOG_LAST_UPDATED,
-            changeFrequency: "weekly" as const,
-            priority: 0.6,
-        }))
-    );
-
-    return [...staticPages, ...categoryPages, ...subcategoryPages];
+    return staticPages;
 }

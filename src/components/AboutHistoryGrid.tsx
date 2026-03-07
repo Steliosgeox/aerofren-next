@@ -7,7 +7,7 @@
  *   — CinematicBackgroundLine SVG sits behind all content (z-index 1)
  *   — Sections alternate text alignment LEFT ↔ RIGHT, opposite the SVG wave
  *   — Content sections are z-index 2 (above the SVG)
- *   — GSAP ScrollTrigger drives all text reveals (native scroll — no Lenis on /about)
+ *   — GSAP ScrollTrigger drives all text reveals on top of the Lenis scroll shell
  *
  * Preserved content (from original AboutHistoryGrid + AboutPhilosophy):
  *   — All four history sections
