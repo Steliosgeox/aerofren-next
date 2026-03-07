@@ -451,7 +451,7 @@ export default function NexusHero() {
                 {/* Main Headline */}
                 <h1 className="nexus-hero__headline">
                     Εκεί που το νερό<br />
-                    γίνεται <span className="nexus-hero__headline--accent">έλεγχος</span>
+                    γίνεται <span className="nexus-hero__headline--accent">Εξέλιξη</span>
                 </h1>
 
                 {/* Description */}
