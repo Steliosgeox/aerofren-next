@@ -1,0 +1,98 @@
+memory allocation of 5017054 bytes failed
+
+
+
+
+#
+#
+# Fatal process out of memory: Re-embedded builtins: set permissions
+# Fatal process out of memory: Re-embedded builtins: set permissions
+#
+----- Native stack trace -----
+
+#
+----- Native stack trace -----
+
+ 1: 00007FF731D2D52D node::MultiIsolatePlatform::DisposeIsolate+5341
+ 2: 00007FF73317C206 v8::base::FatalOOM+54
+ 3: 00007FF732A1DA56 v8::Function::NewInstance+390
+ 4: 00007FF732884B3E v8::CppHeap::CollectGarbageInYoungGenerationForTesting+111438
+ 5: 00007FF7328B804F SSL_CTX_set_default_read_buffer_len+41247
+ 6: 00007FF7328B8B02 SSL_CTX_set_default_read_buffer_len+43986
+ 7: 00007FF7328B94E2 SSL_CTX_set_default_read_buffer_len+46514
+ 8: 00007FF7323B6C33 v8::internal::Version::GetSONAME+122307
+ 9: 00007FF732A48C36 v8::Isolate::Initialize+662
+10: 00007FF731EE366D node::SetIsolateUpForNode+749
+11: 00007FF731C43DA4 RSA_meth_get_flags+212340
+12: 00007FF731C43139 RSA_meth_get_flags+209161
+13: 00007FF731C4D020 RSA_meth_get_flags+249840
+14: 00007FF732A72DE6 uv_thread_detach+150
+15: 00007FF733CB4173 v8::base::UnsignedDivisionByConstant<unsigned __int64>+2903907
+16: 00007FFF6C61E8D7 BaseThreadInitThunk+23
+17: 00007FFF6CB2C40C RtlUserThreadStart+44
+ 1: 00007FF731D2D52D node::MultiIsolatePlatform::DisposeIsolate+5341
+ 2: 00007FF73317C206 v8::base::FatalOOM+54
+ 3: 00007FF732A1DA56 v8::Function::NewInstance+390
+ 4: 00007FF732884B3E v8::CppHeap::CollectGarbageInYoungGenerationForTesting+111438
+ 5: 00007FF7328B804F SSL_CTX_set_default_read_buffer_len+41247
+ 6: 00007FF7328B8B02 SSL_CTX_set_default_read_buffer_len+43986
+ 7: 00007FF7328B94E2 SSL_CTX_set_default_read_buffer_len+46514
+ 8: 00007FF7323B6C33 v8::internal::Version::GetSONAME+122307
+ 9: 00007FF732A48C36 v8::Isolate::Initialize+662
+10: 00007FF731EE366D node::SetIsolateUpForNode+749
+11: 00007FF731C43DA4 RSA_meth_get_flags+212340
+12: 00007FF731C43139 RSA_meth_get_flags+209161
+13: 00007FF731C4D020 RSA_meth_get_flags+249840
+14: 00007FF732A72DE6 uv_thread_detach+150
+15: 00007FF733CB4173 v8::base::UnsignedDivisionByConstant<unsigned __int64>+2903907
+16: 00007FFF6C61E8D7 BaseThreadInitThunk+23
+17: 00007FFF6CB2C40C RtlUserThreadStart+44
+memory allocation of 1663655 bytes failed
+
+
+
+
+#
+#
+# Fatal process out of memory: Re-embedded builtins: set permissions
+# Fatal process out of memory: Re-embedded builtins: set permissions
+#
+#
+----- Native stack trace -----
+----- Native stack trace -----
+
+
+ 1: 00007FF731D2D52D node::MultiIsolatePlatform::DisposeIsolate+5341
+ 2: 00007FF73317C206 v8::base::FatalOOM+54
+ 3: 00007FF732A1DA56 v8::Function::NewInstance+390
+ 4: 00007FF732884B3E v8::CppHeap::CollectGarbageInYoungGenerationForTesting+111438
+ 5: 00007FF7328B804F SSL_CTX_set_default_read_buffer_len+41247
+ 6: 00007FF7328B8B02 SSL_CTX_set_default_read_buffer_len+43986
+ 7: 00007FF7328B94E2 SSL_CTX_set_default_read_buffer_len+46514
+ 8: 00007FF7323B6C33 v8::internal::Version::GetSONAME+122307
+ 9: 00007FF732A48C36 v8::Isolate::Initialize+662
+10: 00007FF731EE366D node::SetIsolateUpForNode+749
+11: 00007FF731C43DA4 RSA_meth_get_flags+212340
+12: 00007FF731C43139 RSA_meth_get_flags+209161
+13: 00007FF731C4D020 RSA_meth_get_flags+249840
+14: 00007FF732A72DE6 uv_thread_detach+150
+15: 00007FF733CB4173 v8::base::UnsignedDivisionByConstant<unsigned __int64>+2903907
+16: 00007FFF6C61E8D7 BaseThreadInitThunk+23
+17: 00007FFF6CB2C40C RtlUserThreadStart+44
+ 1: 00007FF731D2D52D node::MultiIsolatePlatform::DisposeIsolate+5341
+ 2: 00007FF73317C206 v8::base::FatalOOM+54
+ 3: 00007FF732A1DA56 v8::Function::NewInstance+390
+ 4: 00007FF732884B3E v8::CppHeap::CollectGarbageInYoungGenerationForTesting+111438
+ 5: 00007FF7328B804F SSL_CTX_set_default_read_buffer_len+41247
+ 6: 00007FF7328B8B02 SSL_CTX_set_default_read_buffer_len+43986
+ 7: 00007FF7328B94E2 SSL_CTX_set_default_read_buffer_len+46514
+ 8: 00007FF7323B6C33 v8::internal::Version::GetSONAME+122307
+ 9: 00007FF732A48C36 v8::Isolate::Initialize+662
+10: 00007FF731EE366D node::SetIsolateUpForNode+749
+11: 00007FF731C43DA4 RSA_meth_get_flags+212340
+12: 00007FF731C43139 RSA_meth_get_flags+209161
+13: 00007FF731C4D020 RSA_meth_get_flags+249840
+14: 00007FF732A72DE6 uv_thread_detach+150
+15: 00007FF733CB4173 v8::base::UnsignedDivisionByConstant<unsigned __int64>+2903907
+16: 00007FFF6C61E8D7 BaseThreadInitThunk+23
+17: 00007FFF6CB2C40C RtlUserThreadStart+44

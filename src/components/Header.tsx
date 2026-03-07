@@ -2,21 +2,20 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo, useSyncExternalStore } from "react";
 import { productShowcaseItems } from "@/data/product-showcase";
 import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
-import GlassSurface from "./ui/GlassSurface";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
+import { MobileBottomNav, type MobileBottomNavItem } from "./header/MobileBottomNav";
+import { SITE_NAV_ITEMS } from "./header/siteNav";
 // Import from centralized GSAP config - plugins are pre-registered there
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import {
   Phone,
-  Home,
   ArrowRight,
-  Package,
   User,
   LogIn,
   LogOut,
@@ -24,12 +23,11 @@ import {
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 
-const navItems = [
-  { name: "Αρχική", path: "/" },
-  { name: "Προϊόντα", path: "/products", hasDropdown: true },
-  { name: "Ποιοι είμαστε", path: "/about" },
-  { name: "Επικοινωνία", path: "/contact" },
-];
+const desktopNavItems = SITE_NAV_ITEMS.map(({ name, path, hasDropdown }) => ({
+  name,
+  path,
+  hasDropdown,
+}));
 
 // Optimized Logo Component - Only loads ONE image based on theme
 function LogoImage() {
@@ -112,7 +110,6 @@ const LOGIN_BUTTON_STYLES: React.CSSProperties = {
 };
 
 function HeaderComponent() {
-  const pathname = usePathname();
   const router = useRouter();
   const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -214,42 +211,27 @@ function HeaderComponent() {
     };
   }, []);
 
-  const isActivePath = useCallback(
-    (path: string) => {
-      if (!pathname) return false;
-      if (path === "/") return pathname === "/";
-      return pathname.startsWith(path);
-    },
-    [pathname]
-  );
-
-  const mobileDockItems = useMemo(() => {
-    const baseItems = [
-      { label: "Αρχική", path: "/", Icon: Home },
-      { label: "Προϊόντα", path: "/products", Icon: Package },
-      { label: "Επικοινωνία", path: "/contact", Icon: Phone },
-    ];
+  const mobileDockItems = useMemo<readonly MobileBottomNavItem[]>(() => {
+    const baseItems = SITE_NAV_ITEMS.map(({ mobileLabel, path, Icon }) => ({
+      label: mobileLabel,
+      path,
+      Icon,
+    }));
 
     const authItem = user
       ? {
-        label: isAdmin ? "Admin" : "Λογαριασμός",
-        path: isAdmin ? "/admin" : "/login",
-        Icon: User,
-      }
+          label: isAdmin ? "Admin" : "Προφίλ",
+          path: isAdmin ? "/admin" : "/login",
+          Icon: isAdmin ? Shield : User,
+        }
       : {
-        label: "Σύνδεση",
-        path: "/login",
-        Icon: LogIn,
-      };
+          label: "Είσοδος",
+          path: "/login",
+          Icon: LogIn,
+        };
 
     return [...baseItems, authItem];
   }, [user, isAdmin]);
-
-  const dockIconProps = {
-    className: "mobile-dock-icon",
-    strokeWidth: 1.6,
-  } as const;
-
   const handleMegaMenuEnter = useCallback(() => {
     if (megaMenuTimeoutRef.current) {
       clearTimeout(megaMenuTimeoutRef.current);
@@ -303,93 +285,6 @@ function HeaderComponent() {
           transform: scale(0.98);
         }
 
-        .mobile-dock-wrapper {
-          position: fixed;
-          left: 50%;
-          bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-          transform: translateX(-50%);
-          z-index: 70;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          pointer-events: none;
-        }
-
-        .mobile-dock-wrapper > * {
-          pointer-events: auto;
-        }
-
-        .mobile-dock-surface {
-          width: min(360px, calc(100vw - 56px));
-          height: 64px;
-        }
-
-        .mobile-dock-inner {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 10px;
-        }
-
-        .mobile-dock-items {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 6px;
-          width: 100%;
-          height: 100%;
-        }
-
-        .mobile-dock-item {
-          position: relative;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 8px 6px;
-          border-radius: 999px;
-          color: var(--theme-text-muted);
-          font-size: 10px;
-          font-weight: 600;
-          letter-spacing: 0.02em;
-          transition: color 200ms ease, transform 200ms ease;
-        }
-
-        .mobile-dock-item::before {
-          content: "";
-          position: absolute;
-          inset: 6px;
-          border-radius: 999px;
-          background: color-mix(in srgb, var(--theme-glass-bg) 55%, transparent);
-          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-glass-border) 80%, transparent);
-          opacity: 0;
-          transition: opacity 200ms ease;
-          z-index: -1;
-        }
-
-        .mobile-dock-item.is-active {
-          color: var(--theme-text);
-          transform: translateY(-1px);
-        }
-
-        .mobile-dock-item.is-active::before {
-          opacity: 1;
-        }
-
-        .mobile-dock-icon {
-          width: 20px;
-          height: 20px;
-        }
-
-        @media (min-width: 1024px) {
-          .mobile-dock-wrapper {
-            display: none;
-          }
-        }
       `}</style>
 
       <header
@@ -423,7 +318,7 @@ function HeaderComponent() {
               >
                 <nav className="flex items-center" aria-label="Primary navigation">
                   <UnifiedHeaderMenu
-                    navItems={navItems}
+                    navItems={desktopNavItems}
                     onDropdownHover={handleNavDropdownHover}
                     dropdownOpen={megaMenuOpen}
                   />
@@ -621,43 +516,10 @@ function HeaderComponent() {
         </div>
       </header>
 
-      <div className="mobile-dock-wrapper">
-        <GlassSurface
-          className="mobile-dock-surface"
-          width="min(360px, calc(100vw - 56px))"
-          height={64}
-          borderRadius={999}
-          blur={12}
-          displace={0.5}
-          distortionScale={-180}
-          redOffset={0}
-          greenOffset={10}
-          blueOffset={20}
-          brightness={49}
-          opacity={0.93}
-          mixBlendMode="screen"
-          backgroundOpacity={0.16}
-          saturation={1.4}
-        >
-          <div className="mobile-dock-inner">
-            <div className="mobile-dock-items" aria-label="Mobile primary navigation">
-              {mobileDockItems.map((item) => (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  className={`mobile-dock-item ${isActivePath(item.path) ? "is-active" : ""}`}
-                  aria-current={isActivePath(item.path) ? "page" : undefined}
-                >
-                  <item.Icon {...dockIconProps} aria-hidden="true" />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </GlassSurface>
-      </div>
+      <MobileBottomNav items={mobileDockItems} />
     </>
   );
 }
 // Memoize to prevent unnecessary re-renders
 export const Header = memo(HeaderComponent);
+

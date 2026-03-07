@@ -1,0 +1,30 @@
+
+> aerofren-next@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3000
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+- Environments: .env.local
+- Experiments (use with caution):
+  · optimizePackageImports
+
+✓ Starting...
+Creating turbopack project {
+  dir: 'c:\\Users\\Stelios\\.gemini\\antigravity\\playground\\fiery-meteoroid\\aerofren-next',
+  testMode: true
+}
+○ Compiling proxy ...
+✓ Ready in 47.2s
+○ Compiling /api/admin/escalations ...
+ GET /api/admin/contacts?limit=20 200 in 7.0s (compile: 638ms, render: 6.4s)
+ GET /api/admin/escalations 200 in 2.1min (compile: 105s, render: 18.5s)
+ GET /api/admin/contacts?limit=20 200 in 2.1min (compile: 114s, render: 9.6s)
+ GET /api/admin/contacts?limit=20 200 in 7.2s (compile: 1125ms, render: 6.1s)
+ GET /api/admin/escalations 200 in 7.3s (compile: 459ms, render: 6.9s)
+ GET /api/admin/escalations 200 in 7.5s (compile: 829ms, render: 6.7s)
+ GET /api/admin/escalations 200 in 1263ms (compile: 870ms, render: 393ms)
+ GET /api/admin/contacts?limit=20 200 in 1376ms (compile: 858ms, render: 518ms)
+✓ Finished writing to filesystem cache in 10.5s
+✓ Finished filesystem cache database compaction in 12.2s
+[?25h

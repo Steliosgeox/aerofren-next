@@ -23,6 +23,9 @@ lighthouse-report.report.json
 # Raw extracted video frames (compiled into sprite sheets — see public/videos/sprites/)
 public/about-us/frames/transition_down/
 public/about-us/frames/transition_up/
+public/frames-light-theme/
+public/frames-dark-theme/
+public/frames-dim-theme/
 # Original source transition videos (compiled into sprite sheets)
 public/about-us/Going_Down-webm.webm
 public/about-us/Transition_Up.mp4
