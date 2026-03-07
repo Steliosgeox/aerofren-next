@@ -20,6 +20,10 @@ gsap-public-extracted/
 lighthouse-report.report.html
 lighthouse-report.report.json
 
+# Raw extracted video frames (compiled into sprite sheets — see public/videos/sprites/)
+public/about-us/frames/transition_down/
+public/about-us/frames/transition_up/
+
 # testing
 /coverage
 

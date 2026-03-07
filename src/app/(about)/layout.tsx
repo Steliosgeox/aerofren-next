@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header"
+import LenisProvider from "@/components/LenisProvider"
 
 export default function AboutLayout({
   children,
@@ -9,13 +10,15 @@ export default function AboutLayout({
     <>
       <Header />
       {/*
-        NO SmoothScrollProvider:
-        This layout enables native browser scrolling, which is required
-        for CSS Scroll-Driven Animations (animation-timeline: scroll/view)
+        Lenis enabled here for the cinematic SVG thread effect.
+        The new AboutCinematicPage uses GSAP ScrollTrigger (not CSS
+        Scroll-Driven Animations), so Lenis is safe and desirable.
       */}
-      <main style={{ minHeight: '100vh' }}>
-        {children}
-      </main>
+      <LenisProvider>
+        <main style={{ minHeight: '100vh' }}>
+          {children}
+        </main>
+      </LenisProvider>
     </>
   )
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import Script from "next/script"
 import localFont from "next/font/local"
+import { Playfair_Display, DM_Sans } from "next/font/google"
 import { ThemeProvider } from "next-themes"
 import "./globals.css"
 import StyledComponentsRegistry from "@/lib/registry"
@@ -22,6 +23,23 @@ const ttNorms = localFont({
 const ttNormsMono = localFont({
   src: "../fonts/TTNormsProMonoVariable.ttf",
   variable: "--font-tt-norms-mono",
+  display: "swap",
+})
+
+// Cinematic editorial serif — Greek + Latin — used on the About/video pages
+const playfair = Playfair_Display({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+})
+
+// Clean humanist sans — Latin-ext — used as body on the About/video pages
+const dmSans = DM_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-dm-sans",
   display: "swap",
 })
 
@@ -94,7 +112,7 @@ export default async function RootLayout({
   return (
     <html lang="el" suppressHydrationWarning>
       <body
-        className={`${ttNorms.variable} ${ttNormsMono.variable} ${ttNorms.className} ${perfNoBlur ? "perf-no-blur" : ""}`}
+        className={`${ttNorms.variable} ${ttNormsMono.variable} ${playfair.variable} ${dmSans.variable} ${ttNorms.className} ${perfNoBlur ? "perf-no-blur" : ""}`}
         suppressHydrationWarning
       >
         {nonce ? (
