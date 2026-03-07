@@ -218,7 +218,7 @@ export default function ScrollAnimation() {
             <div className={styles.finSection}>
                 <h3 className={styles.finTitle}>ΚΕΝΤΡΟ ΕΞΕΙΔΙΚΕΥΣΗΣ</h3>
                 <p className={styles.finText}>
-                    35+ χρόνια εμπειρίας στην υποστήριξη<br />
+                    45+ χρόνια εμπειρίας στην υποστήριξη<br />
                     της ελληνικής βιομηχανίας.
                 </p>
             </div>

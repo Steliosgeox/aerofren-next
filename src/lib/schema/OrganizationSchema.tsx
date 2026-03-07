@@ -18,7 +18,7 @@ export function OrganizationSchema({ nonce }: { nonce?: string | null } = {}) {
         "description": `B2B προμηθευτής πνευματικών εξαρτημάτων και συστημάτων νερού από το ${FOUNDING_YEAR}. ${YEARS_OF_EXPERIENCE}+ χρόνια εμπειρίας, ${PRODUCT_COUNT} προϊόντα.`,
         "foundingDate": String(FOUNDING_YEAR),
         "telephone": "+302103461645",
-        "email": "info@aerofren.gr",
+        "email": "aerofren@gmail.com",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Χρυσοστόμου Σμύρνης 26",

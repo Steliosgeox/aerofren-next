@@ -852,10 +852,10 @@ export default function AboutCinematicPage() {
               +30 210 3461645
             </a>
             <a
-              href="mailto:info@aerofren.gr"
+              href="mailto:aerofren@gmail.com"
               style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontWeight: 400 }}
             >
-              info@aerofren.gr
+              aerofren@gmail.com
             </a>
           </div>
 

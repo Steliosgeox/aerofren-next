@@ -5,7 +5,7 @@ import { Calendar, Package, Users, Truck } from "lucide-react";
 const stats = [
   {
     icon: <Calendar className="w-6 h-6" />,
-    value: "35+",
+    value: "45+",
     label: "Χρόνια Εμπειρίας",
     description: "Από το 1990",
   },

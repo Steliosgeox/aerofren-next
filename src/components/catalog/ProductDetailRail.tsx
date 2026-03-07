@@ -198,7 +198,7 @@ export function ProductDetailRail({
 
                   <a
                     className="group inline-flex min-h-16 flex-col items-start justify-between gap-4 border border-[var(--theme-glass-border)] bg-[color-mix(in_srgb,var(--theme-glass-bg)_74%,transparent)] px-4 py-4 text-left transition-[transform,border-color,background] duration-200 hover:-translate-y-[1px] hover:border-[color-mix(in_srgb,var(--theme-accent)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_92%,transparent)]"
-                    href="mailto:info@aerofren.gr"
+                    href="mailto:aerofren@gmail.com"
                   >
                     <span className="inline-flex items-start gap-3">
                       <Mail className="h-4 w-4 text-[var(--theme-accent)]" />

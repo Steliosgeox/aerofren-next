@@ -70,15 +70,15 @@ const SOCIAL_LINKS: SocialLink[] = [
 const TRUST_BADGES: TrustBadge[] = [
   { icon: Shield, label: "Εγγύηση ποιότητας", desc: "ISO 9001:2015" },
   { icon: Truck, label: "Αποστολή 24ωρη", desc: "Πανελλαδική" },
-  { icon: Award, label: "35+ χρόνια", desc: "Από το 1989" },
+  { icon: Award, label: "45+ χρόνια", desc: "Από το 1980" },
   { icon: Clock, label: "Άμεση διαθεσιμότητα", desc: "Τεχνική κάλυψη" },
 ];
 
 const CONTACT_INFO = {
   phone: "210 3461645",
   phoneHref: "tel:2103461645",
-  email: "info@aerofren.gr",
-  emailHref: "mailto:info@aerofren.gr",
+  email: "aerofren@gmail.com",
+  emailHref: "mailto:aerofren@gmail.com",
   address: {
     street: "Χρυσοστόμου Σμύρνης 26",
     city: "Μοσχάτο, Αθήνα",
@@ -324,7 +324,7 @@ export function Footer({ currentYear }: FooterProps) {
                   <div className="flex items-center gap-4">
                     <div className="h-px w-12 bg-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)]" aria-hidden="true" />
                     <p className="text-[var(--theme-accent)] font-mono text-sm tracking-[0.3em] uppercase">
-                      Από το 1989
+                      Από το 1980
                     </p>
                   </div>
                 </div>

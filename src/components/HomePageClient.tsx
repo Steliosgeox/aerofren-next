@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import AeroTransitionSection from "@/components/AeroTransitionSection";
 import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +21,7 @@ const ScrollAnimation = dynamic(() => import("@/components/ScrollAnimation"), {
 });
 
 const STATS_DATA = [
-  { value: "35+", label: "Χρόνια Εμπειρίας", speed: 0.8 },
+  { value: "45+", label: "Χρόνια Εμπειρίας", speed: 0.8 },
   { value: "10.000+", label: "Προϊόντα σε Stock", speed: 1.5 },
   { value: "500+", label: "Ενεργοί Συνεργάτες", speed: 1.2 },
   { value: "24ωρη", label: "Αποστολή", speed: 1.8 },
@@ -226,6 +227,11 @@ export default function HomePageClient() {
           HERO SECTION - Three.js Nexus Metaballs
           ============================================ */}
       <NexusHero />
+
+      {/* ============================================
+          AERO TRANSITION - Sprite-driven scroll bridge
+          ============================================ */}
+      <AeroTransitionSection />
 
       {/* ============================================
           STATS SECTION - Zero Gravity Parallax

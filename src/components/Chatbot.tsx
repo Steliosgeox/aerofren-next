@@ -426,7 +426,7 @@ export function Chatbot() {
               <Phone className="chatbot__quick-action-icon" />
               <span>Τηλέφωνο</span>
             </button>
-            <button className="chatbot__quick-action" onClick={() => window.location.href = 'mailto:info@aerofren.gr'}>
+            <button className="chatbot__quick-action" onClick={() => window.location.href = 'mailto:aerofren@gmail.com'}>
               <Mail className="chatbot__quick-action-icon" />
               <span>E-mail</span>
             </button>

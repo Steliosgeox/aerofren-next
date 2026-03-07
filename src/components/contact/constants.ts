@@ -32,9 +32,9 @@ export const CONTACT_CARDS: ContactCardConfig[] = [
   {
     icon: Mail,
     title: "E-mail",
-    primary: "info@aerofren.gr",
+    primary: "aerofren@gmail.com",
     secondary: "Απάντηση εντός 24 ωρών",
-    href: "mailto:info@aerofren.gr",
+    href: "mailto:aerofren@gmail.com",
   },
   {
     icon: MapPin,

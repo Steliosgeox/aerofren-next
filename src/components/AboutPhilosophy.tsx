@@ -97,7 +97,7 @@ export default function AboutPhilosophy() {
 
                 <section className={`${styles.scrollSection} ${styles.s5}`}>
                     <p className={styles.focusText}>Η τεχνογνωσία είναι ο κινητήριος μοχλός.</p>
-                    <p className={styles.description}>35+ χρόνια τεχνικής γνώσης στη διάθεσή σας. Δεν πουλάμε απλώς προϊόντα — προσφέρουμε λύσεις, καθοδήγηση και υποστήριξη που κάνουν τη διαφορά.</p>
+                    <p className={styles.description}>45+ χρόνια τεχνικής γνώσης στη διάθεσή σας. Δεν πουλάμε απλώς προϊόντα — προσφέρουμε λύσεις, καθοδήγηση και υποστήριξη που κάνουν τη διαφορά.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s6}`}>
@@ -108,7 +108,7 @@ export default function AboutPhilosophy() {
                 <div className={styles.closingSection}>
                     <div className={styles.closer}>
                         <strong>Ας χτίσουμε κάτι μαζί.</strong>
-                        info@aerofren.gr<br />
+                        aerofren@gmail.com<br />
                         Μοσχάτο, Αθήνα<br />
                         +30 210 3461645
                     </div>

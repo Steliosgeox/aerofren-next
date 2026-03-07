@@ -75,8 +75,8 @@ export function LegalDocument({ path, title, subtitle, lastUpdated, sections }: 
                 <h2 className="text-xl md:text-2xl font-bold text-[var(--theme-text)] mb-3">Επικοινωνία</h2>
                 <p className="text-sm md:text-base leading-7 text-[var(--theme-text-muted)]">
                   Για απορίες σχετικά με την παρούσα πολιτική ή τους όρους χρήσης μπορείτε να επικοινωνήσετε στο{" "}
-                  <a className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)]" href="mailto:info@aerofren.gr">
-                    info@aerofren.gr
+                  <a className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)]" href="mailto:aerofren@gmail.com">
+                    aerofren@gmail.com
                   </a>{" "}
                   ή στο{" "}
                   <a className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)]" href="tel:2103461645">

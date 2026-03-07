@@ -9,7 +9,7 @@
  * and must be updated separately when this list changes.
  */
 const ADMIN_EMAILS: readonly string[] = [
-    "info@aerofren.gr",
+    "aerofren@gmail.com",
     "admin@aerofren.gr",
     "gamerspcexperts@gmail.com",
 ] as const;

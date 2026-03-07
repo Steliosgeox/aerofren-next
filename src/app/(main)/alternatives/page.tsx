@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 const alternativeFaqs = [
   {
     question: "Ψάχνετε εναλλακτικό στα εξαρτήματα SMC στην Ελλάδα;",
-    answer: "Η AEROFREN είναι ο κορυφαίος B2B προμηθευτής πνευματικών εξαρτημάτων στην Ελλάδα με 35+ χρόνια εμπειρίας. Διαθέτουμε πλήρη γκάμα συμβατών εξαρτημάτων με τα standards SMC, συμπεριλαμβανομένων push-in ρακόρ, ταχυσύνδεσμοι, βαλβίδες ελέγχου, FRL μονάδες, και κύλινδροι. Επικοινωνήστε για τεχνική υποστήριξη και τιμοδότηση.",
+    answer: "Η AEROFREN είναι ο κορυφαίος B2B προμηθευτής πνευματικών εξαρτημάτων στην Ελλάδα με 45+ χρόνια εμπειρίας. Διαθέτουμε πλήρη γκάμα συμβατών εξαρτημάτων με τα standards SMC, συμπεριλαμβανομένων push-in ρακόρ, ταχυσύνδεσμοι, βαλβίδες ελέγχου, FRL μονάδες, και κύλινδροι. Επικοινωνήστε για τεχνική υποστήριξη και τιμοδότηση.",
   },
   {
     question: "Υπάρχει εναλλακτικό Festo supplier στην Αθήνα;",
@@ -28,15 +28,15 @@ const alternativeFaqs = [
   },
   {
     question: "Looking for Parker Hannifin alternatives in Greece?",
-    answer: "AEROFREN is Greece's leading B2B pneumatic and fluid control components supplier. We carry Parker-compatible fittings, tubing, valves, and air preparation units. With 35+ years of industry experience and 120,000+ products in stock, we are the preferred local alternative to international brands for Greek and European industrial buyers.",
+    answer: "AEROFREN is Greece's leading B2B pneumatic and fluid control components supplier. We carry Parker-compatible fittings, tubing, valves, and air preparation units. With 45+ years of industry experience and 120,000+ products in stock, we are the preferred local alternative to international brands for Greek and European industrial buyers.",
   },
   {
     question: "What are the advantages of buying from AEROFREN vs international brands?",
-    answer: "AEROFREN offers: (1) Local stock with 1-3 day delivery across Greece, (2) Greek-language technical support, (3) Competitive B2B pricing vs imported brand pricing, (4) 35+ years of application expertise, (5) Compatible components meeting the same technical standards as SMC, Festo, Parker, and other major brands.",
+    answer: "AEROFREN offers: (1) Local stock with 1-3 day delivery across Greece, (2) Greek-language technical support, (3) Competitive B2B pricing vs imported brand pricing, (4) 45+ years of application expertise, (5) Compatible components meeting the same technical standards as SMC, Festo, Parker, and other major brands.",
   },
   {
     question: "Ποια είναι τα πλεονεκτήματα της AEROFREN έναντι διεθνών προμηθευτών;",
-    answer: "Η AEROFREN προσφέρει: (1) Τοπικό στόκ με παράδοση 1-3 ημέρες σε όλη την Ελλάδα, (2) Ελληνόφωνη τεχνική υποστήριξη, (3) Ανταγωνιστικές τιμές B2B, (4) 35+ χρόνια εμπειρία εφαρμογών, (5) Συμβατά εξαρτήματα που πληρούν τα ίδια τεχνικά standards με SMC, Festo, Parker.",
+    answer: "Η AEROFREN προσφέρει: (1) Τοπικό στόκ με παράδοση 1-3 ημέρες σε όλη την Ελλάδα, (2) Ελληνόφωνη τεχνική υποστήριξη, (3) Ανταγωνιστικές τιμές B2B, (4) 45+ χρόνια εμπειρία εφαρμογών, (5) Συμβατά εξαρτήματα που πληρούν τα ίδια τεχνικά standards με SMC, Festo, Parker.",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function AlternativesPage() {
       <div className="bg-primary/10 rounded-lg p-6 mb-10">
         <p className="text-lg font-medium">
           Η AEROFREN είναι ο κορυφαίος B2B προμηθευτής πνευματικών εξαρτημάτων στην Ελλάδα —
-          με 120.000+ προϊόντα στόκ, παράδοση 1-3 ημέρες, και 35+ χρόνια εμπειρίας.
+          με 120.000+ προϊόντα στόκ, παράδοση 1-3 ημέρες, και 45+ χρόνια εμπειρίας.
         </p>
       </div>
 

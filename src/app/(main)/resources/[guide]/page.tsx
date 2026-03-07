@@ -49,7 +49,7 @@ const guides: Record<
 
 ## Επικοινωνία για τεχνική υποστήριξη
 
-Για εξειδικευμένη βοήθεια: **210 3461645** | info@aerofren.gr
+Για εξειδικευμένη βοήθεια: **210 3461645** | aerofren@gmail.com
     `,
   },
   "plastica-vs-oreichalkos-vs-anoxeidoto": {
@@ -163,7 +163,7 @@ const guides: Record<
 ## Επικοινωνία για σχεδιασμό
 
 Η AEROFREN παρέχει τεχνική υποστήριξη για σχεδίαση κυκλωμάτων:
-**210 3461645** | info@aerofren.gr
+**210 3461645** | aerofren@gmail.com
     `,
   },
 };

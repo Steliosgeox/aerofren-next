@@ -198,7 +198,7 @@ export function ProductsPageContent() {
           </div>
           <a
             className="inline-flex min-h-12 items-center justify-center border border-[color-mix(in_srgb,var(--theme-accent)_26%,transparent)] bg-[color-mix(in_srgb,var(--theme-accent)_12%,transparent)] px-5 text-sm font-semibold text-[var(--theme-text)] transition-[border-color,background] duration-200 hover:border-[color-mix(in_srgb,var(--theme-accent)_44%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-accent)_18%,transparent)]"
-            href="mailto:info@aerofren.gr"
+            href="mailto:aerofren@gmail.com"
           >
             Email
           </a>

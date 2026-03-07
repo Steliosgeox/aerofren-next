@@ -78,7 +78,7 @@ const faqItems: Array<{ question: string; answer: string; lang: "el" | "en" }> =
   {
     lang: "en",
     question: "Do you ship internationally?",
-    answer: "AEROFREN primarily serves the Greek market and EU buyers. For international orders, please contact us directly at info@aerofren.gr with your requirements and we will provide a quotation including shipping.",
+    answer: "AEROFREN primarily serves the Greek market and EU buyers. For international orders, please contact us directly at aerofren@gmail.com with your requirements and we will provide a quotation including shipping.",
   },
 ];
 

@@ -162,7 +162,7 @@ export function SocialTooltips({ isIntegrated = false }: { isIntegrated?: boolea
         </li>
         <li className="icon-content">
           <a
-            href="mailto:info@aerofren.gr"
+            href="mailto:aerofren@gmail.com"
             aria-label="E-mail"
             data-social="mail"
             className="link"
