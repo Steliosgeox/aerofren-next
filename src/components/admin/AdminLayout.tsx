@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Menu, X, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { NotificationBell } from '@/components/NotificationBell';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminAccessDenied } from './AdminAccessDenied';
 
@@ -92,7 +93,12 @@ export function AdminLayout({ title, children, headerRight }: AdminLayoutProps) 
                     >
                         {title}
                     </h1>
-                    {headerRight}
+                    <div className="flex items-center gap-2">
+                        <div className="xl:hidden">
+                            <NotificationBell />
+                        </div>
+                        {headerRight}
+                    </div>
                 </div>
 
                 {children}

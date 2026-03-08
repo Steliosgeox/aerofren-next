@@ -33,6 +33,7 @@ import { gsap } from '@/lib/gsap/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCookieConsent } from '@/components/cookies/CookieConsentProvider';
 import { requestChatCompletion, requestEscalation } from '@/services/chat';
+import { HttpError } from '@/services/http';
 import Link from 'next/link';
 import './Chatbot.scss';
 
@@ -87,6 +88,35 @@ const AIChatText: MarkdownComponents = {
   p: MarkdownParagraph,
   ul: MarkdownList,
 };
+
+function getEscalationErrorContent(error: unknown): string {
+  if (error instanceof HttpError) {
+    if (error.status === 401) {
+      return 'Η σύνδεσή σας έληξε. Συνδεθείτε ξανά και δοκιμάστε πάλι.';
+    }
+    if (error.status === 403) {
+      return 'Δεν ήταν δυνατή η επιβεβαίωση της συνομιλίας σας για προώθηση σε εκπρόσωπο.';
+    }
+    if (error.status === 404) {
+      return 'Δεν βρέθηκε ιστορικό για αυτή τη συνομιλία. Στείλτε ένα μήνυμα και δοκιμάστε ξανά.';
+    }
+    if (error.status === 429) {
+      return 'Υπάρχουν πολλές προσπάθειες αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγο.';
+    }
+    if (error.status === 503) {
+      return 'Η υπηρεσία προώθησης σε εκπρόσωπο δεν είναι διαθέσιμη αυτή τη στιγμή. Καλέστε μας στο 210 3461645.';
+    }
+    if (error.message) {
+      return error.message;
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return 'Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.';
+}
 
 // Memoized message component to prevent unnecessary re-renders
 const ChatMessage = memo(function ChatMessage({
@@ -311,10 +341,22 @@ export function Chatbot() {
         setMessages((prev) => [...prev, confirmationMessage]);
       } else {
         setEscalationStatus('error');
+        const errorMessage: Message = {
+          id: randomID(),
+          type: 'ai',
+          content: 'Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο **210 3461645**.',
+        };
+        setMessages((prev) => [...prev, errorMessage]);
       }
     } catch (error) {
       console.error('Escalation error:', error);
       setEscalationStatus('error');
+      const errorMessage: Message = {
+        id: randomID(),
+        type: 'ai',
+        content: getEscalationErrorContent(error),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     }
   }, [user, sessionId, isEscalated, randomID]);
 

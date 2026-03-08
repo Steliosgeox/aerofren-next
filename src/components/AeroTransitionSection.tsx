@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 
 const CELL_W = 640;
 const CELL_H = 360;
@@ -14,13 +14,38 @@ function drawFrame(
     sprite: HTMLImageElement,
     progress: number,
     w: number,
-    h: number
+    h: number,
 ) {
     const frame = Math.min(Math.floor(progress * TOTAL_FRAMES), TOTAL_FRAMES - 1);
     const col = frame % COLS;
     const row = Math.floor(frame / COLS);
+    const sourceAspect = CELL_W / CELL_H;
+    const canvasAspect = w / h;
+    let drawW = w;
+    let drawH = h;
+    let offsetX = 0;
+    let offsetY = 0;
+    if (canvasAspect > sourceAspect) {
+        drawW = w;
+        drawH = w / sourceAspect;
+        offsetY = (h - drawH) / 2;
+    } else {
+        drawH = h;
+        drawW = h * sourceAspect;
+        offsetX = (w - drawW) / 2;
+    }
     ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(sprite, col * CELL_W, row * CELL_H, CELL_W, CELL_H, 0, 0, w, h);
+    ctx.drawImage(
+        sprite,
+        col * CELL_W,
+        row * CELL_H,
+        CELL_W,
+        CELL_H,
+        offsetX,
+        offsetY,
+        drawW,
+        drawH,
+    );
 }
 
 export default function AeroTransitionSection() {
@@ -30,14 +55,24 @@ export default function AeroTransitionSection() {
     const progressRef = useRef(0);
     const { resolvedTheme } = useTheme();
     const [reduceMotion, setReduceMotion] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsMounted(true);
-  }, []);
+    const isMounted = useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false,
+    );
+    const [loadedSpriteSrc, setLoadedSpriteSrc] = useState<string | null>(null);
+    const [failedSpriteSrc, setFailedSpriteSrc] = useState<string | null>(null);
+    const themeSuffix =
+        resolvedTheme === "dark"
+            ? "dark"
+            : resolvedTheme === "dim"
+                ? "dim"
+                : "light";
+    const spriteSrc = `/videos/sprites/sprite_hero_${themeSuffix}.webp`;
+    const hasSpriteError =
+        failedSpriteSrc === spriteSrc && loadedSpriteSrc !== spriteSrc;
 
     useEffect(() => {
-        
         const media = window.matchMedia("(prefers-reduced-motion: reduce)");
         const updateMotion = () => setReduceMotion(media.matches);
         updateMotion();
@@ -50,24 +85,36 @@ export default function AeroTransitionSection() {
     useEffect(() => {
         if (!isMounted || reduceMotion) return;
 
-        let themeSuffix = "light";
-        if (resolvedTheme === "dark") themeSuffix = "dark";
-        if (resolvedTheme === "dim") themeSuffix = "dim";
-
-        const spriteSrc = `/videos/sprites/sprite_hero_${themeSuffix}.webp`;
-
         const sprite = new Image();
         sprite.src = spriteSrc;
         sprite.onload = () => {
             spriteRef.current = sprite;
+            setLoadedSpriteSrc(spriteSrc);
             // Draw initial frame
             const canvas = canvasRef.current;
             if (canvas && sprite) {
                 const ctx = canvas.getContext("2d");
-                if (ctx) drawFrame(ctx, sprite, progressRef.current, canvas.width, canvas.height);
+                if (ctx)
+                    drawFrame(
+                        ctx,
+                        sprite,
+                        progressRef.current,
+                        canvas.width,
+                        canvas.height,
+                    );
             }
+            ScrollTrigger.refresh();
         };
-    }, [resolvedTheme, isMounted, reduceMotion]);
+        sprite.onerror = () => {
+            spriteRef.current = null;
+            setFailedSpriteSrc(spriteSrc);
+        };
+
+        return () => {
+            sprite.onload = null;
+            sprite.onerror = null;
+        };
+    }, [isMounted, reduceMotion, spriteSrc]);
 
     useEffect(() => {
         if (!isMounted || reduceMotion) return;
@@ -82,12 +129,20 @@ export default function AeroTransitionSection() {
             // Redraw current frame after resize
             if (spriteRef.current) {
                 const ctx = canvas.getContext("2d");
-                if (ctx) drawFrame(ctx, spriteRef.current, progressRef.current, canvas.width, canvas.height);
+                if (ctx)
+                    drawFrame(
+                        ctx,
+                        spriteRef.current,
+                        progressRef.current,
+                        canvas.width,
+                        canvas.height,
+                    );
             }
         };
 
         resize();
         window.addEventListener("resize", resize, { passive: true });
+        ScrollTrigger.refresh();
 
         return () => window.removeEventListener("resize", resize);
     }, [isMounted, reduceMotion, resolvedTheme]);
@@ -108,38 +163,65 @@ export default function AeroTransitionSection() {
         const ctxObj = { progress: 0 };
 
         const ctxSt = gsap.context(() => {
-            gsap.to(ctxObj, {
-                progress: 1,
-                ease: "none",
+            const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: section,
                     start: "top top",
                     end: "bottom bottom",
                     scrub: 0.4,
-                    onUpdate: (self) => {
-                        progressRef.current = self.progress;
+                },
+            });
+
+            tl.to(
+                ctxObj,
+                {
+                    progress: 1,
+                    duration: 1,
+                    ease: "none",
+                    onUpdate: () => {
+                        progressRef.current = ctxObj.progress;
                         if (spriteRef.current) {
-                            drawFrame(ctx, spriteRef.current, self.progress, canvas.width, canvas.height);
+                            drawFrame(
+                                ctx,
+                                spriteRef.current,
+                                ctxObj.progress,
+                                canvas.width,
+                                canvas.height
+                            );
                         }
                     },
-                    onEnter: () => gsap.to(canvas, { opacity: 1, duration: 0.5 }),
-                    onLeave: () => gsap.to(canvas, { opacity: 0, duration: 0.5 }),
-                    onEnterBack: () => gsap.to(canvas, { opacity: 1, duration: 0.5 }),
-                    onLeaveBack: () => gsap.to(canvas, { opacity: 0, duration: 0.5 })
-                }
-            });
+                },
+                0
+            );
+
+            tl.fromTo(
+                canvas,
+                { opacity: 0 },
+                { opacity: 1, duration: 0.15, ease: "none" },
+                0
+            ).to(
+                canvas,
+                { opacity: 0, duration: 0.15, ease: "none" },
+                0.85
+            );
         }, section);
 
         return () => ctxSt.revert();
     }, [isMounted, reduceMotion, resolvedTheme]);
 
-    if (!isMounted) return <div className="min-h-[250vh]" />;
+    if (!isMounted)
+        return (
+            <div className="min-h-[250vh] -mt-[100vh] w-full pointer-events-none" data-aero-transition-placeholder="true" />
+        );
 
     if (reduceMotion) {
         return (
-            <section className="relative w-full overflow-hidden" style={{ minHeight: "100vh" }}>
-                {/* Fallback for reduced motion: maybe just a static background or placeholder */}
-                <div className="w-full h-full min-h-[100vh] bg-[var(--theme-bg-solid)] flex items-center justify-center">
+            <section
+                className="relative w-full -mt-[100vh] overflow-hidden z-0 pointer-events-none"
+                style={{ minHeight: "100vh" }}
+                data-aero-transition="reduced-motion"
+            >
+                <div className="w-full h-full min-h-[100vh] flex items-center justify-center opacity-0">
                     <p className="text-[var(--theme-text-muted)] text-sm uppercase tracking-widest">
                         Animations Disabled
                     </p>
@@ -149,30 +231,27 @@ export default function AeroTransitionSection() {
     }
 
     return (
-        <section ref={sectionRef} className="relative w-full" style={{ height: "250vh" }}>
+        <section
+            ref={sectionRef}
+            className="relative w-full -mt-[100vh] z-0 pointer-events-none"
+            style={{ height: "250vh" }}
+            data-aero-transition="active"
+        >
             <div className="sticky top-0 w-full h-[100vh] overflow-hidden">
-
                 {/* Canvas background layer */}
                 <canvas
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full object-cover z-0"
+                    data-aero-transition-canvas="true"
                 />
 
-                {/* Minimal text label overlay */}
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-                    <div className="text-center">
-                        {/* We can add aesthetic text if needed, or keep it minimal */}
+                {hasSpriteError && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                        <div className="rounded-full border border-red-400/30 bg-black/50 px-5 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-red-200">
+                            Sprite Load Error
+                        </div>
                     </div>
-                </div>
-
-                {/* Top Fade Edge (Background color -> Transparent) */}
-                <div className="absolute top-0 left-0 w-full h-32 z-20 pointer-events-none"
-                    style={{ background: "linear-gradient(to bottom, var(--theme-bg-solid), transparent)" }} />
-
-                {/* Bottom Fade Edge (Transparent -> Background color) */}
-                <div className="absolute bottom-0 left-0 w-full h-40 z-20 pointer-events-none"
-                    style={{ background: "linear-gradient(to top, var(--theme-bg-solid), transparent)" }} />
-
+                )}
             </div>
         </section>
     );

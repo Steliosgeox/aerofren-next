@@ -166,7 +166,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                         title: 'Νέα κλιμάκωση',
                         body: `${esc.userName || esc.userEmail || 'Χρήστης'} ζητά βοήθεια`,
                         timestamp: new Date(esc.escalatedAt),
-                        href: '/admin/requests',
+                        href: `/admin/chats?session=${encodeURIComponent(esc.sessionId)}`,
                         isRead: false,
                     });
                 }
@@ -207,12 +207,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     useEffect(() => {
         if (!user || !isAdmin) return;
 
-        // Delay first poll by 5s to avoid doubling up with admin page's own initial fetch
-        const initialDelay = setTimeout(() => pollAdmin(), 5_000);
+        void pollAdmin();
         pollIntervalRef.current = setInterval(pollAdmin, 30_000);
 
         return () => {
-            clearTimeout(initialDelay);
             if (pollIntervalRef.current) {
                 clearInterval(pollIntervalRef.current);
                 pollIntervalRef.current = null;
