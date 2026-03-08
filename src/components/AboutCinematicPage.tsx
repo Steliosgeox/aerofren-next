@@ -360,7 +360,7 @@ export default function AboutCinematicPage() {
             fontSize: '0.7rem',
             letterSpacing: '0.42em',
             textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.55)',
+            color: '#ffffff',
             fontWeight: 500,
             marginBottom: '2.5rem',
             fontFamily: 'var(--font-dm-sans), sans-serif',
@@ -386,7 +386,7 @@ export default function AboutCinematicPage() {
             <span style={{
               fontStyle: 'italic',
               fontWeight: 400,
-              color: 'rgba(255,255,255,0.82)',
+              color: '#ffffff',
             }}>
               μας.
             </span>
@@ -397,7 +397,7 @@ export default function AboutCinematicPage() {
               fontSize: 'clamp(1rem, 1.8vw, 1.25rem)',
               fontWeight: 300,
               lineHeight: 1.85,
-              color: 'var(--theme-text-muted)',
+              color: '#ffffff',
               maxWidth: '560px',
               margin: '0 auto',
               opacity: 0,
@@ -420,7 +420,7 @@ export default function AboutCinematicPage() {
               fontSize: '0.6rem',
               letterSpacing: '0.32em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.4)',
+              color: '#ffffff',
               fontFamily: 'var(--font-dm-sans), sans-serif',
               fontWeight: 500,
             }}>
@@ -434,8 +434,8 @@ export default function AboutCinematicPage() {
               xmlns="http://www.w3.org/2000/svg"
               style={{ animation: 'diveBounce 2s ease-in-out infinite' }}
             >
-              <path d="M9 0 L9 24" stroke="rgba(255,255,255,0.35)" strokeWidth="1" />
-              <path d="M2 18 L9 26 L16 18" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" fill="none" />
+              <path d="M9 0 L9 24" stroke="rgba(255,255,255,0.8)" strokeWidth="1" />
+              <path d="M2 18 L9 26 L16 18" stroke="#ffffff" strokeWidth="1.2" fill="none" />
             </svg>
             <style>{`
               @keyframes diveBounce {
@@ -528,7 +528,7 @@ export default function AboutCinematicPage() {
                 <span style={{
                   fontSize: '0.7rem',
                   letterSpacing: '0.2em',
-                  color: 'var(--theme-text-muted)',
+                  color: '#ffffff',
                   fontWeight: 500,
                 }}>
                   {sec.year}
@@ -559,7 +559,7 @@ export default function AboutCinematicPage() {
                   fontSize: 'clamp(0.95rem, 1.5vw, 1.15rem)',
                   fontWeight: 300,
                   lineHeight: 1.9,
-                  color: 'var(--theme-text-muted)',
+                  color: '#ffffff',
                   borderLeft: '2px solid color-mix(in srgb, var(--theme-accent) 40%, transparent)',
                   paddingLeft: '1.25rem',
                   maxWidth: '520px',
@@ -715,7 +715,7 @@ export default function AboutCinematicPage() {
                   letterSpacing: '0.3em',
                   textTransform: 'uppercase',
                   fontWeight: 600,
-                  color: 'rgba(255,255,255,0.5)',
+                  color: '#ffffff',
                   background: 'rgba(255,255,255,0.07)',
                   border: '1px solid rgba(255,255,255,0.16)',
                   padding: '5px 12px',
@@ -755,7 +755,7 @@ export default function AboutCinematicPage() {
                   letterSpacing: '-0.02em',
                   margin: '0 0 1.8rem',
                   fontStyle: 'italic',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: '#ffffff',
                   fontFamily: 'var(--font-playfair), Georgia, serif',
                   opacity: 0,
                 }}
@@ -770,7 +770,7 @@ export default function AboutCinematicPage() {
                   fontSize: 'clamp(0.95rem, 1.5vw, 1.15rem)',
                   fontWeight: 300,
                   lineHeight: 1.9,
-                  color: 'var(--theme-text-muted)',
+                  color: '#ffffff',
                   borderLeft: '2px solid color-mix(in srgb, var(--theme-accent) 40%, transparent)',
                   paddingLeft: '1.25rem',
                   maxWidth: '520px',
@@ -804,7 +804,7 @@ export default function AboutCinematicPage() {
             fontSize: '0.7rem',
             letterSpacing: '0.42em',
             textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.45)',
+            color: '#ffffff',
             fontWeight: 500,
             marginBottom: '2rem',
             fontFamily: 'var(--font-dm-sans), sans-serif',
@@ -826,7 +826,7 @@ export default function AboutCinematicPage() {
             <span style={{
               fontStyle: 'italic',
               fontWeight: 400,
-              color: 'rgba(255,255,255,0.8)',
+              color: '#ffffff',
             }}>
               Επικοινωνίας.
             </span>
@@ -839,12 +839,12 @@ export default function AboutCinematicPage() {
             marginBottom: '2.5rem',
             fontSize: 'clamp(0.95rem, 1.4vw, 1.1rem)',
             fontWeight: 300,
-            color: 'rgba(255,255,255,0.75)',
+            color: '#ffffff',
             lineHeight: 1.8,
             fontFamily: 'var(--font-dm-sans), sans-serif',
           }}>
             <span>Χρυσοστόμου Σμύρνης 26, Μοσχάτο</span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9em' }}>Εξειδίκευση: Επεξεργασία Νερού &amp; Πεπιεσμένος Αέρας</span>
+            <span style={{ color: '#ffffff', fontSize: '0.9em' }}>Εξειδίκευση: Επεξεργασία Νερού &amp; Πεπιεσμένος Αέρας</span>
             <a
               href="tel:+302103461645"
               style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 500, letterSpacing: '0.04em' }}
@@ -853,7 +853,7 @@ export default function AboutCinematicPage() {
             </a>
             <a
               href="mailto:aerofren@gmail.com"
-              style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontWeight: 400 }}
+              style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 400 }}
             >
               aerofren@gmail.com
             </a>
