@@ -156,6 +156,7 @@ const ChatMessage = memo(function ChatMessage({
  * AEROFREN Chatbot - Two-state layout matching original design
  */
 export function Chatbot() {
+  const chatRootRef = useRef<HTMLElement>(null);
   const chatScrollerRef = useRef<HTMLDivElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
 
@@ -190,6 +191,7 @@ export function Chatbot() {
     'Φίλτρα νερού',
     'Τιμές & διαθεσιμότητα',
   ];
+  const isConversationMode = messages.length > 0;
 
   // Initialize session based on functional cookie consent.
   useEffect(() => {
@@ -403,41 +405,96 @@ export function Chatbot() {
     };
   }, [hasMessages]);
 
-  // Keep wheel input inside the chatbot scroller so the route-level Lenis shell
-  // does not consume the event while the user is reading a conversation.
+  // Route wheel and touch gestures inside the chat panel to the internal
+  // conversation scroller so the page only scrolls when the pointer is outside.
   useEffect(() => {
-    const scroller = chatScrollerRef.current;
-    if (!scroller) return;
+    const chatRoot = chatRootRef.current;
+    if (!isOpen || !isConversationMode || !chatRoot) return;
 
-    const handleWheel = (e: WheelEvent) => {
-      // Stop propagation to prevent ScrollSmoother from interfering
-      e.stopPropagation();
+    let touchY: number | null = null;
+
+    const routeScroll = (deltaY: number) => {
+      const scroller = chatScrollerRef.current;
+      if (!scroller) return;
+
+      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+      if (maxScrollTop === 0) return;
+
+      const nextScrollTop = Math.max(0, Math.min(maxScrollTop, scroller.scrollTop + deltaY));
+      scroller.scrollTop = nextScrollTop;
     };
 
-    scroller.addEventListener('wheel', handleWheel, { passive: true });
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey) return;
+      event.preventDefault();
+      event.stopPropagation();
+      routeScroll(event.deltaY);
+    };
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) return;
+      touchY = event.touches[0].clientY;
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (event.touches.length !== 1 || touchY === null) return;
+
+      const nextTouchY = event.touches[0].clientY;
+      const deltaY = touchY - nextTouchY;
+
+      if (Math.abs(deltaY) < 1) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      routeScroll(deltaY);
+      touchY = nextTouchY;
+    };
+
+    const resetTouch = () => {
+      touchY = null;
+    };
+
+    chatRoot.addEventListener('wheel', handleWheel, { passive: false });
+    chatRoot.addEventListener('touchstart', handleTouchStart, { passive: true });
+    chatRoot.addEventListener('touchmove', handleTouchMove, { passive: false });
+    chatRoot.addEventListener('touchend', resetTouch);
+    chatRoot.addEventListener('touchcancel', resetTouch);
 
     return () => {
-      scroller.removeEventListener('wheel', handleWheel);
+      chatRoot.removeEventListener('wheel', handleWheel);
+      chatRoot.removeEventListener('touchstart', handleTouchStart);
+      chatRoot.removeEventListener('touchmove', handleTouchMove);
+      chatRoot.removeEventListener('touchend', resetTouch);
+      chatRoot.removeEventListener('touchcancel', resetTouch);
     };
-  }, [isOpen]);
-
-  // Determine if in conversation mode
-  const isConversationMode = messages.length > 0;
+  }, [isConversationMode, isOpen]);
 
   return (
     <>
       {/* Floating Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`chatbot-toggle ${isOpen ? 'chatbot-toggle--open' : ''}`}
-        aria-label={isOpen ? 'Κλείσιμο συνομιλίας' : 'Άνοιγμα συνομιλίας'}
-      >
-        {isOpen ? <X /> : <MessageCircle />}
-      </button>
+      {!isOpen && (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="chatbot-toggle"
+          aria-label="Άνοιγμα συνομιλίας"
+        >
+          <MessageCircle />
+        </button>
+      )}
 
       {/* Chat Widget */}
       {isOpen && (
-        <main className={`chatbot ${isConversationMode ? 'chatbot--conversation' : 'chatbot--welcome'}`}>
+        <main
+          aria-label="Βοηθός AEROFREN"
+          aria-modal="true"
+          className={`chatbot ${isConversationMode ? 'chatbot--conversation' : 'chatbot--welcome'}`}
+          data-lenis-prevent
+          onTouchMoveCapture={(event) => event.stopPropagation()}
+          onWheelCapture={(event) => event.stopPropagation()}
+          ref={chatRootRef}
+          role="dialog"
+        >
           {/* Header */}
           <div className="chatbot__header">
             <div className="chatbot__header-info">
