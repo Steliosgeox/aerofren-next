@@ -5,7 +5,6 @@ import * as THREE from "three";
 import LiquidButton from "./LiquidButton";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import { debounce } from "@/lib/debounce";
-import { getDynamicViewportHeight } from "@/lib/viewport";
 import { getDeviceInfo } from "./nexus-hero/device";
 import { createPresets } from "./nexus-hero/theme-presets";
 import { vertexShader, createFragmentShader } from "./nexus-hero/shader";
@@ -45,6 +44,7 @@ export default function NexusHero() {
 
     const [currentTheme, setCurrentTheme] = useState<"dark" | "light" | "dim">("dark");
     const [isLoaded, setIsLoaded] = useState(false);
+    const [webGLFailed, setWebGLFailed] = useState(false);
     const isVisibleRef = useRef(true);
     const fadeProgressRef = useRef(0); // 0 = fully visible, 1 = fully faded
     const animateRef = useRef<(() => void) | null>(null); // Store animate function for restart
@@ -80,29 +80,13 @@ export default function NexusHero() {
     }, []);
 
     // Convert screen to world coordinates - reuses vector to avoid GC
-    const getViewportMetrics = useCallback(() => {
-        const width =
-            containerRef.current?.clientWidth || window.innerWidth;
-        const height =
-            containerRef.current?.clientHeight || getDynamicViewportHeight();
-
-        return {
-            width: Math.max(1, width),
-            height: Math.max(1, height),
-        };
-    }, []);
-
     const screenToWorldJS = useCallback((normalizedX: number, normalizedY: number) => {
         const uvX = normalizedX * 2.0 - 1.0;
         const uvY = normalizedY * 2.0 - 1.0;
-        const { width, height } =
-            typeof window !== "undefined"
-                ? getViewportMetrics()
-                : { width: 1, height: 1 };
-        const aspect = width / height;
+        const aspect = typeof window !== "undefined" ? window.innerWidth / window.innerHeight : 1;
         tempVector3Ref.current.set(uvX * aspect * 2.0, uvY * 2.0, 0.0);
         return tempVector3Ref.current;
-    }, [getViewportMetrics]);
+    }, []);
 
     // Handle pointer movement - uses CACHED rect to avoid layout thrashing
     const handlePointerMove = useCallback((clientX: number, clientY: number) => {
@@ -179,16 +163,33 @@ export default function NexusHero() {
         camera.position.z = 1;
         clockRef.current = new THREE.Clock();
 
-        // Create renderer
-        const renderer = new THREE.WebGLRenderer({
-            antialias: !device.isMobile && !device.isLowPower,
-            alpha: true,
-            powerPreference: device.isMobile ? "default" : "high-performance",
-            preserveDrawingBuffer: false,
-            premultipliedAlpha: false,
-        });
+        // Pre-flight WebGL check — old Intel HD 2500/4000 GPUs throw on renderer creation
+        const testCanvas = document.createElement("canvas");
+        const glCtx = testCanvas.getContext("webgl2") || testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl");
+        if (!glCtx) {
+            setWebGLFailed(true);
+            setIsLoaded(true);
+            return;
+        }
 
-        const { width, height } = getViewportMetrics();
+        // Create renderer
+        let renderer: THREE.WebGLRenderer;
+        try {
+            renderer = new THREE.WebGLRenderer({
+                antialias: !device.isMobile && !device.isLowPower,
+                alpha: true,
+                powerPreference: device.isMobile ? "default" : "high-performance",
+                preserveDrawingBuffer: false,
+                premultipliedAlpha: false,
+            });
+        } catch {
+            setWebGLFailed(true);
+            setIsLoaded(true);
+            return;
+        }
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
 
         // Clamp ACTUAL render resolution to prevent excessive GPU load
         // This is the max pixels the shader will process (after pixelRatio)
@@ -354,8 +355,7 @@ export default function NexusHero() {
         };
 
         const handleResize = () => {
-            const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
-            applyRenderSize(viewportWidth, viewportHeight);
+            applyRenderSize(window.innerWidth, window.innerHeight);
 
             // Update cached rect for mouse position calculations
             if (containerRef.current) {
@@ -370,16 +370,12 @@ export default function NexusHero() {
         window.addEventListener("mousemove", handleMouseMove, { passive: true });
         window.addEventListener("touchmove", handleTouchMove, { passive: true });
         window.addEventListener("resize", debouncedResize, { passive: true });
-        window.visualViewport?.addEventListener?.("resize", debouncedResize, {
-            passive: true,
-        });
 
         // Initialize cached rect for mouse calculations
         cachedRectRef.current = containerRef.current.getBoundingClientRect();
 
         // Initialize cursor position
-        const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
-        handlePointerMove(viewportWidth / 2, viewportHeight / 2);
+        handlePointerMove(window.innerWidth / 2, window.innerHeight / 2);
 
         // Start animation
         loadedRevealTimeout = setTimeout(() => setIsLoaded(true), 0);
@@ -419,7 +415,6 @@ export default function NexusHero() {
             window.removeEventListener("touchmove", handleTouchMove);
             debouncedResize?.cancel?.();
             window.removeEventListener("resize", debouncedResize);
-            window.visualViewport?.removeEventListener?.("resize", debouncedResize);
 
             // THIRD: Kill ScrollTrigger BEFORE disposing renderer
             if (scrollTriggerRef.current) {
@@ -455,12 +450,17 @@ export default function NexusHero() {
                 loadedRevealTimeout = null;
             }
         };
-    }, [getViewportMetrics, handlePointerMove]);
+    }, [handlePointerMove]);
 
     return (
         <section className="nexus-hero">
-            {/* Three.js Canvas Container */}
-            <div ref={containerRef} className="nexus-hero__canvas" />
+            {/* Three.js Canvas Container — hidden when WebGL unavailable */}
+            <div ref={containerRef} className="nexus-hero__canvas" style={webGLFailed ? { display: "none" } : undefined} />
+
+            {/* Static CSS gradient fallback for old/no-WebGL devices */}
+            {webGLFailed && (
+                <div className="nexus-hero__canvas nexus-hero__fallback" aria-hidden="true" />
+            )}
 
             {/* Noise Texture Overlay */}
             <div className="nexus-hero__noise" />
@@ -516,13 +516,10 @@ export default function NexusHero() {
                     z-index: 1; /* Above ScrollFrameAnimation (z-index: 0) */
                     width: 100%;
                     min-height: 100vh;
-                    min-height: 100dvh;
-                    min-height: var(--app-viewport-height, 100dvh);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    overflow-x: clip;
-                    overflow-y: visible; /* Preserve the LiquidButton blob reveal without leaking page width */
+                    overflow: visible; /* Changed from hidden to allow LiquidButton blobs to show */
                     background: transparent; /* Let ScrollFrameAnimation show through */
                 }
 
@@ -532,6 +529,12 @@ export default function NexusHero() {
                     z-index: 0;
                     will-change: opacity;
                     transform: translateZ(0); /* GPU acceleration */
+                }
+
+                .nexus-hero__fallback {
+                    background: radial-gradient(ellipse 80% 60% at 50% 40%, #003a5c 0%, #001220 55%, #000810 100%);
+                    will-change: auto;
+                    transform: none;
                 }
 
                 .nexus-hero__canvas :global(canvas) {

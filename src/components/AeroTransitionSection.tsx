@@ -3,10 +3,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
-import {
-    getDynamicViewportHeight,
-    VIEWPORT_HEIGHT_CSS_VAR,
-} from "@/lib/viewport";
 
 const CELL_W = 640;
 const CELL_H = 360;
@@ -59,6 +55,12 @@ export default function AeroTransitionSection() {
     const progressRef = useRef(0);
     const { resolvedTheme } = useTheme();
     const [reduceMotion, setReduceMotion] = useState(false);
+    // Skip the ~110MB sprite on devices with < 2 GB RAM (old PCs, budget phones)
+    const [skipSprite] = useState(() => {
+        if (typeof navigator === "undefined") return false;
+        const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+        return typeof mem === "number" && mem < 2;
+    });
     const isMounted = useSyncExternalStore(
         () => () => { },
         () => true,
@@ -75,7 +77,6 @@ export default function AeroTransitionSection() {
     const spriteSrc = `/videos/sprites/sprite_hero_${themeSuffix}.webp`;
     const hasSpriteError =
         failedSpriteSrc === spriteSrc && loadedSpriteSrc !== spriteSrc;
-    const viewportHeight = `var(${VIEWPORT_HEIGHT_CSS_VAR}, 100vh)`;
 
     useEffect(() => {
         const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -88,7 +89,7 @@ export default function AeroTransitionSection() {
 
     // Update sprite based on theme
     useEffect(() => {
-        if (!isMounted || reduceMotion) return;
+        if (!isMounted || reduceMotion || skipSprite) return;
 
         const sprite = new Image();
         sprite.src = spriteSrc;
@@ -119,17 +120,17 @@ export default function AeroTransitionSection() {
             sprite.onload = null;
             sprite.onerror = null;
         };
-    }, [isMounted, reduceMotion, spriteSrc]);
+    }, [isMounted, reduceMotion, skipSprite, spriteSrc]);
 
     useEffect(() => {
-        if (!isMounted || reduceMotion) return;
+        if (!isMounted || reduceMotion || skipSprite) return;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const resize = () => {
             canvas.width = window.innerWidth;
-            canvas.height = getDynamicViewportHeight();
+            canvas.height = window.innerHeight;
 
             // Redraw current frame after resize
             if (spriteRef.current) {
@@ -147,19 +148,13 @@ export default function AeroTransitionSection() {
 
         resize();
         window.addEventListener("resize", resize, { passive: true });
-        window.visualViewport?.addEventListener?.("resize", resize, {
-            passive: true,
-        });
         ScrollTrigger.refresh();
 
-        return () => {
-            window.removeEventListener("resize", resize);
-            window.visualViewport?.removeEventListener?.("resize", resize);
-        };
-    }, [isMounted, reduceMotion, resolvedTheme]);
+        return () => window.removeEventListener("resize", resize);
+    }, [isMounted, reduceMotion, skipSprite, resolvedTheme]);
 
     useEffect(() => {
-        if (!isMounted || reduceMotion) return;
+        if (!isMounted || reduceMotion || skipSprite) return;
 
         const section = sectionRef.current;
         const canvas = canvasRef.current;
@@ -218,34 +213,21 @@ export default function AeroTransitionSection() {
         }, section);
 
         return () => ctxSt.revert();
-    }, [isMounted, reduceMotion, resolvedTheme]);
+    }, [isMounted, reduceMotion, skipSprite, resolvedTheme]);
 
     if (!isMounted)
         return (
-            <div
-                className="w-full pointer-events-none"
-                data-aero-transition-placeholder="true"
-                style={{
-                    minHeight: `calc(${viewportHeight} * 2.5)`,
-                    marginTop: `calc(${viewportHeight} * -1)`,
-                }}
-            />
+            <div className="min-h-[250vh] -mt-[100vh] w-full pointer-events-none" data-aero-transition-placeholder="true" />
         );
 
-    if (reduceMotion) {
+    if (reduceMotion || skipSprite) {
         return (
             <section
-                className="relative w-full overflow-hidden z-0 pointer-events-none"
-                style={{
-                    minHeight: viewportHeight,
-                    marginTop: `calc(${viewportHeight} * -1)`,
-                }}
+                className="relative w-full -mt-[100vh] overflow-hidden z-0 pointer-events-none"
+                style={{ minHeight: "100vh" }}
                 data-aero-transition="reduced-motion"
             >
-                <div
-                    className="w-full h-full flex items-center justify-center opacity-0"
-                    style={{ minHeight: viewportHeight }}
-                >
+                <div className="w-full h-full min-h-[100vh] flex items-center justify-center opacity-0">
                     <p className="text-[var(--theme-text-muted)] text-sm uppercase tracking-widest">
                         Animations Disabled
                     </p>
@@ -257,17 +239,11 @@ export default function AeroTransitionSection() {
     return (
         <section
             ref={sectionRef}
-            className="relative w-full z-0 pointer-events-none"
-            style={{
-                height: `calc(${viewportHeight} * 2.5)`,
-                marginTop: `calc(${viewportHeight} * -1)`,
-            }}
+            className="relative w-full -mt-[100vh] z-0 pointer-events-none"
+            style={{ height: "250vh" }}
             data-aero-transition="active"
         >
-            <div
-                className="sticky top-0 w-full overflow-hidden"
-                style={{ height: viewportHeight }}
-            >
+            <div className="sticky top-0 w-full h-[100vh] overflow-hidden">
                 {/* Canvas background layer */}
                 <canvas
                     ref={canvasRef}

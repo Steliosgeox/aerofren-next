@@ -16,7 +16,10 @@ export const getDeviceInfo = (): DeviceInfo => {
     }
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isLowPower = isMobile || Boolean(navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+    const cores = navigator.hardwareConcurrency ?? 0;
+    const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+    // Flag low-power: mobile, ≤4 logical cores (i5-3rd-gen = 4), or ≤2 GB RAM
+    const isLowPower = isMobile || (cores > 0 && cores <= 4) || (typeof mem === "number" && mem <= 2);
     const pixelRatio = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
     return { isMobile, isSafari, isLowPower, pixelRatio };
 };

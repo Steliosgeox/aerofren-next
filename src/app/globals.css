@@ -40,7 +40,9 @@
      -------------------------------- */
   --brand: var(--theme-accent);
   --brand-dark: var(--theme-accent-hover);
+  --brand-light: #4dd4f4; /* fallback: color-mix unsupported < Chrome 111 */
   --brand-light: color-mix(in srgb, var(--theme-accent) 70%, #ffffff 30%);
+  --brand-accent: #66dbf7; /* fallback */
   --brand-accent: color-mix(in srgb, var(--theme-accent) 60%, #ffffff 40%);
   --accent-orange: #ff6b00;
 
@@ -391,12 +393,14 @@ h4,
 
 .btn-secondary {
   @apply bg-transparent text-[var(--theme-text)];
+  background: rgba(10, 20, 40, 0.85); /* fallback: color-mix unsupported < Chrome 111 */
   background: color-mix(in srgb, var(--theme-glass-bg) 85%, transparent);
   border: 1px solid var(--theme-glass-border);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
+  border-color: rgba(0, 186, 226, 0.35); /* fallback */
   border-color: color-mix(in srgb, var(--theme-accent) 35%, transparent);
   color: var(--theme-accent);
   box-shadow: var(--shadow-md);
@@ -407,6 +411,7 @@ h4,
 }
 
 .btn-ghost:hover {
+  background: rgba(10, 20, 40, 0.85); /* fallback */
   background: color-mix(in srgb, var(--theme-glass-bg) 85%, transparent);
 }
 
@@ -416,6 +421,7 @@ h4,
 
 .card {
   @apply bg-transparent;
+  background: rgba(10, 20, 40, 0.85); /* fallback */
   background: color-mix(in srgb, var(--theme-glass-bg) 85%, transparent);
   border: 1px solid var(--theme-glass-border);
   border-radius: var(--radius-lg);
@@ -501,6 +507,7 @@ h4,
 
 .input {
   @apply h-12 px-4 text-sm w-full;
+  background: rgba(10, 20, 40, 0.85); /* fallback */
   background: color-mix(in srgb, var(--theme-glass-bg) 85%, transparent);
   color: var(--theme-text);
   border: 1px solid var(--theme-glass-border);
@@ -511,6 +518,7 @@ h4,
 .input:focus {
   @apply outline-none;
   border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px rgba(0, 186, 226, 0.20); /* fallback */
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 20%, transparent);
 }
 

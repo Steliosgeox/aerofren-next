@@ -65,6 +65,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
           right: 0;
           bottom: calc(14px + env(safe-area-inset-bottom, 0px));
           z-index: 70;
+          width: min(428px, calc(100vw - 18px));
           width: min(428px, calc(100dvw - 18px));
           margin-inline: auto;
           pointer-events: none;
@@ -242,6 +243,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
 
         @media (max-width: 420px) {
           .mobile-bottom-nav {
+            width: calc(100vw - 14px);
             width: calc(100dvw - 14px);
             bottom: calc(10px + env(safe-area-inset-bottom, 0px));
           }
