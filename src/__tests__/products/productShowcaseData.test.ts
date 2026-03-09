@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   getProductBySlug,
   getProductShowcaseCount,
+  productShowcaseNavigationItems,
   productShowcaseItems,
 } from "@/data/product-showcase";
 
@@ -28,7 +29,9 @@ describe("product showcase data", () => {
 
   it("normalizes duplicate source files into a single product entry", () => {
     expect(
-      productShowcaseItems.filter((item) => item.nameEl === "ΕΞΑΡΤΗΜΑΤΑ ΣΩΛΗΝΩΝ"),
+      productShowcaseItems.filter(
+        (item) => item.nameEl === "ΕΞΑΡΤΗΜΑΤΑ ΣΩΛΗΝΩΝ",
+      ),
     ).toHaveLength(1);
   });
 
@@ -44,7 +47,20 @@ describe("product showcase data", () => {
 
   it("exposes stable lookup helpers", () => {
     expect(getProductShowcaseCount()).toBe(11);
-    expect(getProductBySlug("epexergasia-nerou")?.nameEl).toBe("ΕΠΕΞΕΡΓΑΣΙΑ ΝΕΡΟΥ");
+    expect(getProductBySlug("epexergasia-nerou")?.nameEl).toBe(
+      "ΕΠΕΞΕΡΓΑΣΙΑ ΝΕΡΟΥ",
+    );
     expect(getProductBySlug("does-not-exist")).toBeUndefined();
+  });
+
+  it("maps the horizontal gallery to the Scroll-second artwork set", () => {
+    expect(productShowcaseNavigationItems).toHaveLength(
+      productShowcaseItems.length,
+    );
+
+    for (const item of productShowcaseNavigationItems) {
+      expect(item.image).toMatch(/^\/images\/Scroll-second\//);
+      expect(item.href).toBe(`/products#${item.slug}`);
+    }
   });
 });

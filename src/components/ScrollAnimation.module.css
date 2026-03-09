@@ -13,6 +13,7 @@
        The ::before bg-image is position:absolute inset:0 and doesn't need clipping. */
     position: relative;
     width: 100%;
+    overflow-x: clip;
 }
 
 /* Generated 'Nano Banana' Premium Background */
@@ -52,6 +53,7 @@
 /* Header Section - Full viewport intro */
 .header {
     min-height: 100vh;
+    min-height: var(--app-viewport-height, 100vh);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -101,6 +103,7 @@
 /* Content - container for the grid (GSAP handles pinning) */
 .content {
     min-height: 100vh;
+    min-height: var(--app-viewport-height, 100vh);
     width: 100%;
     display: flex;
     justify-content: center;

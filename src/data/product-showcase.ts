@@ -173,10 +173,35 @@ export function getProductShowcaseCount() {
   return productShowcaseItems.length;
 }
 
+const horizontalGalleryImageById: Record<string, string> = {
+  "solines-inox-thermou-aera":
+    "/images/Scroll-second/Add_background_to_spiral_picture_bfb0a65da2-ezgif.com-jpg-to-webp-converter.webp",
+  "pollapla-stirigmata":
+    "/images/Scroll-second/Beautiful_blue_background_c399f712b1-ezgif.com-jpg-to-webp-converter.webp",
+  "mproutzina-taf":
+    "/images/Scroll-second/Brass_fittings_blue_background_3576546b97-ezgif.com-jpg-to-webp-converter.webp",
+  koftis:
+    "/images/Scroll-second/Beautiful_blue_background_835f5f2fe6-ezgif.com-jpg-to-webp-converter.webp",
+  thermosystellomena:
+    "/images/Scroll-second/Beautiful_blue_background_a7c70edb85-ezgif.com-jpg-to-webp-converter.webp",
+  "epexergasia-nerou":
+    "/images/Scroll-second/Beautiful_blue_background_3c191d233a-ezgif.com-jpg-to-webp-converter.webp",
+  "exartimata-solinon":
+    "/images/Scroll-second/Beautiful_blue_background_1c5f461a95-ezgif.com-jpg-to-webp-converter.webp",
+  "exartimata-pollaplon-xriseon":
+    "/images/Scroll-second/Beautiful_blue_background_ce1a72e4ef-ezgif.com-jpg-to-webp-converter.webp",
+  "exartimata-aeros":
+    "/images/Scroll-second/Beautiful_blue_background_81fbc00005-ezgif.com-jpg-to-webp-converter.webp",
+  "goniakoi-odigoi":
+    "/images/Scroll-second/Add_background_to_spiral_picture_38425f93ea-ezgif.com-jpg-to-webp-converter.webp",
+  "ball-valve-aeros-ygrown":
+    "/images/Scroll-second/Change_background_of_ball_valve_ae99b75fb4-ezgif.com-jpg-to-webp-converter.webp",
+};
+
 export const productShowcaseNavigationItems = productShowcaseItems.map((item) => ({
   id: item.id,
   slug: item.slug,
   nameEl: item.nameEl,
-  image: item.image,
+  image: horizontalGalleryImageById[item.id] ?? item.image,
   href: `/products#${item.slug}`,
 }));

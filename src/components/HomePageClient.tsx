@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import AeroTransitionSection from "@/components/AeroTransitionSection";
 import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
+import { useViewportHeightCssVar } from "@/lib/viewport";
 import { Button } from "@/components/ui/button";
 
 const NexusHero = dynamic(() => import("@/components/NexusHero"), {
@@ -40,6 +41,8 @@ export default function HomePageClient() {
     const cpuCores = navigatorInfo.hardwareConcurrency ?? 4;
     return deviceMemory <= 4 || cpuCores <= 4;
   });
+
+  useViewportHeightCssVar();
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -222,7 +225,7 @@ export default function HomePageClient() {
   }, { scope: contactRef, dependencies: [contactInView, reduceMotion, lowEndDevice] });
 
   return (
-    <>
+    <div className="homePage">
       {/* ============================================
           HERO SECTION - Three.js Nexus Metaballs
           ============================================ */}
@@ -309,6 +312,11 @@ export default function HomePageClient() {
           INLINE STYLES (Scoped to this component)
           ============================================ */}
       <style jsx>{`
+        .homePage {
+          position: relative;
+          overflow-x: clip;
+        }
+
         /* ==== STATS (Zero Gravity Parallax) ==== */
         .stats {
           position: relative;
@@ -593,6 +601,6 @@ export default function HomePageClient() {
           }
         }
       `}</style>
-    </>
+    </div>
   );
 }

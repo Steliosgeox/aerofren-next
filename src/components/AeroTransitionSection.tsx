@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
+import {
+    getDynamicViewportHeight,
+    VIEWPORT_HEIGHT_CSS_VAR,
+} from "@/lib/viewport";
 
 const CELL_W = 640;
 const CELL_H = 360;
@@ -71,6 +75,7 @@ export default function AeroTransitionSection() {
     const spriteSrc = `/videos/sprites/sprite_hero_${themeSuffix}.webp`;
     const hasSpriteError =
         failedSpriteSrc === spriteSrc && loadedSpriteSrc !== spriteSrc;
+    const viewportHeight = `var(${VIEWPORT_HEIGHT_CSS_VAR}, 100vh)`;
 
     useEffect(() => {
         const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -124,7 +129,7 @@ export default function AeroTransitionSection() {
 
         const resize = () => {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.height = getDynamicViewportHeight();
 
             // Redraw current frame after resize
             if (spriteRef.current) {
@@ -142,9 +147,15 @@ export default function AeroTransitionSection() {
 
         resize();
         window.addEventListener("resize", resize, { passive: true });
+        window.visualViewport?.addEventListener?.("resize", resize, {
+            passive: true,
+        });
         ScrollTrigger.refresh();
 
-        return () => window.removeEventListener("resize", resize);
+        return () => {
+            window.removeEventListener("resize", resize);
+            window.visualViewport?.removeEventListener?.("resize", resize);
+        };
     }, [isMounted, reduceMotion, resolvedTheme]);
 
     useEffect(() => {
@@ -211,17 +222,30 @@ export default function AeroTransitionSection() {
 
     if (!isMounted)
         return (
-            <div className="min-h-[250vh] -mt-[100vh] w-full pointer-events-none" data-aero-transition-placeholder="true" />
+            <div
+                className="w-full pointer-events-none"
+                data-aero-transition-placeholder="true"
+                style={{
+                    minHeight: `calc(${viewportHeight} * 2.5)`,
+                    marginTop: `calc(${viewportHeight} * -1)`,
+                }}
+            />
         );
 
     if (reduceMotion) {
         return (
             <section
-                className="relative w-full -mt-[100vh] overflow-hidden z-0 pointer-events-none"
-                style={{ minHeight: "100vh" }}
+                className="relative w-full overflow-hidden z-0 pointer-events-none"
+                style={{
+                    minHeight: viewportHeight,
+                    marginTop: `calc(${viewportHeight} * -1)`,
+                }}
                 data-aero-transition="reduced-motion"
             >
-                <div className="w-full h-full min-h-[100vh] flex items-center justify-center opacity-0">
+                <div
+                    className="w-full h-full flex items-center justify-center opacity-0"
+                    style={{ minHeight: viewportHeight }}
+                >
                     <p className="text-[var(--theme-text-muted)] text-sm uppercase tracking-widest">
                         Animations Disabled
                     </p>
@@ -233,11 +257,17 @@ export default function AeroTransitionSection() {
     return (
         <section
             ref={sectionRef}
-            className="relative w-full -mt-[100vh] z-0 pointer-events-none"
-            style={{ height: "250vh" }}
+            className="relative w-full z-0 pointer-events-none"
+            style={{
+                height: `calc(${viewportHeight} * 2.5)`,
+                marginTop: `calc(${viewportHeight} * -1)`,
+            }}
             data-aero-transition="active"
         >
-            <div className="sticky top-0 w-full h-[100vh] overflow-hidden">
+            <div
+                className="sticky top-0 w-full overflow-hidden"
+                style={{ height: viewportHeight }}
+            >
                 {/* Canvas background layer */}
                 <canvas
                     ref={canvasRef}

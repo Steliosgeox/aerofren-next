@@ -8,6 +8,8 @@
   width: 100%;
   padding: 0;
   margin: 0 auto;
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .galleryHeader {
@@ -74,7 +76,9 @@
 .horizGalleryWrapper {
   position: relative;
   width: 100%;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .horizGalleryStrip {
@@ -90,9 +94,9 @@
 }
 
 .productCardWrap {
-  width: 300px;
-  min-width: 280px;
-  max-width: 340px;
+  width: 320px;
+  min-width: 296px;
+  max-width: 360px;
   flex-shrink: 0;
 }
 
@@ -100,24 +104,16 @@
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 768 / 1376;
   overflow: hidden;
   text-decoration: none;
-  border-radius: 16px;
-  opacity: 1;
-  visibility: visible;
-  background: linear-gradient(
-    145deg,
-    rgba(15, 25, 45, 0.85) 0%,
-    rgba(10, 18, 35, 0.95) 100%
-  );
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(7, 18, 34, 0.96), rgba(4, 10, 22, 1));
+  border: 1px solid rgba(126, 178, 230, 0.24);
   box-shadow:
-    0 8px 32px rgba(0, 30, 80, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 18px 42px rgba(0, 12, 34, 0.34),
+    0 6px 18px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   contain: layout paint style;
   isolation: isolate;
   backface-visibility: hidden;
@@ -129,12 +125,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .productCard:hover {
-    border-color: rgba(0, 102, 204, 0.4);
-    transform: translateY(-4px);
+    border-color: rgba(121, 198, 255, 0.42);
+    transform: translateY(-6px);
     box-shadow:
-      0 20px 48px rgba(0, 80, 160, 0.35),
-      0 8px 24px rgba(0, 102, 204, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      0 24px 54px rgba(0, 24, 62, 0.42),
+      0 12px 28px rgba(0, 126, 214, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -151,16 +147,16 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.85;
+  opacity: 1;
   transition:
     transform 0.5s ease,
-    opacity 0.4s ease;
+    filter 0.5s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .productCard:hover .productCardImage {
-    transform: scale(1.08);
-    opacity: 1;
+    transform: scale(1.035);
+    filter: brightness(1.04) saturate(1.03);
   }
 }
 
@@ -170,9 +166,9 @@
   pointer-events: none;
   background: linear-gradient(
     0deg,
-    rgba(0, 10, 25, 0.95) 0%,
-    rgba(0, 10, 25, 0.6) 35%,
-    rgba(0, 10, 25, 0.2) 60%,
+    rgba(3, 9, 18, 0.4) 0%,
+    rgba(3, 9, 18, 0.22) 32%,
+    rgba(3, 9, 18, 0.1) 56%,
     transparent 100%
   );
 }
@@ -201,42 +197,44 @@
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-100%);
-  transition: opacity 0.3s ease;
+  transform: translateX(-135%) skewX(-14deg);
+  transition: opacity 0.25s ease;
   background: linear-gradient(
-    105deg,
-    transparent 20%,
-    rgba(255, 255, 255, 0.03) 35%,
-    rgba(92, 184, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 65%,
-    transparent 80%
+    100deg,
+    transparent 18%,
+    rgba(255, 255, 255, 0.02) 32%,
+    rgba(255, 255, 255, 0.28) 48%,
+    rgba(138, 214, 255, 0.14) 58%,
+    rgba(255, 255, 255, 0.02) 72%,
+    transparent 86%
   );
+  mix-blend-mode: screen;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .productCard:hover .productCardShine {
     opacity: 1;
-    animation: card-shimmer 1.5s ease-in-out;
+    animation: card-shimmer 1.05s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
 @keyframes card-shimmer {
   0% {
-    transform: translateX(-100%);
+    transform: translateX(-135%) skewX(-14deg);
   }
 
   100% {
-    transform: translateX(100%);
+    transform: translateX(135%) skewX(-14deg);
   }
 }
 
 .ctaWrap .productCard {
   background: linear-gradient(
-    145deg,
-    rgba(0, 102, 204, 0.2) 0%,
-    rgba(0, 60, 140, 0.3) 100%
+    180deg,
+    rgba(10, 41, 82, 0.98) 0%,
+    rgba(4, 19, 42, 1) 100%
   );
-  border-color: rgba(0, 102, 204, 0.3);
+  border-color: rgba(108, 185, 244, 0.28);
 }
 
 .ctaContent {
@@ -279,22 +277,10 @@
   transition: all 0.3s ease;
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .productCard {
-    background: linear-gradient(
-      145deg,
-      rgba(12, 20, 38, 0.94) 0%,
-      rgba(8, 14, 28, 0.98) 100%
-    );
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
 @media (min-width: 1440px) {
   .productCardWrap {
-    width: 22vw;
-    min-width: 300px;
+    width: 23vw;
+    min-width: 320px;
     max-width: 380px;
   }
 }
@@ -302,8 +288,8 @@
 @media (min-width: 1024px) and (max-width: 1439px) {
   .productCardWrap {
     width: 26vw;
-    min-width: 280px;
-    max-width: 340px;
+    min-width: 296px;
+    max-width: 352px;
   }
 }
 
@@ -357,8 +343,7 @@
   }
 
   .productCard {
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    border-radius: 18px;
   }
 }
 
@@ -420,13 +405,7 @@
 
 @media (max-width: 767px), (prefers-reduced-transparency: reduce) {
   .productCard {
-    background: linear-gradient(
-      145deg,
-      rgba(12, 20, 38, 0.94) 0%,
-      rgba(8, 14, 28, 0.98) 100%
-    );
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    background: linear-gradient(180deg, rgba(7, 18, 34, 0.96), rgba(4, 10, 22, 1));
   }
 }
 

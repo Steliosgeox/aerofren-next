@@ -5,6 +5,7 @@ import * as THREE from "three";
 import LiquidButton from "./LiquidButton";
 import { gsap, ScrollTrigger } from "@/lib/gsap/client";
 import { debounce } from "@/lib/debounce";
+import { getDynamicViewportHeight } from "@/lib/viewport";
 import { getDeviceInfo } from "./nexus-hero/device";
 import { createPresets } from "./nexus-hero/theme-presets";
 import { vertexShader, createFragmentShader } from "./nexus-hero/shader";
@@ -79,13 +80,29 @@ export default function NexusHero() {
     }, []);
 
     // Convert screen to world coordinates - reuses vector to avoid GC
+    const getViewportMetrics = useCallback(() => {
+        const width =
+            containerRef.current?.clientWidth || window.innerWidth;
+        const height =
+            containerRef.current?.clientHeight || getDynamicViewportHeight();
+
+        return {
+            width: Math.max(1, width),
+            height: Math.max(1, height),
+        };
+    }, []);
+
     const screenToWorldJS = useCallback((normalizedX: number, normalizedY: number) => {
         const uvX = normalizedX * 2.0 - 1.0;
         const uvY = normalizedY * 2.0 - 1.0;
-        const aspect = typeof window !== "undefined" ? window.innerWidth / window.innerHeight : 1;
+        const { width, height } =
+            typeof window !== "undefined"
+                ? getViewportMetrics()
+                : { width: 1, height: 1 };
+        const aspect = width / height;
         tempVector3Ref.current.set(uvX * aspect * 2.0, uvY * 2.0, 0.0);
         return tempVector3Ref.current;
-    }, []);
+    }, [getViewportMetrics]);
 
     // Handle pointer movement - uses CACHED rect to avoid layout thrashing
     const handlePointerMove = useCallback((clientX: number, clientY: number) => {
@@ -171,8 +188,7 @@ export default function NexusHero() {
             premultipliedAlpha: false,
         });
 
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+        const { width, height } = getViewportMetrics();
 
         // Clamp ACTUAL render resolution to prevent excessive GPU load
         // This is the max pixels the shader will process (after pixelRatio)
@@ -338,7 +354,8 @@ export default function NexusHero() {
         };
 
         const handleResize = () => {
-            applyRenderSize(window.innerWidth, window.innerHeight);
+            const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
+            applyRenderSize(viewportWidth, viewportHeight);
 
             // Update cached rect for mouse position calculations
             if (containerRef.current) {
@@ -353,12 +370,16 @@ export default function NexusHero() {
         window.addEventListener("mousemove", handleMouseMove, { passive: true });
         window.addEventListener("touchmove", handleTouchMove, { passive: true });
         window.addEventListener("resize", debouncedResize, { passive: true });
+        window.visualViewport?.addEventListener?.("resize", debouncedResize, {
+            passive: true,
+        });
 
         // Initialize cached rect for mouse calculations
         cachedRectRef.current = containerRef.current.getBoundingClientRect();
 
         // Initialize cursor position
-        handlePointerMove(window.innerWidth / 2, window.innerHeight / 2);
+        const { width: viewportWidth, height: viewportHeight } = getViewportMetrics();
+        handlePointerMove(viewportWidth / 2, viewportHeight / 2);
 
         // Start animation
         loadedRevealTimeout = setTimeout(() => setIsLoaded(true), 0);
@@ -398,6 +419,7 @@ export default function NexusHero() {
             window.removeEventListener("touchmove", handleTouchMove);
             debouncedResize?.cancel?.();
             window.removeEventListener("resize", debouncedResize);
+            window.visualViewport?.removeEventListener?.("resize", debouncedResize);
 
             // THIRD: Kill ScrollTrigger BEFORE disposing renderer
             if (scrollTriggerRef.current) {
@@ -433,7 +455,7 @@ export default function NexusHero() {
                 loadedRevealTimeout = null;
             }
         };
-    }, [handlePointerMove]);
+    }, [getViewportMetrics, handlePointerMove]);
 
     return (
         <section className="nexus-hero">
@@ -494,10 +516,13 @@ export default function NexusHero() {
                     z-index: 1; /* Above ScrollFrameAnimation (z-index: 0) */
                     width: 100%;
                     min-height: 100vh;
+                    min-height: 100dvh;
+                    min-height: var(--app-viewport-height, 100dvh);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    overflow: visible; /* Changed from hidden to allow LiquidButton blobs to show */
+                    overflow-x: clip;
+                    overflow-y: visible; /* Preserve the LiquidButton blob reveal without leaking page width */
                     background: transparent; /* Let ScrollFrameAnimation show through */
                 }
 
