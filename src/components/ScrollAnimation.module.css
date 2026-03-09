@@ -159,6 +159,14 @@
     will-change: opacity, transform;
 }
 
+.layer > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
 /* Layer 1: Outer edges - odd on left column, even on right column */
 .layer:nth-of-type(1)>div:nth-of-type(odd) {
     grid-column: 1;
@@ -246,18 +254,25 @@
 }
 
 /* Image styling */
-.grid img {
-    width: 100%;
+.gridImage,
+.scalerImage {
+    width: auto;
+    max-width: 100%;
     height: 100%;
-    object-fit: cover;
+    max-height: 100%;
+    object-fit: contain;
+    aspect-ratio: 768 / 1376;
     border-radius: clamp(8px, 2vw, 16px);
     box-shadow:
         0 4px 20px rgba(0, 0, 0, 0.4),
         0 0 40px rgba(59, 130, 246, 0.05);
     transition: box-shadow 0.4s ease, transform 0.4s ease;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
 }
 
-.grid img:hover {
+.gridImage:hover,
+.scalerImage:hover {
     box-shadow:
         0 8px 40px rgba(0, 0, 0, 0.5),
         0 0 60px rgba(139, 92, 246, 0.15);
@@ -276,10 +291,6 @@
 }
 
 .scalerImage {
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
     border-radius: clamp(8px, 2vw, 16px);
     box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.5),
@@ -343,8 +354,10 @@
     }
 
     .scalerImage {
-        width: 100% !important;
+        width: auto !important;
+        max-width: 100% !important;
         height: 100% !important;
+        max-height: 100% !important;
         transform: scale(1) !important;
     }
 }
