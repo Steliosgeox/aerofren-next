@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Σχόλια & Ερωτήσεις
+    url: mailto:dev@aerofren.gr
+    about: Για γενικές ερωτήσεις ή συζητήσεις, επικοινώνησε απευθείας με την ομάδα.
+  - name: 🔒 Αναφορά Ευπάθειας Ασφαλείας
+    url: mailto:security@aerofren.gr
+    about: ΜΗΝ ανοίγεις public issue για θέματα ασφαλείας. Στείλε email.

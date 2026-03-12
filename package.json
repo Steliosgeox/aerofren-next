@@ -2,6 +2,13 @@
   "name": "aerofren-next",
   "version": "0.1.0",
   "private": true,
+  "description": "Premium B2B e-commerce platform για βιομηχανικά πνευματικά συστήματα — Next.js 16, React 19, GSAP Premium, Tailwind CSS 4",
+  "author": {
+    "name": "Stylianos Georgoulis",
+    "email": "dev@aerofren.gr",
+    "url": "https://github.com/Steliosgeox"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

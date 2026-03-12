@@ -1,0 +1,19 @@
+# Κάθε αρχείο του repository χρειάζεται approval από τον Stylianos Georgoulis (Lead Maintainer)
+# και/ή από την ομάδα Sword-Group Greece.
+#
+# CODEOWNERS documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: ο maintainer πρέπει να εγκρίνει ΟΛΕΣ τις αλλαγές
+*       @Steliosgeox
+
+# Next.js Application — Sword-Group Greece είναι co-reviewers
+/aerofren-next/     @Steliosgeox @sword-group-greece
+
+# Security-critical files — ΜΟΝΟ ο maintainer
+SECURITY.md                 @Steliosgeox
+/.github/workflows/         @Steliosgeox
+/aerofren-next/firestore.rules  @Steliosgeox
+/aerofren-next/.env*            @Steliosgeox
+
+# Documentation
+*.md    @Steliosgeox
