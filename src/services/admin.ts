@@ -1,5 +1,11 @@
 import type { AuthUser } from '@/services/http';
 import { fetchWithAuth } from '@/services/http';
+import type {
+    AdminChatStatusFilter,
+    ChatEscalationStatus,
+    ChatMessageRole,
+    ChatWaitingOn,
+} from '@/lib/chat/types';
 
 export interface AdminStats {
     totalChats: number;
@@ -18,7 +24,7 @@ export interface EscalatedChat {
     userEmail: string;
     userName: string;
     escalatedAt: string;
-    status: 'pending' | 'in_progress' | 'resolved';
+    status: ChatEscalationStatus;
     resolvedAt?: string;
     resolvedBy?: string;
 }
@@ -28,19 +34,20 @@ export interface AdminChatSession {
     userId?: string;
     userEmail?: string;
     userName?: string;
+    userPhotoURL?: string;
     messageCount: number;
     lastMessage: string;
+    lastMessagePreview?: string;
+    lastMessageRole?: ChatMessageRole;
+    adminUnreadCount: number;
+    customerUnreadCount: number;
+    waitingOn?: ChatWaitingOn;
+    assignedAdminEmail?: string;
+    userEmailNormalized?: string;
+    userNameNormalized?: string;
+    userEmailLocalPartNormalized?: string;
     isEscalated?: boolean;
-    escalationStatus?: 'pending' | 'in_progress' | 'resolved';
-}
-
-export interface ChatHistoryMessage {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: string;
-    userEmail?: string;
-    userName?: string;
+    escalationStatus?: ChatEscalationStatus;
 }
 
 export interface PaginatedResult<T> {
@@ -71,11 +78,20 @@ export async function resolveEscalation(user: AuthUser | null, sessionId: string
 
 export async function fetchChatSessionsPage(
     user: AuthUser | null,
-    options?: { cursor?: string | null; limit?: number }
+    options?: {
+        cursor?: string | null;
+        limit?: number;
+        status?: AdminChatStatusFilter;
+        needsReply?: boolean;
+        search?: string;
+    }
 ): Promise<PaginatedResult<AdminChatSession>> {
     const params = new URLSearchParams();
     if (options?.cursor) params.set('cursor', options.cursor);
     if (options?.limit) params.set('limit', String(options.limit));
+    if (options?.status) params.set('status', options.status);
+    if (options?.needsReply !== undefined) params.set('needsReply', String(options.needsReply));
+    if (options?.search) params.set('search', options.search);
 
     const data = await fetchWithAuth<{ sessions: AdminChatSession[]; nextCursor: string | null }>(
         user,
@@ -88,23 +104,51 @@ export async function fetchChatSessionsPage(
     };
 }
 
-export async function fetchChatHistoryPage(
+export async function replyToChatSession(
     user: AuthUser | null,
     sessionId: string,
-    options?: { cursor?: string | null; limit?: number }
-): Promise<PaginatedResult<ChatHistoryMessage>> {
-    const params = new URLSearchParams({ sessionId });
-    if (options?.cursor) params.set('cursor', options.cursor);
-    if (options?.limit) params.set('limit', String(options.limit));
-
-    const data = await fetchWithAuth<{ messages: ChatHistoryMessage[]; nextCursor: string | null }>(
+    content: string
+): Promise<{ success: boolean }> {
+    return fetchWithAuth<{ success: boolean }>(
         user,
-        `/api/chat/history?${params.toString()}`
+        `/api/admin/chats/${encodeURIComponent(sessionId)}/reply`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+        }
     );
-    return {
-        items: data.messages ?? [],
-        nextCursor: data.nextCursor ?? null,
-    };
+}
+
+export async function updateChatSessionStatus(
+    user: AuthUser | null,
+    sessionId: string,
+    status: ChatEscalationStatus
+): Promise<{ success: boolean; status: ChatEscalationStatus }> {
+    return fetchWithAuth<{ success: boolean; status: ChatEscalationStatus }>(
+        user,
+        `/api/admin/chats/${encodeURIComponent(sessionId)}/status`,
+        {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        }
+    );
+}
+
+export async function markAdminChatRead(
+    user: AuthUser | null,
+    sessionId: string
+): Promise<boolean> {
+    const data = await fetchWithAuth<{ success: boolean }>(
+        user,
+        `/api/admin/chats/${encodeURIComponent(sessionId)}/read`,
+        {
+            method: 'POST',
+        }
+    );
+
+    return data.success === true;
 }
 
 export interface ContactSubmission {

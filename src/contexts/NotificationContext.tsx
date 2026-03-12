@@ -18,11 +18,11 @@ import {
 } from 'firebase/firestore';
 import { getFirestoreDb } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchEscalations, fetchContactSubmissionsPage } from '@/services/admin';
+import { fetchChatSessionsPage, fetchContactSubmissionsPage } from '@/services/admin';
 
 export interface AppNotification {
     id: string;
-    type: 'escalation' | 'contact' | 'escalation_resolved';
+    type: 'escalation' | 'contact' | 'chat_reply';
     title: string;
     body: string;
     timestamp: Date;
@@ -98,7 +98,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         });
     }, [user?.uid]);
 
-    // ── Regular user: onSnapshot for their own escalatedChats ──────────────
+    // ── Regular user: onSnapshot for unread human replies ──────────────────
     useEffect(() => {
         if (!user?.uid || isAdmin) return;
 
@@ -110,27 +110,37 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         }
 
         const q = query(
-            collection(db, 'escalatedChats'),
+            collection(db, 'chatSessions'),
             where('userId', '==', user.uid),
-            orderBy('escalatedAt', 'desc'),
+            orderBy('lastMessageAt', 'desc'),
             limit(20)
         );
 
         const unsub = onSnapshot(q, (snapshot) => {
-            const notifs: AppNotification[] = snapshot.docs.map((doc) => {
+            const notifs: AppNotification[] = snapshot.docs.flatMap((doc) => {
                 const data = doc.data();
-                const isResolved = data.status === 'resolved';
-                return {
-                    id: doc.id,
-                    type: isResolved ? 'escalation_resolved' as const : 'escalation' as const,
-                    title: isResolved ? 'Αίτημα επιλύθηκε' : 'Αίτημα σε εξέλιξη',
-                    body: isResolved
-                        ? 'Ένας εκπρόσωπος ολοκλήρωσε το αίτημά σας.'
-                        : 'Το αίτημά σας λαμβάνει χειρισμό.',
-                    timestamp: data.escalatedAt?.toDate?.() ?? new Date(),
-                    href: '/',
-                    isRead: readIds.has(doc.id),
-                };
+                const unreadCount =
+                    typeof data.customerUnreadCount === 'number' ? data.customerUnreadCount : 0;
+
+                if (unreadCount <= 0) {
+                    return [];
+                }
+
+                const timestamp = data.lastMessageAt?.toDate?.() ?? new Date();
+                const sessionId = (data.sessionId as string | undefined) ?? doc.id;
+                return [
+                    {
+                        id: `chat:${doc.id}:${timestamp.getTime()}`,
+                        type: 'chat_reply' as const,
+                        title: 'Νέα απάντηση υποστήριξης',
+                        body:
+                            (data.lastMessagePreview as string | undefined) ??
+                            'Έχουμε νέα απάντηση για τη συνομιλία σας.',
+                        timestamp,
+                        href: `/?chat=open&session=${encodeURIComponent(sessionId)}`,
+                        isRead: readIds.has(`chat:${doc.id}:${timestamp.getTime()}`),
+                    },
+                ];
             });
             setNotifications(notifs);
         }, (error) => {
@@ -142,36 +152,39 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.uid, isAdmin]);
 
-    // ── Admin: 30s polling for escalations + contacts ──────────────────────
+    // ── Admin: 30s polling for waiting chat replies + contacts ─────────────
     const pollAdmin = useCallback(async () => {
         if (!user || !isAdmin) return;
 
         try {
-            const [escalations, contactsPage] = await Promise.all([
-                fetchEscalations(user),
+            const [sessionsPage, contactsPage] = await Promise.all([
+                fetchChatSessionsPage(user, {
+                    limit: 20,
+                    status: 'open',
+                    needsReply: true,
+                }),
                 fetchContactSubmissionsPage(user, { limit: 20 }),
             ]);
 
             const newNotifs: AppNotification[] = [];
 
-            for (const esc of escalations) {
-                const notifId = `esc:${esc.sessionId}`;
-                if (
-                    esc.status === 'pending' &&
-                    !prevEscalationIdsRef.current.has(esc.sessionId)
-                ) {
+            for (const session of sessionsPage.items) {
+                const notifId = `esc:${session.sessionId}`;
+                if (!prevEscalationIdsRef.current.has(session.sessionId)) {
                     newNotifs.push({
                         id: notifId,
                         type: 'escalation',
-                        title: 'Νέα κλιμάκωση',
-                        body: `${esc.userName || esc.userEmail || 'Χρήστης'} ζητά βοήθεια`,
-                        timestamp: new Date(esc.escalatedAt),
-                        href: `/admin/chats?session=${encodeURIComponent(esc.sessionId)}`,
+                        title: 'Νέα συνομιλία για απάντηση',
+                        body: `${session.userName || session.userEmail || 'Χρήστης'} περιμένει απάντηση`,
+                        timestamp: new Date(session.lastMessage),
+                        href: `/admin/chats?session=${encodeURIComponent(session.sessionId)}`,
                         isRead: false,
                     });
                 }
             }
-            prevEscalationIdsRef.current = new Set(escalations.map((e) => e.sessionId));
+            prevEscalationIdsRef.current = new Set(
+                sessionsPage.items.map((session) => session.sessionId)
+            );
 
             for (const contact of contactsPage.items) {
                 const notifId = `contact:${contact.id}`;

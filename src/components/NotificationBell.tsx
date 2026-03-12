@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, CheckCheck, AlertTriangle, Mail, CheckCircle } from 'lucide-react';
+import { Bell, X, CheckCheck, AlertTriangle, Mail, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useNotifications, type AppNotification } from '@/contexts/NotificationContext';
 
@@ -21,7 +21,7 @@ function formatRelativeTime(date: Date): string {
 function NotificationIcon({ type }: { type: AppNotification['type'] }) {
     if (type === 'escalation') return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />;
     if (type === 'contact') return <Mail className="w-4 h-4 text-[var(--theme-accent)] shrink-0" />;
-    return <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />;
+    return <MessageCircle className="w-4 h-4 text-green-400 shrink-0" />;
 }
 
 export function NotificationBell() {

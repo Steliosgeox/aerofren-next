@@ -5,6 +5,26 @@ const { getFirestore, Timestamp } = require('firebase-admin/firestore');
 
 const DEFAULT_PAGE_SIZE = 500;
 const MAX_BATCH_WRITES = 400;
+const PREVIEW_LIMIT = 140;
+
+function normalizeValue(value) {
+    return typeof value === 'string' ? value.trim().toLowerCase() : '';
+}
+
+function getEmailLocalPart(email) {
+    const normalized = normalizeValue(email);
+    if (!normalized) return '';
+    return normalized.split('@')[0] || '';
+}
+
+function buildPreview(content) {
+    if (typeof content !== 'string') return '';
+    const collapsed = content.replace(/\s+/g, ' ').trim();
+    if (collapsed.length <= PREVIEW_LIMIT) {
+        return collapsed;
+    }
+    return `${collapsed.slice(0, PREVIEW_LIMIT - 1).trimEnd()}…`;
+}
 
 function parseArgs(argv) {
     const args = {
@@ -65,7 +85,7 @@ async function readAllMessages(db, pageSize) {
     while (true) {
         let query = db
             .collection('chatMessages')
-            .select('sessionId', 'timestamp', 'userId', 'userEmail', 'userName')
+            .select('sessionId', 'timestamp', 'userId', 'userEmail', 'userName', 'role', 'content')
             .orderBy('__name__')
             .limit(pageSize);
 
@@ -99,14 +119,18 @@ async function readAllMessages(db, pageSize) {
                 sessionId,
                 messageCount: 0,
                 lastMessageAt: new Date(0),
+                lastMessagePreview: '',
+                lastMessageRole: undefined,
                 userId: undefined,
                 userEmail: undefined,
                 userName: undefined,
             };
 
             existing.messageCount += 1;
-            if (timestampDate > existing.lastMessageAt) {
+            if (timestampDate >= existing.lastMessageAt) {
                 existing.lastMessageAt = timestampDate;
+                existing.lastMessagePreview = buildPreview(data.content);
+                existing.lastMessageRole = typeof data.role === 'string' ? data.role : undefined;
             }
             if (!existing.userId && typeof data.userId === 'string') {
                 existing.userId = data.userId;
@@ -161,9 +185,17 @@ async function applyBackfill(db, sessions, uniqueUsers) {
             sessionId: session.sessionId,
             messageCount: session.messageCount,
             lastMessageAt: Timestamp.fromDate(session.lastMessageAt),
+            lastMessagePreview: session.lastMessagePreview || '',
+            lastMessageRole: session.lastMessageRole || 'assistant',
+            adminUnreadCount: 0,
+            customerUnreadCount: 0,
+            waitingOn: 'none',
             ...(session.userId ? { userId: session.userId } : {}),
             ...(session.userEmail ? { userEmail: session.userEmail } : {}),
             ...(session.userName ? { userName: session.userName } : {}),
+            ...(session.userEmail ? { userEmailNormalized: normalizeValue(session.userEmail) } : {}),
+            ...(session.userName ? { userNameNormalized: normalizeValue(session.userName) } : {}),
+            ...(session.userEmail ? { userEmailLocalPartNormalized: getEmailLocalPart(session.userEmail) } : {}),
         };
         batch.set(db.collection('chatSessions').doc(session.sessionId), payload, { merge: true });
         writes += 1;

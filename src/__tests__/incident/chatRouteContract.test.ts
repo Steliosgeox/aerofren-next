@@ -23,16 +23,40 @@ describe('chat route incident contract', () => {
         const source = readSource('src/app/(main)/api/chat/escalate/route.ts');
 
         expect(source).toMatch(/messagesSnapshot\.empty/);
-        expect(source).toMatch(/ζήτησε προώθηση σε εκπρόσωπο/);
+        expect(source).toMatch(/lastMessagePreview/);
+        expect(source).toMatch(/waitingOn:\s*'admin'/);
         expect(source).toMatch(/FieldValue\.increment\(1\)/);
     });
 
-    it('loads chat history without relying on a composite Firestore index', () => {
+    it('loads chat history through an indexed sessionId plus timestamp query', () => {
         const source = readSource('src/app/(main)/api/chat/history/route.ts');
 
         expect(source).toMatch(/collection\('chatMessages'\)/);
         expect(source).toMatch(/where\('sessionId', '==', sessionId\)/);
-        expect(source).not.toMatch(/orderBy\('timestamp', 'desc'\)/);
-        expect(source).toMatch(/sortedDocs/);
+        expect(source).toMatch(/orderBy\('timestamp', 'desc'\)/);
+        expect(source).toMatch(/startAfter\(Timestamp\.fromMillis\(tsMillis\)\)/);
+        expect(source).not.toMatch(/sortedDocs/);
+    });
+
+    it('stores human admin replies in chat messages and advances unread state', () => {
+        const source = readSource('src/app/api/admin/chats/[sessionId]/reply/route.ts');
+
+        expect(source).toMatch(/role:\s*'admin'/);
+        expect(source).toMatch(/customerUnreadCount:\s*FieldValue\.increment\(1\)/);
+        expect(source).toMatch(/waitingOn:\s*'customer'/);
+    });
+
+    it('clears customer unread state when the end user opens the session', () => {
+        const source = readSource('src/app/(main)/api/chat/sessions/[sessionId]/read/route.ts');
+
+        expect(source).toMatch(/customerUnreadCount:\s*0/);
+        expect(source).toMatch(/sessionRef\.set/);
+    });
+
+    it('hides the public mobile dock on admin routes to protect the workspace layout', () => {
+        const source = readSource('src/components/Header.tsx');
+
+        expect(source).toMatch(/const showMobileDock = !\(pathname\?\.startsWith\('\/admin'\)\);/);
+        expect(source).toMatch(/\{showMobileDock && <MobileBottomNav items=\{mobileDockItems\} \/>\}/);
     });
 });

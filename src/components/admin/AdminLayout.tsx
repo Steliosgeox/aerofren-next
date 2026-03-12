@@ -6,14 +6,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NotificationBell } from '@/components/NotificationBell';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminAccessDenied } from './AdminAccessDenied';
+import { cn } from '@/lib/utils';
 
 interface AdminLayoutProps {
     title: string;
     children: React.ReactNode;
     headerRight?: React.ReactNode;
+    workspace?: boolean;
 }
 
-export function AdminLayout({ title, children, headerRight }: AdminLayoutProps) {
+export function AdminLayout({ title, children, headerRight, workspace = false }: AdminLayoutProps) {
     const { user, loading: authLoading, isAdmin } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -67,7 +69,12 @@ export function AdminLayout({ title, children, headerRight }: AdminLayoutProps) 
             )}
 
             {/* Main content */}
-            <main className="flex-1 min-w-0 p-6 lg:p-8">
+            <main
+                className={cn(
+                    'flex-1 min-w-0',
+                    workspace ? 'px-4 pb-4 lg:px-6 lg:pb-6' : 'p-6 lg:p-8'
+                )}
+            >
                 {/* Mobile hamburger */}
                 <button
                     className="lg:hidden fixed top-[116px] left-4 z-50 p-2 rounded-xl shadow-lg"
@@ -86,14 +93,19 @@ export function AdminLayout({ title, children, headerRight }: AdminLayoutProps) 
                 </button>
 
                 {/* Page header */}
-                <div className="flex items-center justify-between mb-8">
+                <div
+                    className={cn(
+                        'flex items-start justify-between gap-3',
+                        workspace ? 'mb-4 px-12 pt-4 lg:px-0 lg:pt-6' : 'mb-8'
+                    )}
+                >
                     <h1
-                        className="text-3xl font-extrabold"
+                        className={cn('font-extrabold', workspace ? 'text-2xl lg:text-3xl' : 'text-3xl')}
                         style={{ color: 'var(--theme-text)' }}
                     >
                         {title}
                     </h1>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                         <div className="xl:hidden">
                             <NotificationBell />
                         </div>
@@ -101,7 +113,9 @@ export function AdminLayout({ title, children, headerRight }: AdminLayoutProps) 
                     </div>
                 </div>
 
-                {children}
+                <div className={cn(workspace ? 'min-h-[calc(100vh-180px)]' : undefined)}>
+                    {children}
+                </div>
             </main>
         </div>
     );

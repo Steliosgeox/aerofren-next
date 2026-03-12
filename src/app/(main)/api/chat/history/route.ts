@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import * as z from 'zod';
+import { Timestamp } from 'firebase-admin/firestore';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 import {
     verifyIdToken,
@@ -18,6 +19,7 @@ import {
     isUserAdmin,
     getAdminFirestore,
 } from '@/lib/firebase-admin';
+import type { ChatMessageRole } from '@/lib/chat/types';
 
 export async function GET(request: NextRequest) {
     try {
@@ -62,7 +64,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Require authentication for all history requests
-        const authHeader = request.headers.get('Authorization');
+        const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
         const token = extractBearerToken(authHeader);
 
         if (!token) {
@@ -108,46 +110,23 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Keep chat history resilient in production without requiring a
-        // composite Firestore index for (sessionId, timestamp, __name__).
-        const historySnapshot = await db
+        let historyQuery = db
             .collection('chatMessages')
             .where('sessionId', '==', sessionId)
-            .get();
+            .orderBy('timestamp', 'desc')
+            .limit(limit + 1);
 
-        const sortedDocs = historySnapshot.docs
-            .slice()
-            .sort((left, right) => {
-                const leftMillis = left.data().timestamp?.toMillis?.() ?? 0;
-                const rightMillis = right.data().timestamp?.toMillis?.() ?? 0;
-
-                if (leftMillis !== rightMillis) {
-                    return rightMillis - leftMillis;
-                }
-
-                return right.id.localeCompare(left.id);
-            });
-
-        let filteredDocs = sortedDocs;
         if (cursor) {
-            const [tsPart, ...idParts] = cursor.split('_');
-            const docId = idParts.join('_');
-            const tsMillis = Number(tsPart);
-
-            if (docId && Number.isFinite(tsMillis)) {
-                filteredDocs = sortedDocs.filter((doc) => {
-                    const docMillis = doc.data().timestamp?.toMillis?.() ?? 0;
-
-                    if (docMillis < tsMillis) return true;
-                    if (docMillis > tsMillis) return false;
-
-                    return doc.id.localeCompare(docId) < 0;
-                });
+            const tsMillis = Number(cursor);
+            if (Number.isFinite(tsMillis)) {
+                historyQuery = historyQuery.startAfter(Timestamp.fromMillis(tsMillis));
             }
         }
 
-        const hasMore = filteredDocs.length > limit;
-        const pageDocs = filteredDocs.slice(0, limit);
+        const historySnapshot = await historyQuery.get();
+        const docs = historySnapshot.docs;
+        const hasMore = docs.length > limit;
+        const pageDocs = hasMore ? docs.slice(0, limit) : docs;
 
         // If no messages found, return empty (don't reveal if session exists)
         if (pageDocs.length === 0) {
@@ -162,24 +141,49 @@ export async function GET(request: NextRequest) {
         // Transform to simpler format for frontend
         const messages = pageDocs.map((doc) => {
             const data = doc.data();
+            const role = (data.role as ChatMessageRole | undefined) ?? 'assistant';
             return {
                 id: doc.id,
-                role: data.role,
+                role,
                 content: data.content,
                 timestamp: data.timestamp?.toDate?.()?.toISOString() || new Date().toISOString(),
                 userEmail: data.userEmail,
                 userName: data.userName,
+                senderLabel:
+                    role === 'admin'
+                        ? (data.senderLabel as string | undefined) ?? 'Ομάδα AEROFREN'
+                        : role === 'assistant'
+                            ? 'AI AEROFREN'
+                            : role === 'system'
+                                ? 'Σύστημα'
+                                : (data.userName as string | undefined) ?? (data.userEmail as string | undefined),
             };
         }).reverse();
 
         const lastDoc = pageDocs[pageDocs.length - 1];
         const nextCursor = hasMore && lastDoc
-            ? `${(lastDoc.data().timestamp?.toMillis?.() ?? Date.now())}_${lastDoc.id}`
+            ? String(lastDoc.data().timestamp?.toMillis?.() ?? Date.now())
             : null;
 
         return NextResponse.json(
             {
                 sessionId,
+                session: sessionDoc.exists
+                    ? {
+                          sessionId,
+                          userId: sessionUserId,
+                          userEmail: sessionDoc.data()?.userEmail as string | undefined,
+                          userName: sessionDoc.data()?.userName as string | undefined,
+                          userPhotoURL: sessionDoc.data()?.userPhotoURL as string | undefined,
+                          escalationStatus: sessionDoc.data()?.escalationStatus as string | undefined,
+                          waitingOn: sessionDoc.data()?.waitingOn as string | undefined,
+                          lastMessageAt:
+                              sessionDoc.data()?.lastMessageAt?.toDate?.()?.toISOString() ??
+                              undefined,
+                          customerUnreadCount:
+                              (sessionDoc.data()?.customerUnreadCount as number | undefined) ?? 0,
+                      }
+                    : null,
                 messages,
                 count: messages.length,
                 nextCursor,

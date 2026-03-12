@@ -16,12 +16,14 @@ import { AEROFREN_SYSTEM_PROMPT, FALLBACK_RESPONSES } from '@/lib/chatbot/prompt
 import * as z from 'zod';
 import { randomUUID } from 'node:crypto';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { buildMessagePreview, getChatIdentityMetadata, isOpenEscalationStatus } from '@/lib/chat/session-metadata';
 import {
     extractBearerToken,
     getAdminFirestore,
     verifyIdToken,
 } from '@/lib/firebase-admin';
 import { createChatPersistencePlan } from '@/lib/chat/persistence-plan';
+import type { ChatEscalationStatus } from '@/lib/chat/types';
 
 // Initialize Mistral client (lazy - only when needed)
 let mistralClient: Mistral | null = null;
@@ -47,6 +49,7 @@ interface RequestUserIdentity {
     uid?: string;
     email?: string;
     name?: string;
+    photoURL?: string;
 }
 
 interface PersistTurnResult {
@@ -108,10 +111,15 @@ async function persistConversationTurn(params: {
 
     try {
         const occurredAt = new Date();
-        const expiresAt = new Date(occurredAt);
-        expiresAt.setMonth(expiresAt.getMonth() + 3);
-        const timestamp = Timestamp.fromDate(occurredAt);
-        const expiration = Timestamp.fromDate(expiresAt);
+        const assistantOccurredAt = new Date(occurredAt.getTime() + 1);
+        const userExpiresAt = new Date(occurredAt);
+        userExpiresAt.setMonth(userExpiresAt.getMonth() + 3);
+        const assistantExpiresAt = new Date(assistantOccurredAt);
+        assistantExpiresAt.setMonth(assistantExpiresAt.getMonth() + 3);
+        const userTimestamp = Timestamp.fromDate(occurredAt);
+        const assistantTimestamp = Timestamp.fromDate(assistantOccurredAt);
+        const userExpiration = Timestamp.fromDate(userExpiresAt);
+        const assistantExpiration = Timestamp.fromDate(assistantExpiresAt);
 
         const plan = createChatPersistencePlan({
             sessionId: params.sessionId,
@@ -130,12 +138,19 @@ async function persistConversationTurn(params: {
             : null;
 
         await db.runTransaction(async (tx) => {
+            const sessionSnapshot = await tx.get(sessionRef);
+            const existingSession = sessionSnapshot.data() ?? {};
+            const escalationStatus = existingSession.escalationStatus as
+                | ChatEscalationStatus
+                | undefined;
+            const hasOpenHumanQueue = isOpenEscalationStatus(escalationStatus);
+
             tx.set(userMessageRef, {
                 sessionId: plan.messages[0].sessionId,
                 role: plan.messages[0].role,
                 content: plan.messages[0].content,
-                timestamp,
-                expiresAt: expiration,
+                timestamp: userTimestamp,
+                expiresAt: userExpiration,
                 ...(plan.messages[0].userId ? { userId: plan.messages[0].userId } : {}),
                 ...(plan.messages[0].userEmail ? { userEmail: plan.messages[0].userEmail } : {}),
                 ...(plan.messages[0].userName ? { userName: plan.messages[0].userName } : {}),
@@ -145,8 +160,8 @@ async function persistConversationTurn(params: {
                 sessionId: plan.messages[1].sessionId,
                 role: plan.messages[1].role,
                 content: plan.messages[1].content,
-                timestamp,
-                expiresAt: expiration,
+                timestamp: assistantTimestamp,
+                expiresAt: assistantExpiration,
                 ...(plan.messages[1].userId ? { userId: plan.messages[1].userId } : {}),
                 ...(plan.messages[1].userEmail ? { userEmail: plan.messages[1].userEmail } : {}),
                 ...(plan.messages[1].userName ? { userName: plan.messages[1].userName } : {}),
@@ -156,11 +171,24 @@ async function persistConversationTurn(params: {
                 sessionRef,
                 {
                     sessionId: plan.sessionUpdate.sessionId,
-                    lastMessageAt: Timestamp.fromDate(plan.sessionUpdate.lastMessageAt),
+                    lastMessageAt: assistantTimestamp,
+                    lastMessagePreview: hasOpenHumanQueue
+                        ? buildMessagePreview(params.userMessage)
+                        : buildMessagePreview(params.assistantMessage),
+                    lastMessageRole: hasOpenHumanQueue ? 'user' : 'assistant',
                     messageCount: FieldValue.increment(plan.sessionUpdate.messageCountDelta),
+                    ...(hasOpenHumanQueue
+                        ? {
+                              waitingOn: 'admin',
+                              adminUnreadCount: FieldValue.increment(1),
+                          }
+                        : {}),
+                    ...getChatIdentityMetadata({
+                        userEmail: plan.sessionUpdate.userEmail,
+                        userName: plan.sessionUpdate.userName,
+                        userPhotoURL: plan.sessionUpdate.userPhotoURL,
+                    }),
                     ...(plan.sessionUpdate.userId ? { userId: plan.sessionUpdate.userId } : {}),
-                    ...(plan.sessionUpdate.userEmail ? { userEmail: plan.sessionUpdate.userEmail } : {}),
-                    ...(plan.sessionUpdate.userName ? { userName: plan.sessionUpdate.userName } : {}),
                 },
                 { merge: true }
             );
@@ -170,7 +198,7 @@ async function persistConversationTurn(params: {
                 if (!existingMarker.exists) {
                     tx.set(uniqueUserRef, {
                         uid: plan.uniqueUserMarkerId,
-                        firstSeenAt: timestamp,
+                        firstSeenAt: userTimestamp,
                         email: plan.sessionUpdate.userEmail ?? null,
                         name: plan.sessionUpdate.userName ?? null,
                     });
@@ -178,7 +206,7 @@ async function persistConversationTurn(params: {
                         globalStatsRef,
                         {
                             uniqueUsersCount: FieldValue.increment(1),
-                            updatedAt: timestamp,
+                            updatedAt: assistantTimestamp,
                         },
                         { merge: true }
                     );
@@ -186,7 +214,7 @@ async function persistConversationTurn(params: {
                     tx.set(
                         globalStatsRef,
                         {
-                            updatedAt: timestamp,
+                            updatedAt: assistantTimestamp,
                         },
                         { merge: true }
                     );
@@ -266,6 +294,7 @@ export async function POST(request: NextRequest) {
                 uid: decodedToken.uid,
                 email: decodedToken.email,
                 name: decodedToken.name,
+                photoURL: decodedToken.picture,
             }
             : null;
 

@@ -2,12 +2,19 @@
  * AEROFREN AI Chatbot Component
  * TWO-STATE LAYOUT:
  * 1. Welcome = Compact floating widget
- * 2. Conversation = EXPANDED with large textarea (matching original design)
+ * 2. Conversation = Expanded conversation workspace
  */
 
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, memo } from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+  memo,
+} from "react";
 import {
   ArrowRight,
   Headset,
@@ -21,56 +28,64 @@ import {
   User,
   LogIn,
   CheckCircle,
-} from 'lucide-react';
-import dynamic from 'next/dynamic';
+  Shield,
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
+import { gsap } from "@/lib/gsap/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
+import {
+  requestChatCompletion,
+  requestEscalation,
+  fetchChatHistoryPage,
+  markChatSessionRead,
+  type ChatHistoryMessage,
+} from "@/services/chat";
+import { HttpError } from "@/services/http";
+import { useNotifications } from "@/contexts/NotificationContext";
+import type { ChatEscalationStatus, ChatMessageRole } from "@/lib/chat/types";
+import "./Chatbot.scss";
 
 const ReactMarkdown = dynamic(
-  () => import('react-markdown').then(mod => mod.default),
+  () => import("react-markdown").then((mod) => mod.default),
   { ssr: false, loading: () => <span>...</span> }
 );
-import { v4 as uuidv4 } from 'uuid';
-import { gsap } from '@/lib/gsap/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCookieConsent } from '@/components/cookies/CookieConsentProvider';
-import { requestChatCompletion, requestEscalation } from '@/services/chat';
-import { HttpError } from '@/services/http';
-import Link from 'next/link';
-import './Chatbot.scss';
 
-// Types
 interface Message {
   id: string;
-  type: 'user' | 'ai';
+  role: ChatMessageRole;
   content: string;
+  timestamp?: string;
+  senderLabel?: string;
+  optimistic?: boolean;
 }
 
-// Storage key
-const STORAGE_KEY = 'aerofren_chat_session';
+const STORAGE_KEY = "aerofren_chat_session";
 
-// Type for markdown component overrides
 type MarkdownComponents = {
   p: React.ComponentType<{ children?: React.ReactNode }>;
   ul: React.ComponentType<{ children?: React.ReactNode }>;
 };
 
-const ALLOWED_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:']);
+const ALLOWED_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 
 function sanitizeLinkUri(uri: string): string {
-  if (!uri) return '#';
-  // Allow anchor links
-  if (uri.startsWith('#')) return uri;
-  // Allow absolute paths but block protocol-relative URLs (//)
-  if (uri.startsWith('/') && !uri.startsWith('//')) return uri;
+  if (!uri) return "#";
+  if (uri.startsWith("#")) return uri;
+  if (uri.startsWith("/") && !uri.startsWith("//")) return uri;
 
   try {
     const parsed = new URL(uri);
-    return ALLOWED_PROTOCOLS.has(parsed.protocol) ? uri : '#';
+    return ALLOWED_PROTOCOLS.has(parsed.protocol) ? uri : "#";
   } catch {
     try {
-      const parsed = new URL(uri, 'https://aerofren.gr');
-      return ALLOWED_PROTOCOLS.has(parsed.protocol) ? uri : '#';
+      const parsed = new URL(uri, "https://aerofren.gr");
+      return ALLOWED_PROTOCOLS.has(parsed.protocol) ? uri : "#";
     } catch {
-      return '#';
+      return "#";
     }
   }
 }
@@ -83,28 +98,47 @@ const MarkdownList = memo(function MarkdownList({ children }: { children?: React
   return <ul className="chatbot__message-text">{children}</ul>;
 });
 
-// Memoized Markdown components to prevent re-renders
 const AIChatText: MarkdownComponents = {
   p: MarkdownParagraph,
   ul: MarkdownList,
 };
 
+function mapHistoryMessage(message: ChatHistoryMessage): Message {
+  return {
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    timestamp: message.timestamp,
+    senderLabel: message.senderLabel,
+  };
+}
+
+function getEscalationActionLabel(status: ChatEscalationStatus | "idle") {
+  if (status === "pending") return "Σε αναμονή";
+  if (status === "in_progress") return "Σε εξέλιξη";
+  if (status === "resolved") return "Άνοιγμα ξανά";
+  return "Μιλήστε με εκπρόσωπο";
+}
+
 function getEscalationErrorContent(error: unknown): string {
   if (error instanceof HttpError) {
     if (error.status === 401) {
-      return 'Η σύνδεσή σας έληξε. Συνδεθείτε ξανά και δοκιμάστε πάλι.';
+      return "Η σύνδεσή σας έληξε. Συνδεθείτε ξανά και δοκιμάστε πάλι.";
     }
     if (error.status === 403) {
-      return 'Δεν ήταν δυνατή η επιβεβαίωση της συνομιλίας σας για προώθηση σε εκπρόσωπο.';
+      return "Δεν ήταν δυνατή η επιβεβαίωση της συνομιλίας σας για προώθηση σε εκπρόσωπο.";
     }
     if (error.status === 404) {
-      return 'Δεν βρέθηκε ιστορικό για αυτή τη συνομιλία. Στείλτε ένα μήνυμα και δοκιμάστε ξανά.';
+      return "Δεν βρέθηκε ιστορικό για αυτή τη συνομιλία. Στείλτε ένα μήνυμα και δοκιμάστε ξανά.";
+    }
+    if (error.status === 409) {
+      return error.message;
     }
     if (error.status === 429) {
-      return 'Υπάρχουν πολλές προσπάθειες αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγο.';
+      return "Υπάρχουν πολλές προσπάθειες αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγο.";
     }
     if (error.status === 503) {
-      return 'Η υπηρεσία προώθησης σε εκπρόσωπο δεν είναι διαθέσιμη αυτή τη στιγμή. Καλέστε μας στο 210 3461645.';
+      return "Η υπηρεσία προώθησης σε εκπρόσωπο δεν είναι διαθέσιμη αυτή τη στιγμή. Καλέστε μας στο 210 3461645.";
     }
     if (error.message) {
       return error.message;
@@ -115,33 +149,53 @@ function getEscalationErrorContent(error: unknown): string {
     return error.message;
   }
 
-  return 'Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.';
+  return "Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.";
 }
 
-// Memoized message component to prevent unnecessary re-renders
 const ChatMessage = memo(function ChatMessage({
   message,
-  AIChatText
+  markdownComponents,
 }: {
   message: Message;
-  AIChatText: MarkdownComponents;
+  markdownComponents: MarkdownComponents;
 }) {
-  const messageClass = `chatbot__message chatbot__message--${message.type}`;
+  if (message.role === "system") {
+    return (
+      <div className="chatbot__message chatbot__message--system">
+        <div className="chatbot__system-pill">
+          <ReactMarkdown components={markdownComponents} urlTransform={sanitizeLinkUri}>
+            {message.content}
+          </ReactMarkdown>
+        </div>
+      </div>
+    );
+  }
+
+  const isUser = message.role === "user";
+  const isAdmin = message.role === "admin";
+  const messageClass = `chatbot__message chatbot__message--${message.role}`;
 
   return (
     <div className={messageClass}>
-      {message.type === 'ai' && (
+      {!isUser && (
         <div className="chatbot__message-icon">
-          <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
-            <Headset className="chatbot__icon-svg" />
+          <div
+            className={`chatbot__icon chatbot__icon--small ${isAdmin ? "chatbot__icon--support" : "chatbot__icon--gradient"}`}
+          >
+            {isAdmin ? <Shield className="chatbot__icon-svg" /> : <Headset className="chatbot__icon-svg" />}
           </div>
         </div>
       )}
       <div className="chatbot__message-content">
-        <ReactMarkdown components={AIChatText} urlTransform={sanitizeLinkUri}>
+        {(message.senderLabel || isAdmin) && (
+          <p className="chatbot__message-sender">
+            {message.senderLabel || "Ομάδα AEROFREN"}
+          </p>
+        )}
+        <ReactMarkdown components={markdownComponents} urlTransform={sanitizeLinkUri}>
           {message.content}
         </ReactMarkdown>
-        {message.type === 'user' && (
+        {isUser && (
           <>
             <div className="chatbot__message-bubble" />
             <div className="chatbot__message-bubble chatbot__message-bubble--end" />
@@ -152,48 +206,46 @@ const ChatMessage = memo(function ChatMessage({
   );
 });
 
-/**
- * AEROFREN Chatbot - Two-state layout matching original design
- */
 export function Chatbot() {
+  const searchParams = useSearchParams();
   const chatRootRef = useRef<HTMLElement>(null);
   const chatScrollerRef = useRef<HTMLDivElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const hydratedSessionRef = useRef<string | null>(null);
 
-  // Auth context for user info
   const { user } = useAuth();
   const { allowFunctional, isReady: cookieConsentReady } = useCookieConsent();
+  const { notifications, unreadCount } = useNotifications();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState<string>('');
+  const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isHydrating, setIsHydrating] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string>(() => uuidv4());
   const [scrollbarWidth, setScrollbarWidth] = useState<number>(0);
   const [showLoginPrompt, setShowLoginPrompt] = useState<boolean>(false);
-  const [isEscalated, setIsEscalated] = useState<boolean>(false);
-  const [escalationStatus, setEscalationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [supportStatus, setSupportStatus] = useState<ChatEscalationStatus | "idle">("idle");
+  const [escalationStatus, setEscalationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-  // Dynamic padding for scrollbar
   const messagesStyle: React.CSSProperties = {
     paddingInlineEnd: `calc(1.5em - ${scrollbarWidth}px)`,
   };
 
-  // Placeholder and suggestions
-  const placeholder = 'Ρωτήστε μας ό,τι χρειάζεστε...';
-  const welcomeSuggestions: string[] = [
-    'Ποια προϊόντα διαθέτετε;',
-    'Στοιχεία επικοινωνίας',
-    'Αποστέλλετε παραγγελίες;',
+  const placeholder = "Ρωτήστε μας ό,τι χρειάζεστε...";
+  const welcomeSuggestions = [
+    "Ποια προϊόντα διαθέτετε;",
+    "Στοιχεία επικοινωνίας",
+    "Αποστέλλετε παραγγελίες;",
   ];
-  const conversationSuggestions: string[] = [
-    'Πνευματικά ρακόρ',
-    'Φίλτρα νερού',
-    'Τιμές & διαθεσιμότητα',
+  const conversationSuggestions = [
+    "Πνευματικά ρακόρ",
+    "Φίλτρα νερού",
+    "Τιμές & διαθεσιμότητα",
   ];
   const isConversationMode = messages.length > 0;
+  const hasUnreadSupportReply = notifications.some((notification) => notification.type === "chat_reply" && !notification.isRead);
 
-  // Initialize session based on functional cookie consent.
   useEffect(() => {
     if (!cookieConsentReady) return;
 
@@ -215,41 +267,131 @@ export function Chatbot() {
       }
       setSessionId(storedSession);
     } catch (error) {
-      console.warn('Failed to access localStorage for chat session', error);
+      console.warn("Failed to access localStorage for chat session", error);
       setSessionId(uuidv4());
     }
   }, [allowFunctional, cookieConsentReady]);
 
-  // Generate random ID
+  useEffect(() => {
+    const shouldOpen = searchParams.get("chat") === "open";
+    const sessionParam = searchParams.get("session");
+
+    if (shouldOpen) {
+      setIsOpen(true);
+    }
+
+    if (sessionParam) {
+      setSessionId(sessionParam);
+      hydratedSessionRef.current = null;
+      if (allowFunctional && cookieConsentReady) {
+        try {
+          localStorage.setItem(STORAGE_KEY, sessionParam);
+        } catch {
+          // ignore storage failures
+        }
+      }
+    }
+  }, [allowFunctional, cookieConsentReady, searchParams]);
+
   const randomID = useCallback(() => {
     const random = crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
-    return Math.floor(random * 2 ** 32).toString(16).padStart(8, '0');
+    return Math.floor(random * 2 ** 32).toString(16).padStart(8, "0");
   }, []);
 
-  // Handle suggestion click
+  const refreshHistory = useCallback(async () => {
+    if (!isOpen || !user || !sessionId) return;
+
+    setIsHydrating(true);
+    try {
+      const history = await fetchChatHistoryPage(user, sessionId, { limit: 50 });
+      setMessages(history.items.map(mapHistoryMessage));
+      setSupportStatus(history.session?.escalationStatus ?? "idle");
+
+      if ((history.session?.customerUnreadCount ?? 0) > 0) {
+        await markChatSessionRead(user, sessionId);
+      }
+    } catch (error) {
+      console.warn("[chatbot] failed to refresh history", error);
+    } finally {
+      setIsHydrating(false);
+    }
+  }, [isOpen, sessionId, user]);
+
+  useEffect(() => {
+    if (!isOpen || !user || !sessionId) return;
+
+    const hydrationKey = `${user.uid}:${sessionId}`;
+    if (hydratedSessionRef.current === hydrationKey) {
+      return;
+    }
+
+    let cancelled = false;
+    setIsHydrating(true);
+
+    fetchChatHistoryPage(user, sessionId, { limit: 50 })
+      .then(async (history) => {
+        if (cancelled) return;
+
+        hydratedSessionRef.current = hydrationKey;
+        setMessages(history.items.map(mapHistoryMessage));
+        setSupportStatus(history.session?.escalationStatus ?? "idle");
+
+        if ((history.session?.customerUnreadCount ?? 0) > 0) {
+          await markChatSessionRead(user, sessionId);
+        }
+      })
+      .catch((error) => {
+        console.warn("[chatbot] failed to hydrate history", error);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsHydrating(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, sessionId, user]);
+
+  useEffect(() => {
+    if (!isOpen || !user || !sessionId) return;
+    if (!hasUnreadSupportReply) return;
+
+    const currentThreadNotification = notifications.find((notification) => {
+      if (notification.type !== "chat_reply") return false;
+      return notification.href.includes(encodeURIComponent(sessionId));
+    });
+
+    if (currentThreadNotification) {
+      void refreshHistory();
+    }
+  }, [hasUnreadSupportReply, isOpen, notifications, refreshHistory, sessionId, user]);
+
   const handleSuggestionClick = useCallback((suggestion: string) => {
-    handleSubmit(suggestion);
+    void handleSubmit(suggestion);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Submit message
   const handleSubmit = useCallback(async (text?: string) => {
     const messageText = text || input;
     if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: randomID(),
-      type: 'user',
+      role: "user",
       content: messageText,
+      timestamp: new Date().toISOString(),
+      senderLabel: user?.displayName ?? user?.email ?? undefined,
     };
 
     setIsLoading(true);
     setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    setInput("");
 
     try {
       const history = messages.slice(-10).map((msg) => ({
-        role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+        role: msg.role === "user" ? "user" as const : "assistant" as const,
         content: msg.content,
       }));
 
@@ -261,18 +403,19 @@ export function Chatbot() {
 
       if (data.sessionId && data.sessionId !== sessionId) {
         setSessionId(data.sessionId);
+        hydratedSessionRef.current = null;
         if (allowFunctional && cookieConsentReady) {
           try {
             localStorage.setItem(STORAGE_KEY, data.sessionId);
           } catch (error) {
-            console.warn('Failed to persist updated sessionId', error);
+            console.warn("Failed to persist updated sessionId", error);
           }
         }
       }
 
       if (data.persisted === false) {
         console.warn(
-          '[chatbot] server persistence unavailable',
+          "[chatbot] server persistence unavailable",
           JSON.stringify({
             sessionId: data.sessionId,
             traceId: data.traceId ?? null,
@@ -281,22 +424,25 @@ export function Chatbot() {
         );
       }
 
-      const aiContent = data.response || 'Λυπούμαστε, δεν μπορέσαμε να απαντήσουμε. Παρακαλούμε δοκιμάστε ξανά.';
+      const aiContent =
+        data.response ||
+        "Λυπούμαστε, δεν μπορέσαμε να απαντήσουμε. Παρακαλούμε δοκιμάστε ξανά.";
 
       const aiMessage: Message = {
         id: randomID(),
-        type: 'ai',
+        role: "assistant",
         content: aiContent,
+        timestamp: new Date().toISOString(),
+        senderLabel: "AI AEROFREN",
       };
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
-      const errorContent = 'Παρουσιάστηκε πρόβλημα. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.';
+      console.error("Chat error:", error);
       const errorMessage: Message = {
         id: randomID(),
-        type: 'ai',
-        content: errorContent,
+        role: "system",
+        content: "Παρουσιάστηκε πρόβλημα. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.",
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -304,91 +450,84 @@ export function Chatbot() {
     }
   }, [allowFunctional, cookieConsentReady, input, isLoading, messages, randomID, sessionId, user]);
 
-  // Handle Enter key
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
+  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void handleSubmit();
     }
   }, [handleSubmit]);
 
-  // Handle escalation to human support
   const handleEscalation = useCallback(async () => {
-    // If user is not logged in, show login prompt
     if (!user) {
       setShowLoginPrompt(true);
       return;
     }
 
-    // Already escalated
-    if (isEscalated) {
+    if (supportStatus === "pending" || supportStatus === "in_progress") {
       return;
     }
 
-    setEscalationStatus('loading');
+    setEscalationStatus("loading");
 
     try {
       const result = await requestEscalation(user, sessionId);
 
       if (result.success) {
-        setIsEscalated(true);
-        setEscalationStatus('success');
+        setSupportStatus(result.status);
+        setEscalationStatus("success");
 
-        // Add confirmation message to chat
         const confirmationMessage: Message = {
           id: randomID(),
-          type: 'ai',
-          content: `✅ **Το αίτημά σας καταχωρήθηκε.**\n\nΈνας εκπρόσωπός μας θα επικοινωνήσει σύντομα στο **${user.email}**.\n\nΕναλλακτικά, καλέστε μας στο **210 3461645**.`,
+          role: "system",
+          content:
+            result.status === "resolved"
+              ? "Το αίτημά σας επανενεργοποιήθηκε."
+              : `✅ **Το αίτημά σας καταχωρήθηκε.**\n\nΈνας εκπρόσωπός μας θα επικοινωνήσει σύντομα στο **${user.email}**.\n\nΕναλλακτικά, καλέστε μας στο **210 3461645**.`,
         };
         setMessages((prev) => [...prev, confirmationMessage]);
       } else {
-        setEscalationStatus('error');
+        setEscalationStatus("error");
         const errorMessage: Message = {
           id: randomID(),
-          type: 'ai',
-          content: 'Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο **210 3461645**.',
+          role: "system",
+          content:
+            "Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο **210 3461645**.",
         };
         setMessages((prev) => [...prev, errorMessage]);
       }
     } catch (error) {
-      console.error('Escalation error:', error);
-      setEscalationStatus('error');
+      console.error("Escalation error:", error);
+      setEscalationStatus("error");
       const errorMessage: Message = {
         id: randomID(),
-        type: 'ai',
+        role: "system",
         content: getEscalationErrorContent(error),
       };
       setMessages((prev) => [...prev, errorMessage]);
     }
-  }, [user, sessionId, isEscalated, randomID]);
+  }, [randomID, sessionId, supportStatus, user]);
 
-  // Track previous message count to only scroll on new messages
   const prevMessageCountRef = useRef(0);
-
-  // Scroll to bottom when NEW messages arrive (not on every render)
   useEffect(() => {
     const newCount = messages.length;
     const prevCount = prevMessageCountRef.current;
 
-    // Only scroll if we have new messages
     if (newCount > prevCount && chatScrollerRef.current) {
       const scroller = chatScrollerRef.current;
-      // Use requestAnimationFrame for smoother timing
       requestAnimationFrame(() => {
         if (scroller) {
           gsap.to(scroller, {
             scrollTop: scroller.scrollHeight,
             duration: 0.6,
-            ease: 'power2.out',
+            ease: "power2.out",
           });
         }
       });
     }
 
     prevMessageCountRef.current = newCount;
-  }, [messages.length]);  // Only depend on length, not entire array
+  }, [messages.length]);
 
-  // Scrollbar width only changes on layout transition (welcome→conversation) or resize
   const hasMessages = messages.length > 0;
   useLayoutEffect(() => {
     const calculateWidth = () => {
@@ -398,15 +537,13 @@ export function Chatbot() {
     };
 
     const frameId = requestAnimationFrame(calculateWidth);
-    window.addEventListener('resize', calculateWidth);
+    window.addEventListener("resize", calculateWidth);
     return () => {
       cancelAnimationFrame(frameId);
-      window.removeEventListener('resize', calculateWidth);
+      window.removeEventListener("resize", calculateWidth);
     };
   }, [hasMessages]);
 
-  // Route wheel and touch gestures inside the chat panel to the internal
-  // conversation scroller so the page only scrolls when the pointer is outside.
   useEffect(() => {
     const chatRoot = chatRootRef.current;
     if (!isOpen || !isConversationMode || !chatRoot) return;
@@ -454,24 +591,23 @@ export function Chatbot() {
       touchY = null;
     };
 
-    chatRoot.addEventListener('wheel', handleWheel, { passive: false });
-    chatRoot.addEventListener('touchstart', handleTouchStart, { passive: true });
-    chatRoot.addEventListener('touchmove', handleTouchMove, { passive: false });
-    chatRoot.addEventListener('touchend', resetTouch);
-    chatRoot.addEventListener('touchcancel', resetTouch);
+    chatRoot.addEventListener("wheel", handleWheel, { passive: false });
+    chatRoot.addEventListener("touchstart", handleTouchStart, { passive: true });
+    chatRoot.addEventListener("touchmove", handleTouchMove, { passive: false });
+    chatRoot.addEventListener("touchend", resetTouch);
+    chatRoot.addEventListener("touchcancel", resetTouch);
 
     return () => {
-      chatRoot.removeEventListener('wheel', handleWheel);
-      chatRoot.removeEventListener('touchstart', handleTouchStart);
-      chatRoot.removeEventListener('touchmove', handleTouchMove);
-      chatRoot.removeEventListener('touchend', resetTouch);
-      chatRoot.removeEventListener('touchcancel', resetTouch);
+      chatRoot.removeEventListener("wheel", handleWheel);
+      chatRoot.removeEventListener("touchstart", handleTouchStart);
+      chatRoot.removeEventListener("touchmove", handleTouchMove);
+      chatRoot.removeEventListener("touchend", resetTouch);
+      chatRoot.removeEventListener("touchcancel", resetTouch);
     };
   }, [isConversationMode, isOpen]);
 
   return (
     <>
-      {/* Floating Toggle Button */}
       {!isOpen && (
         <button
           type="button"
@@ -480,22 +616,25 @@ export function Chatbot() {
           aria-label="Άνοιγμα συνομιλίας"
         >
           <MessageCircle />
+          {unreadCount > 0 && (
+            <span className="chatbot-toggle__badge">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
         </button>
       )}
 
-      {/* Chat Widget */}
       {isOpen && (
         <main
           aria-label="Βοηθός AEROFREN"
           aria-modal="true"
-          className={`chatbot ${isConversationMode ? 'chatbot--conversation' : 'chatbot--welcome'}`}
+          className={`chatbot ${isConversationMode ? "chatbot--conversation" : "chatbot--welcome"}`}
           data-lenis-prevent
           onTouchMoveCapture={(event) => event.stopPropagation()}
           onWheelCapture={(event) => event.stopPropagation()}
           ref={chatRootRef}
           role="dialog"
         >
-          {/* Header */}
           <div className="chatbot__header">
             <div className="chatbot__header-info">
               <div className="chatbot__header-icon">
@@ -503,7 +642,11 @@ export function Chatbot() {
               </div>
               <div className="chatbot__header-text">
                 <h3 className="chatbot__header-title">Βοηθός AEROFREN</h3>
-                <span className="chatbot__header-status">Online • AI υποστήριξη</span>
+                <span className="chatbot__header-status">
+                  {supportStatus === "idle"
+                    ? "Online • AI υποστήριξη"
+                    : `Online • ${getEscalationActionLabel(supportStatus)}`}
+                </span>
               </div>
             </div>
             <button
@@ -515,40 +658,47 @@ export function Chatbot() {
             </button>
           </div>
 
-          {/* Quick Actions */}
           <div className="chatbot__quick-actions">
-            <button className="chatbot__quick-action" onClick={() => window.open('/products', '_blank')}>
+            <button className="chatbot__quick-action" onClick={() => window.open("/products", "_blank")}>
               <Package className="chatbot__quick-action-icon" />
               <span>Προϊόντα</span>
             </button>
-            <button className="chatbot__quick-action" onClick={() => window.location.href = 'tel:+302103461645'}>
+            <button className="chatbot__quick-action" onClick={() => (window.location.href = "tel:+302103461645")}>
               <Phone className="chatbot__quick-action-icon" />
               <span>Τηλέφωνο</span>
             </button>
-            <button className="chatbot__quick-action" onClick={() => window.location.href = 'mailto:aerofren@gmail.com'}>
+            <button className="chatbot__quick-action" onClick={() => (window.location.href = "mailto:aerofren@gmail.com")}>
               <Mail className="chatbot__quick-action-icon" />
               <span>E-mail</span>
             </button>
             <button
-              className={`chatbot__quick-action ${isEscalated ? 'chatbot__quick-action--success' : ''} ${escalationStatus === 'loading' ? 'chatbot__quick-action--loading' : ''}`}
+              className={`chatbot__quick-action ${supportStatus !== "idle" ? "chatbot__quick-action--success" : ""} ${escalationStatus === "loading" ? "chatbot__quick-action--loading" : ""}`}
               onClick={handleEscalation}
-              disabled={isEscalated || escalationStatus === 'loading'}
+              disabled={supportStatus === "pending" || supportStatus === "in_progress" || escalationStatus === "loading"}
             >
-              {isEscalated ? (
+              {supportStatus === "pending" || supportStatus === "in_progress" ? (
                 <CheckCircle className="chatbot__quick-action-icon chatbot__quick-action-icon--success" />
-              ) : escalationStatus === 'loading' ? (
+              ) : escalationStatus === "loading" ? (
                 <div className="chatbot__quick-action-spinner" />
               ) : (
                 <User className="chatbot__quick-action-icon" />
               )}
-              <span>{isEscalated ? 'Καταχωρήθηκε' : 'Μιλήστε με εκπρόσωπο'}</span>
+              <span>{getEscalationActionLabel(supportStatus)}</span>
             </button>
           </div>
 
-          {/* Login Prompt Modal */}
           {showLoginPrompt && (
             <div className="chatbot__login-modal">
-              <div className="chatbot__login-modal-backdrop" role="button" tabIndex={0} aria-label="Κλείσιμο modal" onClick={() => setShowLoginPrompt(false)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowLoginPrompt(false); }} />
+              <div
+                className="chatbot__login-modal-backdrop"
+                role="button"
+                tabIndex={0}
+                aria-label="Κλείσιμο modal"
+                onClick={() => setShowLoginPrompt(false)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") setShowLoginPrompt(false);
+                }}
+              />
               <div className="chatbot__login-modal-content">
                 <button
                   className="chatbot__login-modal-close"
@@ -577,7 +727,7 @@ export function Chatbot() {
                     className="chatbot__login-modal-btn chatbot__login-modal-btn--secondary"
                     onClick={() => {
                       setShowLoginPrompt(false);
-                      window.location.href = 'tel:+302103461645';
+                      window.location.href = "tel:+302103461645";
                     }}
                   >
                     <Phone className="w-4 h-4" />
@@ -589,7 +739,6 @@ export function Chatbot() {
           )}
 
           <div className="chatbot__container">
-            {/* ========== WELCOME STATE ========== */}
             {!isConversationMode ? (
               <div className="chatbot__welcome-content">
                 <div className="chatbot__icon-wrapper">
@@ -599,9 +748,9 @@ export function Chatbot() {
                 </div>
                 <h1 className="chatbot__title">Πώς μπορούμε να βοηθήσουμε;</h1>
                 <div className="chatbot__suggestions-box">
-                  {welcomeSuggestions.map((suggestion, i) => (
+                  {welcomeSuggestions.map((suggestion, index) => (
                     <button
-                      key={`suggestion${i + 1}`}
+                      key={`suggestion${index + 1}`}
                       className="chatbot__suggestion"
                       onClick={() => handleSuggestionClick(suggestion)}
                     >
@@ -618,12 +767,12 @@ export function Chatbot() {
                       type="text"
                       placeholder={placeholder}
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={(event) => setInput(event.target.value)}
                       onKeyDown={handleKeyDown}
                     />
                     <button
                       className="chatbot__submit"
-                      onClick={() => handleSubmit()}
+                      onClick={() => void handleSubmit()}
                       disabled={!input.trim()}
                       aria-label="Αποστολή"
                     >
@@ -633,9 +782,7 @@ export function Chatbot() {
                 </div>
               </div>
             ) : (
-              /* ========== CONVERSATION STATE - EXPANDED ========== */
               <div className="chatbot__conversation-content">
-                {/* Scrollable Message Area */}
                 <div className="chatbot__message-scroller" ref={chatScrollerRef}>
                   <div
                     className="chatbot__messages"
@@ -646,11 +793,21 @@ export function Chatbot() {
                       <ChatMessage
                         key={message.id}
                         message={message}
-                        AIChatText={AIChatText}
+                        markdownComponents={AIChatText}
                       />
                     ))}
+                    {isHydrating && messages.length === 0 && (
+                      <div className="chatbot__message chatbot__message--assistant chatbot__message--ai-loading">
+                        <div className="chatbot__message-icon">
+                          <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
+                            <Headset className="chatbot__icon-svg" />
+                          </div>
+                        </div>
+                        <Loader />
+                      </div>
+                    )}
                     {isLoading && (
-                      <div className="chatbot__message chatbot__message--ai chatbot__message--ai-loading">
+                      <div className="chatbot__message chatbot__message--assistant chatbot__message--ai-loading">
                         <div className="chatbot__message-icon">
                           <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
                             <Headset className="chatbot__icon-svg" />
@@ -662,12 +819,16 @@ export function Chatbot() {
                   </div>
                 </div>
 
-                {/* Input Box with LARGE TEXTAREA - matching original */}
                 <div className="chatbot__input-box">
+                  {hasUnreadSupportReply && (
+                    <div className="chatbot__support-pill">
+                      Έχετε νέα απάντηση από την ομάδα υποστήριξης.
+                    </div>
+                  )}
                   <div className="chatbot__suggestion-tags">
-                    {conversationSuggestions.map((suggestion, i) => (
+                    {conversationSuggestions.map((suggestion, index) => (
                       <button
-                        key={`suggestion-tag${i + 1}`}
+                        key={`suggestion-tag${index + 1}`}
                         className="chatbot__suggestion-tag"
                         type="button"
                         disabled={isLoading}
@@ -687,7 +848,7 @@ export function Chatbot() {
                       placeholder={placeholder}
                       value={input}
                       disabled={isLoading}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={(event) => setInput(event.target.value)}
                       onKeyDown={handleKeyDown}
                       rows={1}
                     />
@@ -696,7 +857,7 @@ export function Chatbot() {
                     </button>
                     <button
                       className="chatbot__submit chatbot__submit--textarea"
-                      onClick={() => handleSubmit()}
+                      onClick={() => void handleSubmit()}
                       disabled={!input.trim() || isLoading}
                       aria-label="Αποστολή"
                     >
@@ -713,9 +874,6 @@ export function Chatbot() {
   );
 }
 
-/**
- * Loading Spinner
- */
 function Loader() {
   return (
     <svg
