@@ -6,7 +6,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   Facebook,
   Instagram,
-  Linkedin,
   Shield,
   Truck,
   Award,
@@ -14,7 +13,19 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { MagicBento, ParticleCard } from "@/components/MagicBento";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
+import {
+  BUSINESS_ADDRESS_CITY_LINE_EL,
+  BUSINESS_ADDRESS_STREET,
+  BUSINESS_EMAIL,
+  BUSINESS_EMAIL_HREF,
+  BUSINESS_NAME,
+  BUSINESS_PHONE_DISPLAY,
+  BUSINESS_PHONE_HREF,
+  FOUNDING_LABEL_EL,
+} from "@/lib/constants/aerofren";
+import { catalogCategoryLinks } from "@/data/catalog-taxonomy";
 
 // =============================================================================
 // TYPES
@@ -55,34 +66,40 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const CATEGORY_LINKS: NavItem[] = [
-  { name: "Ρακόρ ταχυσύνδεσης", path: "/products/push-in-fittings" },
-  { name: "Πνευματικές βαλβίδες", path: "/products/pneumatic-valves" },
-  { name: "Σωλήνες & σπιράλ", path: "/products/hoses-pipes" },
-  { name: "Σφαιρικές βάνες", path: "/products/ball-valves" },
+  ...catalogCategoryLinks,
 ];
 
 const SOCIAL_LINKS: SocialLink[] = [
   { icon: Facebook, href: "https://facebook.com/aerofren", label: "Facebook" },
   { icon: Instagram, href: "https://instagram.com/aerofren", label: "Instagram" },
-  { icon: Linkedin, href: "https://linkedin.com/company/aerofren", label: "LinkedIn" },
 ];
 
 const TRUST_BADGES: TrustBadge[] = [
   { icon: Shield, label: "Εγγύηση ποιότητας", desc: "ISO 9001:2015" },
   { icon: Truck, label: "Αποστολή 24ωρη", desc: "Πανελλαδική" },
-  { icon: Award, label: "45+ χρόνια", desc: "Από το 1980" },
+  { icon: Award, label: "1980", desc: FOUNDING_LABEL_EL },
   { icon: Clock, label: "Άμεση διαθεσιμότητα", desc: "Τεχνική κάλυψη" },
 ];
 
 const CONTACT_INFO = {
-  phone: "210 3461645",
-  phoneHref: "tel:2103461645",
-  email: "aerofren@gmail.com",
-  emailHref: "mailto:aerofren@gmail.com",
+  phone: BUSINESS_PHONE_DISPLAY,
+  phoneHref: BUSINESS_PHONE_HREF,
+  email: BUSINESS_EMAIL,
+  emailHref: BUSINESS_EMAIL_HREF,
   address: {
-    street: "Χρυσοστόμου Σμύρνης 26",
-    city: "Μοσχάτο, Αθήνα",
+    street: BUSINESS_ADDRESS_STREET,
+    city: BUSINESS_ADDRESS_CITY_LINE_EL,
   },
+} as const;
+
+const FOOTER_PHONE_EVENT_PARAMS = {
+  location: "footer_contact",
+  page_type: "global",
+} as const;
+
+const FOOTER_EMAIL_EVENT_PARAMS = {
+  location: "footer_contact",
+  page_type: "global",
 } as const;
 
 // =============================================================================
@@ -221,11 +238,18 @@ const ContactRow = memo(function ContactRow({
   value,
   href,
   multiline = false,
+  eventName,
+  eventParams,
 }: {
   label: string;
   value: React.ReactNode;
   href?: string;
   multiline?: boolean;
+  eventName?: "phone_click" | "email_click";
+  eventParams?: {
+    location: string;
+    page_type: string;
+  };
 }) {
   const content = (
     <>
@@ -242,7 +266,16 @@ const ContactRow = memo(function ContactRow({
     } transition-all`;
 
   if (href) {
-    return <a href={href} className={className}>{content}</a>;
+    return (
+      <TrackedLink
+        className={className}
+        eventName={eventName ?? "phone_click"}
+        eventParams={eventParams ?? { location: "footer_contact", page_type: "global" }}
+        href={href}
+      >
+        {content}
+      </TrackedLink>
+    );
   }
   return <div className={className}>{content}</div>;
 });
@@ -319,12 +352,12 @@ export function Footer({ currentYear }: FooterProps) {
               <div>
                 <div className="mb-10">
                   <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-2 bg-clip-text text-transparent bg-gradient-to-br from-[var(--theme-text)] via-[var(--theme-text)] to-[var(--theme-text-muted)]">
-                    AEROFREN
+                    {BUSINESS_NAME}
                   </h2>
                   <div className="flex items-center gap-4">
                     <div className="h-px w-12 bg-[color-mix(in_srgb,var(--theme-accent)_45%,transparent)]" aria-hidden="true" />
                     <p className="text-[var(--theme-accent)] font-mono text-sm tracking-[0.3em] uppercase">
-                      Από το 1980
+                      {FOUNDING_LABEL_EL}
                     </p>
                   </div>
                 </div>
@@ -367,12 +400,25 @@ export function Footer({ currentYear }: FooterProps) {
                     </ul>
                   </nav>
                   <nav aria-label="Κατηγορίες προϊόντων">
-                    <h3 className="text-xs font-mono text-[var(--theme-text-muted)] uppercase tracking-widest mb-6">
-                      Κατηγορίες
-                    </h3>
-                    <ul className="space-y-4">
-                      {CATEGORY_LINKS.map((item) => (
-                        <NavLink key={item.path} item={item} />
+                      <h3 className="text-xs font-mono text-[var(--theme-text-muted)] uppercase tracking-widest mb-6">
+                        Κατηγορίες
+                      </h3>
+                      <ul className="space-y-4">
+                        {CATEGORY_LINKS.map((item) => (
+                          <li key={item.path}>
+                            <TrackedLink
+                              className="text-sm text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors block leading-tight"
+                              eventName="category_cta_click"
+                              eventParams={{
+                                location: "footer_categories",
+                                page_type: "global",
+                                category_slug: item.path.replace("/products/", ""),
+                              }}
+                              href={item.path}
+                            >
+                              {item.name}
+                            </TrackedLink>
+                          </li>
                       ))}
                     </ul>
                   </nav>
@@ -416,11 +462,15 @@ export function Footer({ currentYear }: FooterProps) {
                   <address className="space-y-6 not-italic">
                     <ContactRow
                       label="Τηλέφωνο"
+                      eventName="phone_click"
+                      eventParams={FOOTER_PHONE_EVENT_PARAMS}
                       value={CONTACT_INFO.phone}
                       href={CONTACT_INFO.phoneHref}
                     />
                     <ContactRow
                       label="E-mail"
+                      eventName="email_click"
+                      eventParams={FOOTER_EMAIL_EVENT_PARAMS}
                       value={CONTACT_INFO.email}
                       href={CONTACT_INFO.emailHref}
                     />

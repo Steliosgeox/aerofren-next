@@ -1,6 +1,8 @@
 "use client";
 
 import { Phone } from "lucide-react";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_HREF } from "@/lib/constants/aerofren";
 
 export function ContactCallToAction() {
   return (
@@ -25,14 +27,16 @@ export function ContactCallToAction() {
           <p className="relative text-lg text-white mb-6 [text-shadow:0_1px_6px_rgba(0,0,0,0.2)]">
             Η τεχνική μας ομάδα είναι διαθέσιμη για να απαντήσει σε κάθε σας ερώτηση.
           </p>
-          <a
-            href="tel:+302103461645"
-            aria-label="Καλέστε την AEROFREN στο 210 3461645"
+          <TrackedLink
+            href={BUSINESS_PHONE_HREF}
+            aria-label={`Καλέστε την AEROFREN στο ${BUSINESS_PHONE_DISPLAY}`}
             className="relative inline-flex items-center justify-center h-12 px-8 bg-[var(--theme-accent)] text-white font-semibold rounded-lg hover:bg-[var(--theme-accent-hover)] transition-[transform,box-shadow,background-color] shadow-lg hover:shadow-xl hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-accent)]"
+            eventName="phone_click"
+            eventParams={{ location: "contact_cta", page_type: "contact" }}
           >
             <Phone className="w-5 h-5 mr-2" />
-            Καλέστε: 210 3461645
-          </a>
+            Καλέστε: {BUSINESS_PHONE_DISPLAY}
+          </TrackedLink>
         </div>
       </div>
     </section>

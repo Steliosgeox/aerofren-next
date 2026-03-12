@@ -24,13 +24,13 @@
 | I-06 | IMPORTANT | `sitemap.ts` | Individual `/resources/[guide]` pages missing — only `/resources` index is listed | Open |
 | I-07 | IMPORTANT | `industries/page.tsx` | Page has zero JSON-LD schema — only new content page with no structured data | Open |
 | I-08 | IMPORTANT | `glossary/page.tsx:39` | Passes unsorted `terms` to `GlossarySchema` but sorted `sortedTerms` to UI — inconsistency | Open |
-| I-09 | IMPORTANT | Multiple files | Founding year/experience inconsistency: schema says 1980, footer says 1989, copy says "35+" | Open |
+| I-09 | IMPORTANT | Multiple files | Founding year/experience inconsistency: schema says 1980, footer says 1980, and copy must also use 1980 consistently | Closed |
 | M-01 | MINOR | `faq/page.tsx:80,93` | Filter boundary `i < 8` is a hardcoded magic number — breaks silently if new Greek FAQs added | Open |
 | M-02 | MINOR | `faq/page.tsx:81,94` | `key={i}` on filtered array — both first items get `key=0`, duplicate React keys | Open |
 | M-03 | MINOR | `glossary/page.tsx:48` | `key={i}` on sorted array — should use stable term name | Open |
 | M-04 | MINOR | `industries/page.tsx:50,56` | `key={i}` and nested `key={j}` — index keys throughout | Open |
 | M-05 | MINOR | All new content pages | Missing `openGraph` metadata — pages won't preview on social media/Slack/LinkedIn | Open |
-| M-06 | MINOR | `PersonSchema.tsx:9` | Description says "35+ χρόνια" — founded 1980 = 46+ years in 2026, factually wrong | Open |
+| M-06 | MINOR | `PersonSchema.tsx:9` | Founder description must reference 1980 directly instead of dynamic experience shorthand | Closed |
 | M-07 | MINOR | `WebsiteSchema.tsx` | Bare object without `@graph` — inconsistent with `OrganizationSchema` which uses `@graph` | Open |
 | M-08 | MINOR | `WebsiteSchema.tsx:16` | `query-input` property deprecated by Google in February 2024 — harmless but dead code | Open |
 
@@ -48,7 +48,7 @@ The `OrganizationSchema` and `WebsiteSchema` components were designed as pure fu
 The schema types were written from memory rather than validated against the current schema.org type hierarchy. `WholesaleStore` doesn't exist (the valid parent is `Store → LocalBusiness`). `Continent` doesn't exist in schema.org's type hierarchy. `QuantitativeValue.value` accepts only `Number` per the spec.
 
 ### Why I-09 exists
-The founding year appears in at least 4 independent locations — `OrganizationSchema.tsx`, `PersonSchema.tsx`, `Footer.tsx`, and `layout.tsx` — with no shared source of truth. The values diverged: the schema says 1980, the footer component says 1989, and the copy says "35+" (implying ~1991). We need a single authoritative constant.
+The founding year appears in at least 4 independent locations — `OrganizationSchema.tsx`, `PersonSchema.tsx`, `Footer.tsx`, and `layout.tsx` — and should be consolidated behind a single authoritative constant that always renders `1980`.
 
 ---
 
@@ -83,7 +83,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 export const YEARS_OF_EXPERIENCE = CURRENT_YEAR - FOUNDING_YEAR;
 
 /** Approximate SKU count for copy and schema */
-export const PRODUCT_COUNT = "120.000+";
+export const PRODUCT_COUNT = "10.000+";
 
 /** Official business name */
 export const BUSINESS_NAME = "AEROFREN";
@@ -377,7 +377,7 @@ git commit -m "fix(schema): move description/image to nested WebPage item in Lis
 - Modify: `src/lib/schema/PersonSchema.tsx`
 - Uses: `src/lib/constants/aerofren.ts`
 
-**Context:** The `Person` node lacks an `@id`. Without it, no other schema can reference the founder by IRI — the `ArticleSchema` author field can't point to this person, breaking the graph. Also fixes the "35+ χρόνια" factual error (M-06) using the constants.
+**Context:** The `Person` node lacks an `@id`. Without it, no other schema can reference the founder by IRI — the `ArticleSchema` author field can't point to this person, breaking the graph. Also fixes the founding-year consistency issue (M-06) using the constants.
 
 **Step 1: Update PersonSchema.tsx**
 

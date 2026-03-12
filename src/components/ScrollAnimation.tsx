@@ -4,35 +4,35 @@ import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { gsap } from '@/lib/gsap/client';
 import styles from './ScrollAnimation.module.css';
+import { FOUNDING_LABEL_EL } from "@/lib/constants/aerofren";
 
 // Layer 1: Background/Outer elements (6 images)
 const LAYER_1_IMAGES = [
-    '/images/Scroll-second/Add_background_to_spiral_picture_38425f93ea-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Add_background_to_spiral_picture_bfb0a65da2-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Add_background_to_spiral_picture_d733cbaf63-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Add_background_to_spiral_picture_3a83586b00-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Change_background_of_ball_valve_ae99b75fb4-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Beautiful_blue_background_81fbc00005-ezgif.com-jpg-to-webp-converter.webp',
+    '/images/scroll-new/l1_cylinder_pneu_1768534522489.png',
+    '/images/scroll-new/l1_filter_regulator_1768534537093.png',
+    '/images/scroll-new/l1_solenoid_valve_1768534552843.png',
+    '/images/scroll-new/l1_air_hoses_1768534582221.png',
+    '/images/scroll-new/l1_ball_valve_1768534596693.png',
+    '/images/scroll-new/l1_air_tool_1768534611483.png',
 ];
 
 // Layer 2: Midground/Inner elements (6 images)
 const LAYER_2_IMAGES = [
-    '/images/Scroll-second/Brass_fittings_blue_background_3576546b97-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Beautiful_blue_background_c399f712b1-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Beautiful_blue_background_29a2b57df9-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Beautiful_blue_background_835f5f2fe6-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Beautiful_blue_background_ce1a72e4ef-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Beautiful_blue_background_a7c70edb85-ezgif.com-jpg-to-webp-converter.webp',
+    '/images/scroll-new/l2_push_in_fittings_1768534635577.png',
+    '/images/scroll-new/l2_brass_fittings_1768534649826.png',
+    '/images/scroll-new/l2_digital_sensor_1768534663754.png',
+    '/images/scroll-new/l2_flow_control_1768534690849.png',
+    '/images/scroll-new/l2_silencer_1768534704874.png',
+    '/images/scroll-new/l2_quick_coupler_1768534717862.png',
 ];
 
 // Layer 3: Foreground/Center Vertical elements (2 images)
 const LAYER_3_IMAGES = [
-    '/images/Scroll-second/Add_background_to_spiral_picture_5ed39697f1-ezgif.com-jpg-to-webp-converter.webp',
-    '/images/Scroll-second/Beautiful_blue_background_3c191d233a-ezgif.com-jpg-to-webp-converter.webp',
+    '/images/scroll-new/l3_mini_valve_1768534745937.png',
+    '/images/scroll-new/l3_gauge_macro_1768534760443.png',
 ];
 
-const SCALER_IMAGE =
-    '/images/Scroll-second/Beautiful_blue_background_1c5f461a95-ezgif.com-jpg-to-webp-converter.webp';
+const SCALER_IMAGE = '/images/scroll-new/scaler_hero_1768534781568.png';
 
 /**
  * ScrollAnimation Component
@@ -153,11 +153,9 @@ export default function ScrollAnimation() {
                                     <Image
                                         src={src}
                                         alt=""
-                                        className={styles.gridImage}
-                                        width={768}
-                                        height={1376}
+                                        width={640}
+                                        height={640}
                                         sizes="(max-width: 900px) 33vw, 16vw"
-                                        decoding="async"
                                     />
                                 </div>
                             ))}
@@ -170,11 +168,9 @@ export default function ScrollAnimation() {
                                     <Image
                                         src={src}
                                         alt=""
-                                        className={styles.gridImage}
-                                        width={768}
-                                        height={1376}
+                                        width={640}
+                                        height={640}
                                         sizes="(max-width: 900px) 33vw, 16vw"
-                                        decoding="async"
                                     />
                                 </div>
                             ))}
@@ -187,11 +183,9 @@ export default function ScrollAnimation() {
                                     <Image
                                         src={src}
                                         alt=""
-                                        className={styles.gridImage}
-                                        width={768}
-                                        height={1376}
+                                        width={640}
+                                        height={640}
                                         sizes="(max-width: 900px) 33vw, 16vw"
-                                        decoding="async"
                                     />
                                 </div>
                             ))}
@@ -203,11 +197,9 @@ export default function ScrollAnimation() {
                                 src={SCALER_IMAGE}
                                 alt="AEROFREN — Κεντρικό προϊόν"
                                 className={styles.scalerImage}
-                                width={768}
-                                height={1376}
+                                width={900}
+                                height={1125}
                                 sizes="(max-width: 900px) 33vw, 20vw"
-                                decoding="async"
-                                priority
                             />
                         </div>
                     </div>
@@ -227,7 +219,7 @@ export default function ScrollAnimation() {
             <div className={styles.finSection}>
                 <h3 className={styles.finTitle}>ΚΕΝΤΡΟ ΕΞΕΙΔΙΚΕΥΣΗΣ</h3>
                 <p className={styles.finText}>
-                    45+ χρόνια εμπειρίας στην υποστήριξη<br />
+                    {FOUNDING_LABEL_EL} στην υποστήριξη<br />
                     της ελληνικής βιομηχανίας.
                 </p>
             </div>

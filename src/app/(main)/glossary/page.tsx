@@ -1,5 +1,6 @@
 // src/app/(main)/glossary/page.tsx
 import type { Metadata } from "next";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { GlossarySchema } from "@/lib/schema/GlossarySchema";
 
 export const metadata: Metadata = {
@@ -51,6 +52,39 @@ export default function GlossaryPage() {
       <p className="text-muted-foreground mb-8">
         Technical Glossary — Ορισμοί εξαρτημάτων πνευματικών συστημάτων & νερού
       </p>
+
+      <section className="rounded-lg border p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-3">Σχετικές κατηγορίες</h2>
+        <p className="text-muted-foreground mb-4">
+          Αν ψάχνετε τους τεχνικούς όρους μέσα σε πραγματικές οικογένειες προϊόντων, ξεκινήστε από τις βασικές landing pages του καταλόγου.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <TrackedLink
+            className="rounded-md border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+            eventName="category_cta_click"
+            eventParams={{ location: "glossary_page", page_type: "glossary", category_slug: "push-in-fittings" }}
+            href="/products/push-in-fittings"
+          >
+            Ρακόρ Ταχυσύνδεσης
+          </TrackedLink>
+          <TrackedLink
+            className="rounded-md border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+            eventName="category_cta_click"
+            eventParams={{ location: "glossary_page", page_type: "glossary", category_slug: "thread-fittings" }}
+            href="/products/thread-fittings"
+          >
+            Σπειρωτά Ρακόρ &amp; Εξαρτήματα
+          </TrackedLink>
+          <TrackedLink
+            className="rounded-md border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+            eventName="category_cta_click"
+            eventParams={{ location: "glossary_page", page_type: "glossary", category_slug: "hoses-pipes" }}
+            href="/products/hoses-pipes"
+          >
+            Σωλήνες &amp; Σπιράλ
+          </TrackedLink>
+        </div>
+      </section>
 
       <dl className="grid gap-6">
         {sortedTerms.map((term) => (

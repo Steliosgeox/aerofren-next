@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo, useSyncExternalStore } from "react";
-import { productShowcaseItems } from "@/data/product-showcase";
+import { catalogCategories } from "@/data/catalog-taxonomy";
 import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
 import { LiquidGlassSwitcher } from "./LiquidGlassSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +22,8 @@ import {
   Shield,
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
+import { TrackedLink } from "@/components/analytics/TrackedLink";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_HREF } from "@/lib/constants/aerofren";
 
 const desktopNavItems = SITE_NAV_ITEMS.map(({ name, path, hasDropdown }) => ({
   name,
@@ -334,43 +336,51 @@ function HeaderComponent() {
                   <div
                     className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[820px] rounded-2xl overflow-hidden"
                     role="menu"
-                    aria-label="Προτεινόμενα προϊόντα"
+                    aria-label="Κατηγορίες προϊόντων"
                     style={MEGA_MENU_STYLES}
                   >
                     <div className="p-6">
                       {/* Header */}
                       <div className="flex items-center justify-between mb-5 pb-4" style={{ borderBottom: '1px solid var(--theme-glass-border)' }}>
                         <h3 className="font-bold text-lg" style={{ color: 'var(--theme-text)' }}>
-                          Προτεινόμενα προϊόντα
+                          Κατηγορίες προϊόντων
                         </h3>
-                        <Link
+                        <TrackedLink
                           href="/products"
                           className="text-sm font-semibold hover:underline flex items-center gap-1"
                           style={{ color: 'var(--theme-accent)' }}
+                          eventName="category_cta_click"
+                          eventParams={{ location: "header_megamenu", page_type: "global" }}
                           onClick={() => setMegaMenuOpen(false)}
                         >
                           Δείτε όλα
                           <ArrowRight className="w-4 h-4" />
-                        </Link>
+                        </TrackedLink>
                       </div>
 
                       <div className="mb-5 grid gap-1">
                         <p className="text-xs uppercase tracking-[0.28em]" style={{ color: "var(--theme-text-muted)" }}>
-                          Δημοφιλείς Κατηγορίες
+                          Canonical Landing Pages
                         </p>
                         <p className="text-sm leading-6" style={{ color: "var(--theme-text-muted)" }}>
-                          Ανακαλύψτε επιλεγμένα προϊόντα. Μεταβείτε στον κατάλογο για αναλυτικά τεχνικά χαρακτηριστικά, άμεση παραγγελία και τεχνική υποστήριξη.
+                          Περιηγηθείτε στις βασικές indexable κατηγορίες του καταλόγου και μεταβείτε στις επιμέρους landing pages για πιο στοχευμένο περιεχόμενο.
                         </p>
                       </div>
 
-                      {/* Product Grid */}
+                      {/* Category Grid */}
                       <div className="grid grid-cols-2 gap-2">
-                        {productShowcaseItems.slice(0, 6).map((product) => (
-                          <Link
-                            key={product.id}
-                            href={`/products#${product.slug}`}
+                        {catalogCategories.map((category) => (
+                          <TrackedLink
+                            key={category.slug}
+                            href={`/products/${category.slug}`}
                             role="menuitem"
                             className="group flex items-center gap-3 rounded-xl border border-transparent p-3 transition-all duration-150"
+                            eventName="category_cta_click"
+                            eventParams={{
+                              location: "header_megamenu",
+                              page_type: "global",
+                              category_slug: category.slug,
+                            }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.background = 'var(--theme-glass-bg)';
                               e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--theme-accent) 22%, transparent)';
@@ -383,11 +393,11 @@ function HeaderComponent() {
                           >
                             <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden border border-[var(--theme-glass-border)] bg-[color-mix(in_srgb,var(--c-glass)_60%,transparent)]">
                               <Image
-                                src={product.image}
-                                alt={product.nameEl}
+                                src={category.image}
+                                alt={category.nameEl}
                                 fill
                                 sizes="56px"
-                                className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-110"
+                                className="object-cover transition-transform duration-300 group-hover:scale-110"
                               />
                             </div>
                             <div className="min-w-0">
@@ -395,13 +405,13 @@ function HeaderComponent() {
                                 className="font-semibold text-sm block truncate"
                                 style={{ color: 'var(--theme-text)' }}
                               >
-                                {product.nameEl}
+                                {category.nameEl}
                               </span>
                               <span className="text-xs" style={{ color: 'var(--theme-text-muted)' }}>
-                                {product.tagEl}
+                                {category.summaryEl}
                               </span>
                             </div>
-                          </Link>
+                          </TrackedLink>
                         ))}
                       </div>
 
@@ -410,14 +420,16 @@ function HeaderComponent() {
                         <p className="text-sm" style={{ color: 'var(--theme-text-muted)' }}>
                           Δεν βλέπετε το προϊόν που αναζητάτε;
                         </p>
-                        <a
-                          href="tel:2103461645"
+                        <TrackedLink
+                          href={BUSINESS_PHONE_HREF}
                           className="text-sm font-bold hover:underline flex items-center gap-1"
                           style={{ color: 'var(--theme-accent)' }}
+                          eventName="phone_click"
+                          eventParams={{ location: "header_megamenu", page_type: "global" }}
                         >
                           <Phone className="w-4 h-4" />
-                          210 3461645
-                        </a>
+                          {BUSINESS_PHONE_DISPLAY}
+                        </TrackedLink>
                       </div>
                     </div>
                   </div>

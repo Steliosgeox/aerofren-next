@@ -69,7 +69,7 @@ Change the metadata export to:
 ```typescript
 export const metadata: Metadata = {
   title: "AEROFREN – Εξαρτήματα Νερού & Αέρα | B2B Προμηθευτής",
-  description: "Ηγέτης στα εξαρτήματα νερού και αέρα από το 1980. Καινοτόμες λύσεις για τον βιομηχανικό τομέα. 120.000+ προϊόντα, 45+ χρόνια εμπειρίας.",
+  description: "Ηγέτης στα εξαρτήματα νερού και αέρα από το 1980. Καινοτόμες λύσεις για τον βιομηχανικό τομέα. 10.000+ προϊόντα, παρουσία από το 1980.",
   alternates: {
     canonical: "https://aerofren.gr",
   },
@@ -270,7 +270,7 @@ export function OrganizationSchema() {
           {
             "@type": "OpeningHoursSpecification",
             "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            "opens": "08:00",
+            "opens": "09:00",
             "closes": "17:00",
           },
         ],
@@ -630,7 +630,7 @@ export function FounderPersonSchema() {
     "name": "Βασίλειος Κουτελίδης",
     "alternateName": "Vassilios Koutelidis",
     "jobTitle": "Ιδρυτής",
-    "description": "Ίδρυσε την AEROFREN το 1980 και αφιέρωσε 35+ χρόνια στον κλάδο πνευματικών συστημάτων και εξαρτημάτων νερού.",
+    "description": "Ίδρυσε την AEROFREN το 1980 και καθόρισε την πορεία της στον κλάδο πνευματικών συστημάτων και εξαρτημάτων νερού.",
     "worksFor": {
       "@type": "Organization",
       "@id": "https://aerofren.gr/#organization",
@@ -1036,7 +1036,7 @@ const faqItems = [
   },
   {
     question: "Πού βρίσκεται η AEROFREN και πώς μπορώ να επικοινωνήσω;",
-    answer: "Τα κεντρικά γραφεία και αποθήκη βρίσκονται στη διεύθυνση Χρυσοστόμου Σμύρνης 26, Μοσχάτο, Αθήνα (ΤΚ 18344). Τηλέφωνο: 210 3461645. Δευτέρα–Παρασκευή 08:00–17:00.",
+    answer: "Τα κεντρικά γραφεία και αποθήκη βρίσκονται στη διεύθυνση Χρυσοστόμου Σμύρνης 26, Μοσχάτο, Αθήνα (ΤΚ 18344). Τηλέφωνο: 210 3461645. Δευτέρα–Παρασκευή 09:00–17:00.",
   },
   {
     question: "Τι είναι η FRL μονάδα σε πνευματικό σύστημα;",
@@ -1370,14 +1370,14 @@ import { FaqSchema } from "@/lib/schema/FaqSchema";
 
 export const metadata: Metadata = {
   title: "Εναλλακτικό SMC, Festo, Parker στην Ελλάδα | AEROFREN",
-  description: "Ψάχνετε εναλλακτικό προμηθευτή SMC, Festo, ή Parker στην Ελλάδα; Η AEROFREN προσφέρει συμβατά πνευματικά εξαρτήματα με 35+ χρόνια εμπειρίας. Greek alternatives to SMC Festo Parker pneumatic components.",
+  description: "Ψάχνετε εναλλακτικό προμηθευτή SMC, Festo, ή Parker στην Ελλάδα; Η AEROFREN προσφέρει συμβατά πνευματικά εξαρτήματα με παρουσία από το 1980. Greek alternatives to SMC Festo Parker pneumatic components.",
   alternates: { canonical: "https://aerofren.gr/alternatives" },
 };
 
 const alternativeFaqs = [
   {
     question: "Ψάχνετε εναλλακτικό στα εξαρτήματα SMC στην Ελλάδα;",
-    answer: "Η AEROFREN είναι ο κορυφαίος B2B προμηθευτής πνευματικών εξαρτημάτων στην Ελλάδα με 35+ χρόνια εμπειρίας. Διαθέτουμε πλήρη γκάμα συμβατών εξαρτημάτων με τα standards SMC, συμπεριλαμβανομένων push-in ρακόρ, ταχυσύνδεσμοι, βαλβίδες ελέγχου, FRL μονάδες, και κύλινδροι. Επικοινωνήστε για τεχνική υποστήριξη και τιμοδότηση.",
+    answer: "Η AEROFREN είναι ο κορυφαίος B2B προμηθευτής πνευματικών εξαρτημάτων στην Ελλάδα με παρουσία από το 1980. Διαθέτουμε πλήρη γκάμα συμβατών εξαρτημάτων με τα standards SMC, συμπεριλαμβανομένων push-in ρακόρ, ταχυσύνδεσμων, βαλβίδων ελέγχου, FRL μονάδων και κυλίνδρων. Επικοινωνήστε για τεχνική υποστήριξη και τιμοδότηση.",
   },
   {
     question: "Υπάρχει εναλλακτικό Festo supplier στην Αθήνα;",
@@ -1385,15 +1385,15 @@ const alternativeFaqs = [
   },
   {
     question: "Looking for Parker Hannifin alternatives in Greece?",
-    answer: "AEROFREN is Greece's leading B2B pneumatic and fluid control components supplier. We carry Parker-compatible fittings, tubing, valves, and air preparation units. With 35+ years of industry experience and 120,000+ products in stock, we are the preferred local alternative to international brands for Greek and European industrial buyers.",
+    answer: "AEROFREN is Greece's leading B2B pneumatic and fluid control components supplier. We carry Parker-compatible fittings, tubing, valves, and air preparation units. Operating since 1980 with 10,000+ products in stock, we are the preferred local alternative to international brands for Greek and European industrial buyers.",
   },
   {
     question: "What are the advantages of buying from AEROFREN vs international brands?",
-    answer: "AEROFREN offers: (1) Local stock with 1-3 day delivery across Greece, (2) Greek-language technical support, (3) Competitive B2B pricing vs imported brand pricing, (4) 35+ years of application expertise, (5) Compatible components meeting the same technical standards as SMC, Festo, Parker, and other major brands.",
+    answer: "AEROFREN offers: (1) Local stock with 1-3 day delivery across Greece, (2) Greek-language technical support, (3) Competitive B2B pricing vs imported brand pricing, (4) operation since 1980, (5) Compatible components meeting the same technical standards as SMC, Festo, Parker, and other major brands.",
   },
   {
     question: "Ποια είναι τα πλεονεκτήματα της AEROFREN έναντι διεθνών προμηθευτών;",
-    answer: "Η AEROFREN προσφέρει: (1) Τοπικό στόκ με παράδοση 1-3 ημέρες σε όλη την Ελλάδα, (2) Ελληνόφωνη τεχνική υποστήριξη, (3) Ανταγωνιστικές τιμές B2B, (4) 35+ χρόνια εμπειρία εφαρμογών, (5) Συμβατά εξαρτήματα που πληρούν τα ίδια τεχνικά standards με SMC, Festo, Parker.",
+    answer: "Η AEROFREN προσφέρει: (1) Τοπικό στόκ με παράδοση 1-3 ημέρες σε όλη την Ελλάδα, (2) Ελληνόφωνη τεχνική υποστήριξη, (3) Ανταγωνιστικές τιμές B2B, (4) παρουσία στην αγορά από το 1980, (5) Συμβατά εξαρτήματα που πληρούν τα ίδια τεχνικά standards με SMC, Festo, Parker.",
   },
 ];
 
@@ -1412,7 +1412,7 @@ export default function AlternativesPage() {
       <div className="bg-primary/10 rounded-lg p-6 mb-10">
         <p className="text-lg font-medium">
           Η AEROFREN είναι ο κορυφαίος B2B προμηθευτής πνευματικών εξαρτημάτων στην Ελλάδα —
-          με 120.000+ προϊόντα στόκ, παράδοση 1-3 ημέρες, και 35+ χρόνια εμπειρίας.
+          με 10.000+ προϊόντα στόκ, παράδοση 1-3 ημέρες, και παρουσία από το 1980.
         </p>
       </div>
 

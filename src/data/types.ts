@@ -60,6 +60,41 @@ export interface BreadcrumbItem {
   href: string;
 }
 
+export interface SeoFaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface CatalogSubcategory {
+  id: string;
+  slug: string;
+  nameEl: string;
+  image: string;
+  tagEl: string;
+  summaryEl: string;
+  highlightsEl: [string, string, string];
+  parentCategorySlug: string;
+  canonicalPath: string;
+  descriptionEl: string;
+  applicationsEl: [string, string, string];
+  faqsEl: SeoFaqItem[];
+  seoTitle: string;
+  seoDescription: string;
+}
+
+export interface CatalogCategory {
+  slug: string;
+  nameEl: string;
+  image: string;
+  summaryEl: string;
+  introEl: string;
+  benefitsEl: [string, string, string];
+  faqsEl: SeoFaqItem[];
+  seoTitle: string;
+  seoDescription: string;
+  subcategories: CatalogSubcategory[];
+}
+
 // Helper type for category icons
 export type CategoryIconName =
   | 'plug'

@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Home, Info, Package, Phone } from "lucide-react";
+import { catalogCategoryLinks } from "@/data/catalog-taxonomy";
 
 export interface SiteNavItem {
   name: string;
@@ -36,3 +37,5 @@ export const SITE_NAV_ITEMS: readonly SiteNavItem[] = [
     Icon: Phone,
   },
 ] as const;
+
+export const PRODUCT_DROPDOWN_ITEMS = catalogCategoryLinks;

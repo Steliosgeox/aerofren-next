@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink, MapPin, Navigation } from "lucide-react";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import {
   CONTACT_ADDRESS_LINE_1,
   CONTACT_ADDRESS_LINE_2,
@@ -57,24 +58,28 @@ export function ContactMapCard() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <a
+                <TrackedLink
                   href={CONTACT_MAP_DIRECTIONS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--contact-border)] px-3 py-2 text-sm font-semibold text-[var(--contact-text)] hover:border-[color-mix(in_srgb,var(--theme-accent)_55%,transparent)] hover:text-[var(--theme-accent)] transition-colors"
+                  eventName="map_directions_click"
+                  eventParams={{ location: "contact_map", page_type: "contact" }}
                 >
                   Οδηγίες
                   <Navigation className="h-4 w-4" />
-                </a>
-                <a
+                </TrackedLink>
+                <TrackedLink
                   href={CONTACT_MAP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold bg-[var(--theme-accent)] text-white hover:bg-[var(--theme-accent-hover)] transition-colors"
+                  eventName="map_directions_click"
+                  eventParams={{ location: "contact_map", page_type: "contact" }}
                 >
                   Google Maps
                   <ExternalLink className="h-4 w-4" />
-                </a>
+                </TrackedLink>
               </div>
             </div>
           </div>

@@ -1,8 +1,19 @@
 import { Building2, Clock, Mail, MapPin, Phone } from "lucide-react";
 import type { ContactCardConfig, ContactFormState } from "@/components/contact/types";
+import {
+  BUSINESS_ADDRESS_CITY_LINE_EL,
+  BUSINESS_ADDRESS_STREET,
+  BUSINESS_EMAIL,
+  BUSINESS_EMAIL_HREF,
+  BUSINESS_HOURS_TEXT_EL,
+  BUSINESS_NAME,
+  BUSINESS_PHONE_DISPLAY,
+  BUSINESS_PHONE_HREF,
+  FOUNDING_LABEL_EL,
+} from "@/lib/constants/aerofren";
 
-export const CONTACT_ADDRESS_LINE_1 = "Χρυσοστόμου Σμύρνης 26";
-export const CONTACT_ADDRESS_LINE_2 = "Μοσχάτο 18344, Αθήνα";
+export const CONTACT_ADDRESS_LINE_1 = BUSINESS_ADDRESS_STREET;
+export const CONTACT_ADDRESS_LINE_2 = BUSINESS_ADDRESS_CITY_LINE_EL;
 const CONTACT_MAP_QUERY = encodeURIComponent(
   `${CONTACT_ADDRESS_LINE_1}, ${CONTACT_ADDRESS_LINE_2}`
 );
@@ -25,16 +36,16 @@ export const CONTACT_CARDS: ContactCardConfig[] = [
   {
     icon: Phone,
     title: "Τηλέφωνο",
-    primary: "210 3461645",
+    primary: BUSINESS_PHONE_DISPLAY,
     secondary: "Δευτέρα - Παρασκευή",
-    href: "tel:2103461645",
+    href: BUSINESS_PHONE_HREF,
   },
   {
     icon: Mail,
     title: "E-mail",
-    primary: "aerofren@gmail.com",
+    primary: BUSINESS_EMAIL,
     secondary: "Απάντηση εντός 24 ωρών",
-    href: "mailto:aerofren@gmail.com",
+    href: BUSINESS_EMAIL_HREF,
   },
   {
     icon: MapPin,
@@ -46,15 +57,15 @@ export const CONTACT_CARDS: ContactCardConfig[] = [
   {
     icon: Clock,
     title: "Ωράριο",
-    primary: "08:00 - 16:00",
+    primary: BUSINESS_HOURS_TEXT_EL,
     secondary: "Σάββατο - Κυριακή: Κλειστά",
   },
   {
     icon: Building2,
     title: "Επωνυμία",
-    primary: "AEROFREN",
+    primary: BUSINESS_NAME,
     secondary: "Κουτελίδου Αικατερίνη Β.",
-    tags: ["Μόνο B2B", "Από το 1990"],
+    tags: ["Μόνο B2B", FOUNDING_LABEL_EL],
   },
 ];
 

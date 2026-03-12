@@ -7,14 +7,7 @@ export function WebsiteSchema({ nonce }: { nonce?: string | null } = {}) {
     "@id": WEBSITE_ID,
     "name": "AEROFREN",
     "url": SITE_URL,
-    "inLanguage": ["el", "en"],
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": `${SITE_URL}/products?q={search_term_string}`,
-      },
-    },
+    "inLanguage": "el-GR",
     "publisher": {
       "@id": ORGANIZATION_ID,
     },

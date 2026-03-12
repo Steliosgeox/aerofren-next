@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { ItemListSchema } from "@/lib/schema/ItemListSchema";
 import { SITE_URL } from "@/lib/constants/aerofren";
 
@@ -23,30 +24,35 @@ const industries = [
     nameEn: "Manufacturing & Automation",
     description: "Πνευματικά εξαρτήματα για γραμμές παραγωγής, ρομποτικά συστήματα, και βιομηχανικούς αυτοματισμούς.",
     products: ["Push-in ρακόρ", "Κύλινδροι", "Ηλεκτροβαλβίδες", "FRL μονάδες"],
+    href: "/products/push-in-fittings",
   },
   {
     name: "Αγροτικός Τομέας",
     nameEn: "Agriculture",
     description: "Εξαρτήματα άρδευσης, υδροδότησης, και πνευματικών συστημάτων για αγροτικές εγκαταστάσεις.",
     products: ["Σωλήνες PE", "Ρακόρ νερού", "Βαλβίδες", "Συνδετήρες"],
+    href: "/products/water-filtration",
   },
   {
     name: "Τρόφιμα & Ποτά",
     nameEn: "Food & Beverage",
     description: "Food-grade πνευματικά εξαρτήματα από ανοξείδωτο ατσάλι και εγκεκριμένα υλικά για βιομηχανίες τροφίμων.",
     products: ["Inox ρακόρ", "Food-grade σωλήνες", "Βαλβίδες inox"],
+    href: "/products/hoses-pipes",
   },
   {
     name: "Κατασκευές",
     nameEn: "Construction",
     description: "Εξαρτήματα για πνευματικά εργαλεία, συστήματα αέρα, και υδραυλικές εγκαταστάσεις σε κατασκευαστικά έργα.",
     products: ["Ταχυσύνδεσμοι", "Σωλήνες υψηλής πίεσης", "Ρυθμιστές πίεσης"],
+    href: "/products/air-tools",
   },
   {
     name: "Ναυτιλία & Offshore",
     nameEn: "Marine & Offshore",
     description: "Ανθεκτικά εξαρτήματα για θαλάσσιες εφαρμογές με αντίσταση στη διάβρωση από αλατόνερο.",
     products: ["Marine-grade inox", "Ρακόρ ανθεκτικά σε αλάτι"],
+    href: "/products/thread-fittings",
   },
 ];
 
@@ -59,7 +65,7 @@ export default function IndustriesPage() {
         url={`${SITE_URL}/industries`}
         items={industries.map((ind) => ({
           name: ind.name,
-          url: `${SITE_URL}/products`,
+          url: `${SITE_URL}${ind.href}`,
           description: ind.description,
         }))}
       />
@@ -79,6 +85,14 @@ export default function IndustriesPage() {
                 </li>
               ))}
             </ul>
+            <TrackedLink
+              className="inline-flex mt-4 text-sm font-semibold hover:text-primary transition-colors"
+              eventName="category_cta_click"
+              eventParams={{ location: "industries_page", page_type: "industries", category_slug: industry.href.replace("/products/", "") }}
+              href={industry.href}
+            >
+              Δείτε σχετική κατηγορία
+            </TrackedLink>
           </div>
         ))}
       </div>
