@@ -13,6 +13,9 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main>
+      <h1 className="sr-only">
+        AEROFREN: εξαρτήματα νερού και αέρα για επαγγελματικές εφαρμογές
+      </h1>
       <HomePageClient />
     </main>
   );

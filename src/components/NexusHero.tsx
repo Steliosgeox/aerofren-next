@@ -8,7 +8,6 @@ import { debounce } from "@/lib/debounce";
 import { getDeviceInfo } from "./nexus-hero/device";
 import { createPresets } from "./nexus-hero/theme-presets";
 import { vertexShader, createFragmentShader } from "./nexus-hero/shader";
-import { FOUNDING_LABEL_EL } from "@/lib/constants/aerofren";
 
 /**
  * NexusHero - Premium Three.js Metaballs Hero Section
@@ -479,7 +478,7 @@ export default function NexusHero() {
 
                 {/* Description */}
                 <p className="nexus-hero__description">
-                    Συστήματα αέρος και εξοπλισμός επεξεργασίας νερού για επαγγελματίες, {FOUNDING_LABEL_EL.toLowerCase()}.
+                    Συστήματα αέρος και εξοπλισμός επεξεργασίας νερού για επαγγελματίες, με 45+ χρόνια εμπειρίας.
                 </p>
 
                 {/* Tagline */}

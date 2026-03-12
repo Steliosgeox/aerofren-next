@@ -2,20 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./HorizontalGallery.module.css";
-import { TrackedLink } from "@/components/analytics/TrackedLink";
-import { catalogCategories } from "@/data/catalog-taxonomy";
+import {
+  getProductShowcaseCount,
+  productShowcaseNavigationItems,
+} from "@/data/product-showcase";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
-const galleryProducts = catalogCategories.map((category) => ({
-  id: category.slug,
-  nameEl: category.nameEl,
-  image: category.image,
-  href: `/products/${category.slug}`,
-}));
-const showcaseCount = galleryProducts.length;
+const galleryProducts = productShowcaseNavigationItems;
+const showcaseCount = getProductShowcaseCount();
 
 type LegacyMediaQueryList = MediaQueryList & {
   addListener?: (listener: () => void) => void;
@@ -193,7 +191,7 @@ export default function HorizontalGallery() {
             Εξαρτήματα υψηλών προδιαγραφών
           </h2>
           <p className={`${styles.gallerySubheading} ${styles.headerReveal}`}>
-            Σύρτε για να δείτε τις βασικές SEO κατηγορίες του καταλόγου
+            Σύρτε για να δείτε όλα τα προϊόντα μας
           </p>
         </div>
 
@@ -201,16 +199,7 @@ export default function HorizontalGallery() {
           <div ref={stripRef} className={styles.horizGalleryStrip}>
             {galleryProducts.map((item) => (
               <div key={item.id} className={styles.productCardWrap}>
-                <TrackedLink
-                  href={item.href}
-                  className={styles.productCard}
-                  eventName="category_cta_click"
-                  eventParams={{
-                    location: "horizontal_gallery",
-                    page_type: "home",
-                    category_slug: item.id,
-                  }}
-                >
+                <Link href={item.href} className={styles.productCard}>
                   <div className={styles.productCardImageWrap}>
                     <Image
                       src={item.image}
@@ -226,20 +215,15 @@ export default function HorizontalGallery() {
                   <div className={styles.productCardContent}>
                     <span className={styles.productCardLabel}>{item.nameEl}</span>
                   </div>
-                </TrackedLink>
+                </Link>
               </div>
             ))}
 
             <div className={`${styles.productCardWrap} ${styles.ctaWrap}`}>
-              <TrackedLink
-                href="/products"
-                className={styles.productCard}
-                eventName="category_cta_click"
-                eventParams={{ location: "horizontal_gallery", page_type: "home" }}
-              >
+              <Link href="/products" className={styles.productCard}>
                 <div className={styles.ctaContent}>
                   <span className={styles.ctaNumber}>{showcaseCount}</span>
-                  <span className={styles.ctaText}>SEO Κατηγορίες</span>
+                  <span className={styles.ctaText}>Κατηγορίες Προϊόντων</span>
                   <span className={styles.ctaAction}>
                     Δείτε τον κατάλογο
                     <svg
@@ -256,7 +240,7 @@ export default function HorizontalGallery() {
                   </span>
                 </div>
                 <div className={styles.productCardShine} />
-              </TrackedLink>
+              </Link>
             </div>
           </div>
         </div>

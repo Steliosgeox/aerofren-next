@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import AeroTransitionSection from "@/components/AeroTransitionSection";
 import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
+import { useViewportHeightCssVar } from "@/lib/viewport";
 import { Button } from "@/components/ui/button";
 import {
   BUSINESS_PHONE_DISPLAY,
@@ -12,7 +13,6 @@ import {
   FOUNDING_YEAR,
   PRODUCT_COUNT,
 } from "@/lib/constants/aerofren";
-import { trackLeadEvent } from "@/lib/analytics";
 
 const NexusHero = dynamic(() => import("@/components/NexusHero"), {
   ssr: false,
@@ -47,6 +47,8 @@ export default function HomePageClient() {
     const cpuCores = navigatorInfo.hardwareConcurrency ?? 4;
     return deviceMemory <= 4 || cpuCores <= 4;
   });
+
+  useViewportHeightCssVar();
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -229,7 +231,7 @@ export default function HomePageClient() {
   }, { scope: contactRef, dependencies: [contactInView, reduceMotion, lowEndDevice] });
 
   return (
-    <>
+    <div className="homePage">
       {/* ============================================
           HERO SECTION - Three.js Nexus Metaballs
           ============================================ */}
@@ -302,17 +304,7 @@ export default function HomePageClient() {
             </p>
             <div className="contact__ctas">
               <Button asChild variant="glass-accent" size="hero">
-                <a
-                  href={BUSINESS_PHONE_HREF}
-                  onClick={() =>
-                    trackLeadEvent("phone_click", {
-                      location: "home_contact_card",
-                      page_type: "home",
-                    })
-                  }
-                >
-                  📞 {BUSINESS_PHONE_DISPLAY}
-                </a>
+                <a href={BUSINESS_PHONE_HREF}>📞 {BUSINESS_PHONE_DISPLAY}</a>
               </Button>
               <Button asChild variant="glass-secondary" size="hero">
                 <Link href="/contact">Φόρμα Επικοινωνίας</Link>
@@ -326,6 +318,11 @@ export default function HomePageClient() {
           INLINE STYLES (Scoped to this component)
           ============================================ */}
       <style jsx>{`
+        .homePage {
+          position: relative;
+          overflow-x: clip;
+        }
+
         /* ==== STATS (Zero Gravity Parallax) ==== */
         .stats {
           position: relative;
@@ -610,6 +607,6 @@ export default function HomePageClient() {
           }
         }
       `}</style>
-    </>
+    </div>
   );
 }

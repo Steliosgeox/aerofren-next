@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { ProductsPageContent } from "@/components/catalog/ProductsPageContent";
 
 describe("ProductsPageContent", () => {
-  it("renders canonical category links plus the curated showcase", () => {
+  it("renders the public product showcase layout", () => {
     render(<ProductsPageContent />);
 
     expect(
@@ -14,11 +14,9 @@ describe("ProductsPageContent", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /ρακόρ ταχυσύνδεσης/i }),
-    ).toHaveAttribute("href", "/products/push-in-fittings");
-    expect(
       screen.getByRole("button", { name: "ΕΠΕΞΕΡΓΑΣΙΑ ΝΕΡΟΥ" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/κατηγορίες προϊόντων/i)).toBeInTheDocument();
   });
 
   it("opens the selected product inside the detail rail", async () => {

@@ -1,8 +1,12 @@
 import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+
 import HorizontalGallery from "@/components/HorizontalGallery";
-import { catalogCategories } from "@/data/catalog-taxonomy";
+import {
+  getProductShowcaseCount,
+  productShowcaseNavigationItems,
+} from "@/data/product-showcase";
 
 vi.mock("next/link", () => ({
   default: ({
@@ -39,18 +43,29 @@ vi.mock("next/image", () => ({
 }));
 
 describe("HorizontalGallery", () => {
-  it("renders canonical category links and the CTA card", () => {
+  it("renders the restored showcase strip and CTA card", () => {
     render(<HorizontalGallery />);
 
-    for (const item of catalogCategories) {
+    expect(screen.getByText("Κατάλογος Προϊόντων")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /εξαρτήματα υψηλών προδιαγραφών/i,
+      }),
+    ).toBeInTheDocument();
+
+    for (const item of productShowcaseNavigationItems) {
       expect(screen.getByAltText(item.nameEl).closest("a")).toHaveAttribute(
         "href",
-        `/products/${item.slug}`,
+        item.href,
       );
     }
 
-    expect(screen.getByText(String(catalogCategories.length))).toBeInTheDocument();
-    expect(screen.getByText("SEO Κατηγορίες")).toBeInTheDocument();
-    expect(screen.getByText("Δείτε τον κατάλογο")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /δείτε τον κατάλογο/i }),
+    ).toHaveAttribute("href", "/products");
+    expect(
+      screen.getByText(String(getProductShowcaseCount())),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Κατηγορίες Προϊόντων")).toBeInTheDocument();
   });
 });
