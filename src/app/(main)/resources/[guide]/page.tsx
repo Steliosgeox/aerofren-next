@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { ArticleSchema } from "@/lib/schema/ArticleSchema";
 
 interface GuidePageProps {
@@ -168,6 +169,27 @@ const guides: Record<
   },
 };
 
+const relatedGuideLinks: Record<
+  string,
+  Array<{ href: string; label: string; type: "category" | "subcategory" }>
+> = {
+  "odigos-epilogis-rakor": [
+    { href: "/products/push-in-fittings", label: "Ρακόρ Ταχυσύνδεσης", type: "category" },
+    { href: "/products/thread-fittings", label: "Σπειρωτά Ρακόρ & Εξαρτήματα", type: "category" },
+    { href: "/products/push-in-fittings/exartimata-aeros", label: "Εξαρτήματα Αέρος", type: "subcategory" },
+  ],
+  "plastica-vs-oreichalkos-vs-anoxeidoto": [
+    { href: "/products/thread-fittings/mproutzina-taf", label: "Μπρούτζινα Ταφ", type: "subcategory" },
+    { href: "/products/hoses-pipes/solines-inox-thermou-aera", label: "Σωλήνες Inox Θερμού Αέρα", type: "subcategory" },
+    { href: "/products/thread-fittings", label: "Σπειρωτά Ρακόρ & Εξαρτήματα", type: "category" },
+  ],
+  "sxediasmos-pneumatikoy-kyklomatos": [
+    { href: "/products/push-in-fittings", label: "Ρακόρ Ταχυσύνδεσης", type: "category" },
+    { href: "/products/ball-valves", label: "Σφαιρικές Βάνες", type: "category" },
+    { href: "/products/push-in-fittings/goniakoi-odigoi", label: "Γωνιακοί Οδηγοί", type: "subcategory" },
+  ],
+};
+
 export async function generateStaticParams() {
   return Object.keys(guides).map((slug) => ({ guide: slug }));
 }
@@ -249,6 +271,33 @@ export default async function GuidePage({ params }: GuidePageProps) {
           return <p key={key} className="text-muted-foreground leading-relaxed">{line}</p>;
         })}
       </div>
+
+      {relatedGuideLinks[guideSlug]?.length ? (
+        <section className="mt-10 rounded-lg border p-6">
+          <h2 className="text-xl font-semibold mb-3">Σχετικές σελίδες προϊόντων</h2>
+          <p className="text-muted-foreground mb-4">
+            Συνδυάστε τον οδηγό με τις παρακάτω landing pages για πιο πρακτική συνέχεια στην έρευνά σας.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {relatedGuideLinks[guideSlug].map((item) => (
+              <TrackedLink
+                key={item.href}
+                className="rounded-md border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+                eventName={item.type === "category" ? "category_cta_click" : "subcategory_cta_click"}
+                eventParams={{
+                  location: "resource_guide",
+                  page_type: "resource_guide",
+                  category_slug: item.type === "category" ? item.href.replace("/products/", "") : item.href.split("/")[2],
+                  subcategory_slug: item.type === "subcategory" ? item.href.split("/")[3] : undefined,
+                }}
+                href={item.href}
+              >
+                {item.label}
+              </TrackedLink>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <p className="text-sm text-muted-foreground mt-12">
         Τελευταία ενημέρωση: Φεβρουάριος 2026

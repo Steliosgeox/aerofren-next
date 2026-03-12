@@ -1,6 +1,13 @@
 // src/app/(main)/faq/page.tsx
 import type { Metadata } from "next";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { FaqSchema } from "@/lib/schema/FaqSchema";
+import {
+  BUSINESS_ADDRESS_FULL_EL,
+  BUSINESS_EMAIL,
+  BUSINESS_PHONE_DISPLAY,
+  BUSINESS_WEEKDAY_HOURS_EL,
+} from "@/lib/constants/aerofren";
 
 export const metadata: Metadata = {
   title: "Συχνές Ερωτήσεις | AEROFREN",
@@ -47,7 +54,7 @@ const faqItems: Array<{ question: string; answer: string; lang: "el" | "en" }> =
   {
     lang: "el",
     question: "Πού βρίσκεται η AEROFREN και πώς μπορώ να επικοινωνήσω;",
-    answer: "Τα κεντρικά γραφεία και αποθήκη βρίσκονται στη διεύθυνση Χρυσοστόμου Σμύρνης 26, Μοσχάτο, Αθήνα (ΤΚ 18344). Τηλέφωνο: 210 3461645. Δευτέρα–Παρασκευή 08:00–17:00.",
+    answer: `Τα κεντρικά γραφεία και η αποθήκη βρίσκονται στη διεύθυνση ${BUSINESS_ADDRESS_FULL_EL}. Τηλέφωνο: ${BUSINESS_PHONE_DISPLAY}. Email: ${BUSINESS_EMAIL}. ${BUSINESS_WEEKDAY_HOURS_EL}.`,
   },
   {
     lang: "el",
@@ -102,6 +109,39 @@ export default function FaqPage() {
               <p className="text-muted-foreground leading-relaxed">{item.answer}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mb-12 rounded-lg border p-6">
+        <h2 className="text-xl font-semibold mb-3">Σχετικές κατηγορίες</h2>
+        <p className="text-muted-foreground mb-4">
+          Για τις πιο συχνές ερωτήσεις γύρω από ρακόρ, βάνες και επεξεργασία νερού, δείτε τις παρακάτω landing pages.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <TrackedLink
+            className="rounded-md border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+            eventName="category_cta_click"
+            eventParams={{ location: "faq_page", page_type: "faq", category_slug: "push-in-fittings" }}
+            href="/products/push-in-fittings"
+          >
+            Ρακόρ Ταχυσύνδεσης
+          </TrackedLink>
+          <TrackedLink
+            className="rounded-md border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+            eventName="category_cta_click"
+            eventParams={{ location: "faq_page", page_type: "faq", category_slug: "ball-valves" }}
+            href="/products/ball-valves"
+          >
+            Σφαιρικές Βάνες
+          </TrackedLink>
+          <TrackedLink
+            className="rounded-md border px-4 py-2 text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+            eventName="category_cta_click"
+            eventParams={{ location: "faq_page", page_type: "faq", category_slug: "water-filtration" }}
+            href="/products/water-filtration"
+          >
+            Φίλτρανση &amp; Επεξεργασία Νερού
+          </TrackedLink>
         </div>
       </section>
 

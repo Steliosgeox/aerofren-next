@@ -6,19 +6,19 @@ const readSource = (relativePath: string) =>
   readFileSync(path.join(process.cwd(), relativePath), "utf8");
 
 describe("product navigation regressions", () => {
-  it("rewires the header mega menu to the new product showcase data", () => {
+  it("rewires the header mega menu to the catalog taxonomy", () => {
     const source = readSource("src/components/Header.tsx");
 
-    expect(source).toContain("@/data/product-showcase");
-    expect(source).not.toContain('from "@/data/categories"');
-    expect(source).toContain("Προτεινόμενα προϊόντα");
+    expect(source).toContain("@/data/catalog-taxonomy");
+    expect(source).not.toContain("@/data/product-showcase");
+    expect(source).toContain("Κατηγορίες προϊόντων");
   });
 
-  it("removes old category query links from the homepage gallery", () => {
+  it("routes the homepage gallery through canonical category paths", () => {
     const source = readSource("src/components/HorizontalGallery.tsx");
 
-    expect(source).not.toMatch(/\/products\?category=/);
-    expect(source).toContain("@/data/product-showcase");
-    expect(source).not.toContain("ΚΑΤΗΓΟΡΙΕΣ ΠΡΟΪΟΝΤΩΝ");
+    expect(source).not.toContain("/products#");
+    expect(source).toContain("@/data/catalog-taxonomy");
+    expect(source).toContain("SEO Κατηγορίες");
   });
 });

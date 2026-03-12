@@ -479,7 +479,7 @@ Expected: Server starts with zero errors in terminal. Open `http://localhost:300
 
 **Step 3: Verify stats section parallax**
 
-Scroll to the 4 stats nodes (35+ Χρόνια, 10.000+ Προϊόντα, etc.). Each should move at different speeds as you scroll past. The existing manual parallax in `HomePageClient.tsx` drives this — it should work identically to before.
+Scroll to the 4 stats nodes (1980 Έτος Ίδρυσης, 10.000+ Προϊόντα, etc.). Each should move at different speeds as you scroll past. The existing manual parallax in `HomePageClient.tsx` drives this — it should work identically to before.
 
 **Step 4: Verify contact card entrance**
 

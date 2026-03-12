@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { ProductsPageContent } from "@/components/catalog/ProductsPageContent";
 
 describe("ProductsPageContent", () => {
-  it("renders the new public product showcase instead of a category grid", () => {
+  it("renders the public product showcase layout", () => {
     render(<ProductsPageContent />);
 
     expect(
@@ -16,7 +16,7 @@ describe("ProductsPageContent", () => {
     expect(
       screen.getByRole("button", { name: "ΕΠΕΞΕΡΓΑΣΙΑ ΝΕΡΟΥ" }),
     ).toBeInTheDocument();
-    expect(screen.queryByText(/κατηγορίες/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/κατηγορίες προϊόντων/i)).toBeInTheDocument();
   });
 
   it("opens the selected product inside the detail rail", async () => {

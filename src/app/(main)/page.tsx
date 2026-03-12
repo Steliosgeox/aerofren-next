@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import HomePageClient from "@/components/HomePageClient";
+import { FOUNDING_LABEL_EL, PRODUCT_COUNT } from "@/lib/constants/aerofren";
 
 export const metadata: Metadata = {
   title: "AEROFREN – Εξαρτήματα Νερού & Αέρα | B2B Προμηθευτής",
-  description: "Ηγέτης στα εξαρτήματα νερού και αέρα από το 1980. Καινοτόμες λύσεις για τον βιομηχανικό τομέα. 120.000+ προϊόντα, 45+ χρόνια εμπειρίας.",
+  description: `Ηγέτης στα εξαρτήματα νερού και αέρα ${FOUNDING_LABEL_EL.toLowerCase()}. Καινοτόμες λύσεις για τον βιομηχανικό τομέα. ${PRODUCT_COUNT} προϊόντα.`,
   alternates: {
     canonical: "https://aerofren.gr",
   },
@@ -12,6 +13,9 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main>
+      <h1 className="sr-only">
+        AEROFREN: εξαρτήματα νερού και αέρα για επαγγελματικές εφαρμογές
+      </h1>
       <HomePageClient />
     </main>
   );

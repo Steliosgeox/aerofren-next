@@ -1,0 +1,52 @@
+name: Αίτημα Νέας Λειτουργίας
+description: Έχεις ιδέα για κάτι νέο; Ακούμε!
+title: "[FEAT] "
+labels: ["enhancement"]
+assignees:
+  - Steliosgeox
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ευχαριστούμε για την πρότασή σου! Πριν ανοίξεις αίτημα,
+        κοίτα αν υπάρχει ήδη κάτι παρόμοιο.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Ποιο πρόβλημα λύνει αυτό;
+      description: Πες μας την ανάγκη ή το πόνο που θέλεις να απευθύνεις.
+      placeholder: "Θα ήθελα να μπορώ να... γιατί..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Προτεινόμενη Λύση
+      description: Πώς φαντάζεσαι ότι θα πρέπει να λειτουργεί;
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Εναλλακτικές που έχεις σκεφτεί
+      description: Έχεις εξετάσει άλλες λύσεις ή workarounds;
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Σημαντικότητα
+      options:
+        - 🔴 Κρίσιμο (blocking παραγωγικό πρόβλημα)
+        - 🟡 Σημαντικό (επηρεάζει την εμπειρία χρήστη)
+        - 🟢 Nice to have (βελτίωση)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Επιπλέον Πλαίσιο
+      description: Mockups, screenshots, links, οτιδήποτε βοηθάει.

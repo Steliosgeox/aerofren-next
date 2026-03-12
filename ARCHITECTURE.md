@@ -738,7 +738,15 @@ NEXT_PUBLIC_POSTHOG_KEY=
 
 ## License
 
-Proprietary - AEROFREN © 2026
+Ο κώδικας αυτού του project διανέμεται υπό [MIT License](../LICENSE).
+
+Copyright © 2026 Stylianos Georgoulis
+
+> ⚠️ **GSAP Premium Notice:** Τα plugins `ScrollSmoother`, `SplitText`,
+> `ScrambleText`, `CustomEase`, `CustomBounce`, `Draggable`, `InertiaPlugin`,
+> `Observer`, `MotionPathPlugin` είναι εμπορικές άδειες GSAP Club GreenSock
+> και **δεν καλύπτονται** από την MIT άδεια. Απαιτείται ξεχωριστή αγορά από
+> [gsap.com/pricing](https://gsap.com/pricing/).
 
 ---
 

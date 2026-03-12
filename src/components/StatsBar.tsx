@@ -1,17 +1,18 @@
 "use client";
 
 import { Calendar, Package, Users, Truck } from "lucide-react";
+import { FOUNDING_LABEL_EL, PRODUCT_COUNT } from "@/lib/constants/aerofren";
 
 const stats = [
   {
     icon: <Calendar className="w-6 h-6" />,
-    value: "45+",
-    label: "Χρόνια Εμπειρίας",
-    description: "Από το 1990",
+    value: "1980",
+    label: "Έτος Ίδρυσης",
+    description: FOUNDING_LABEL_EL,
   },
   {
     icon: <Package className="w-6 h-6" />,
-    value: "10.000+",
+    value: PRODUCT_COUNT,
     label: "Προϊόντα σε απόθεμα",
     description: "Άμεσα διαθέσιμα",
   },

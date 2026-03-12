@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { RESOURCE_GUIDE_SLUGS } from "@/lib/constants/aerofren";
+import { catalogCategories } from "@/data/catalog-taxonomy";
+import { RESOURCE_GUIDE_SLUGS, SITE_URL } from "@/lib/constants/aerofren";
 
 /**
  * Dynamic sitemap for AEROFREN
@@ -11,83 +12,98 @@ const CATALOG_LAST_UPDATED = new Date("2026-02-27");  // Update when catalog cha
 const SITE_LAUNCHED = new Date("2025-01-01");         // Approximate launch date
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = "https://aerofren.gr";
+    const catalogPages: MetadataRoute.Sitemap = [
+        ...catalogCategories.map((category) => ({
+            url: `${SITE_URL}/products/${category.slug}`,
+            lastModified: CATALOG_LAST_UPDATED,
+            changeFrequency: "weekly" as const,
+            priority: 0.85,
+        })),
+        ...catalogCategories.flatMap((category) =>
+            category.subcategories.map((subcategory) => ({
+                url: `${SITE_URL}${subcategory.canonicalPath}`,
+                lastModified: CATALOG_LAST_UPDATED,
+                changeFrequency: "weekly" as const,
+                priority: 0.75,
+            })),
+        ),
+    ];
 
     // Static pages
     const staticPages: MetadataRoute.Sitemap = [
         {
-            url: baseUrl,
+            url: SITE_URL,
             lastModified: CATALOG_LAST_UPDATED,
             changeFrequency: "weekly",
             priority: 1.0,
         },
         {
-            url: `${baseUrl}/about`,
+            url: `${SITE_URL}/about`,
             lastModified: SITE_LAUNCHED,
             changeFrequency: "monthly",
             priority: 0.7,
         },
         {
-            url: `${baseUrl}/contact`,
+            url: `${SITE_URL}/contact`,
             lastModified: SITE_LAUNCHED,
             changeFrequency: "monthly",
             priority: 0.6,
         },
         {
-            url: `${baseUrl}/privacy`,
+            url: `${SITE_URL}/privacy`,
             lastModified: new Date("2026-02-22"),
             changeFrequency: "yearly",
             priority: 0.3,
         },
         {
-            url: `${baseUrl}/terms`,
+            url: `${SITE_URL}/terms`,
             lastModified: new Date("2026-02-22"),
             changeFrequency: "yearly",
             priority: 0.3,
         },
         {
-            url: `${baseUrl}/products`,
+            url: `${SITE_URL}/products`,
             lastModified: CATALOG_LAST_UPDATED,
             changeFrequency: "weekly",
             priority: 0.9,
         },
         {
-            url: `${baseUrl}/faq`,
+            url: `${SITE_URL}/faq`,
             lastModified: new Date("2026-02-27"),
             changeFrequency: "monthly",
             priority: 0.8,
         },
         {
-            url: `${baseUrl}/glossary`,
+            url: `${SITE_URL}/glossary`,
             lastModified: new Date("2026-02-27"),
             changeFrequency: "monthly",
             priority: 0.8,
         },
         {
-            url: `${baseUrl}/resources`,
+            url: `${SITE_URL}/resources`,
             lastModified: new Date("2026-02-27"),
             changeFrequency: "monthly",
             priority: 0.8,
         },
         ...RESOURCE_GUIDE_SLUGS.map((slug) => ({
-            url: `${baseUrl}/resources/${slug}`,
+            url: `${SITE_URL}/resources/${slug}`,
             lastModified: new Date("2026-02-27"),
             changeFrequency: "monthly" as const,
             priority: 0.7,
         })),
         {
-            url: `${baseUrl}/alternatives`,
+            url: `${SITE_URL}/alternatives`,
             lastModified: new Date("2026-02-27"),
             changeFrequency: "monthly",
             priority: 0.8,
         },
         {
-            url: `${baseUrl}/industries`,
+            url: `${SITE_URL}/industries`,
             lastModified: new Date("2026-02-27"),
             changeFrequency: "monthly",
             priority: 0.7,
         },
     ];
 
-    return staticPages;
+    return [...staticPages, ...catalogPages];
 }

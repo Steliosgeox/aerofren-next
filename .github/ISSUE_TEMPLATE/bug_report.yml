@@ -1,0 +1,80 @@
+name: Αναφορά Σφάλματος
+description: Βρήκες κάτι που δεν δουλεύει σωστά; Πες μας!
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees:
+  - Steliosgeox
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ευχαριστούμε που αφιερώνεις χρόνο για να αναφέρεις το πρόβλημα!
+        Συμπλήρωσε τα παρακάτω πεδία όσο πιο λεπτομερώς μπορείς.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Περιγραφή Σφάλματος
+      description: Τι ακριβώς συμβαίνει; Τι περίμενες να δεις;
+      placeholder: "Περίγραψε σύντομα και ξεκάθαρα τι δεν πάει καλά..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Βήματα Αναπαραγωγής
+      description: Πώς μπορούμε να το αναπαράγουμε;
+      placeholder: |
+        1. Πήγα στη σελίδα '...'
+        2. Έκανα κλικ στο '...'
+        3. Κύλησα στο σημείο '...'
+        4. Εμφανίστηκε το σφάλμα
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Αναμενόμενη Συμπεριφορά
+      description: Τι θα έπρεπε να συμβεί;
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Video
+      description: Αν έχεις, πρόσθεσε screenshots ή video recording. Σέρνε και άσε τα αρχεία εδώ.
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      multiple: true
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Άλλος
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Συσκευή
+      options:
+        - Desktop
+        - Mobile (iOS)
+        - Mobile (Android)
+        - Tablet
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Επιπλέον Πλαίσιο
+      description: Οτιδήποτε άλλο νομίζεις ότι μπορεί να βοηθήσει.

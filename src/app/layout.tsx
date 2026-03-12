@@ -11,8 +11,16 @@ import ErrorBoundary from "@/components/ui/ErrorBoundary"
 import FpsOverlay from "@/components/FpsOverlay"
 import PageVisibilityHandler from "@/components/PageVisibilityHandler"
 import { CookieConsentProvider } from "@/components/cookies/CookieConsentProvider"
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics"
 import { OrganizationSchema } from "@/lib/schema/OrganizationSchema"
 import { WebsiteSchema } from "@/lib/schema/WebsiteSchema"
+import {
+  BUSINESS_ADDRESS_CITY_LINE_EL,
+  BUSINESS_NAME,
+  FOUNDING_LABEL_EL,
+  PRODUCT_COUNT,
+  SITE_URL,
+} from "@/lib/constants/aerofren"
 
 const ttNorms = localFont({
   src: "../fonts/TTNormsProVariable.ttf",
@@ -44,13 +52,13 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://aerofren.gr"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "AEROFREN – Εξαρτήματα Νερού & Αέρα | B2B Προμηθευτής",
-    template: "%s | AEROFREN",
+    default: `${BUSINESS_NAME} – Εξαρτήματα Νερού & Αέρα | B2B Προμηθευτής`,
+    template: `%s | ${BUSINESS_NAME}`,
   },
   description:
-    "Ο αποκλειστικός B2B συνεργάτης του επαγγελματία σε εξαρτήματα νερού, φίλτρανσης και πνευματικών συστημάτων. 45+ χρόνια εμπειρίας, 10.000+ προϊόντα. Μοσχάτο, Αθήνα.",
+    `Ο αποκλειστικός B2B συνεργάτης του επαγγελματία σε εξαρτήματα νερού, φίλτρανσης και πνευματικών συστημάτων. ${FOUNDING_LABEL_EL}, ${PRODUCT_COUNT} προϊόντα. ${BUSINESS_ADDRESS_CITY_LINE_EL}.`,
   keywords: [
     "εξαρτήματα νερού",
     "φίλτρα νερού",
@@ -70,18 +78,14 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  alternates: {
-    languages: {
-      "el": "https://aerofren.gr",
-      "en": "https://aerofren.gr",
-      "x-default": "https://aerofren.gr",
-    },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
   openGraph: {
-    title: "AEROFREN – Εξαρτήματα Νερού & Αέρα",
-    description: "Ο κορυφαίος B2B προμηθευτής εξαρτημάτων νερού και αέρα στην Ελλάδα. 45+ χρόνια εμπειρίας.",
-    url: "https://aerofren.gr",
-    siteName: "AEROFREN",
+    title: `${BUSINESS_NAME} – Εξαρτήματα Νερού & Αέρα`,
+    description: `Ο κορυφαίος B2B προμηθευτής εξαρτημάτων νερού και αέρα στην Ελλάδα. ${FOUNDING_LABEL_EL}.`,
+    url: SITE_URL,
+    siteName: BUSINESS_NAME,
     locale: "el_GR",
     type: "website",
     images: [
@@ -95,7 +99,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AEROFREN – Εξαρτήματα Νερού & Αέρα",
+    title: `${BUSINESS_NAME} – Εξαρτήματα Νερού & Αέρα`,
     description: "Ο κορυφαίος B2B προμηθευτής εξαρτημάτων νερού και αέρα στην Ελλάδα.",
     images: ["/images/hero-fittings.jpg"],
   },
@@ -132,6 +136,7 @@ export default async function RootLayout({
             <AuthWrapper>
               <StyledComponentsRegistry nonce={nonce}>
                 <CookieConsentProvider>
+                  <GoogleAnalytics />
                   {children}
                   <FpsOverlay />
                   <PageVisibilityHandler />

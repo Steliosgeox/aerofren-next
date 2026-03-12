@@ -7,6 +7,12 @@ import AeroTransitionSection from "@/components/AeroTransitionSection";
 import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
 import { useViewportHeightCssVar } from "@/lib/viewport";
 import { Button } from "@/components/ui/button";
+import {
+  BUSINESS_PHONE_DISPLAY,
+  BUSINESS_PHONE_HREF,
+  FOUNDING_YEAR,
+  PRODUCT_COUNT,
+} from "@/lib/constants/aerofren";
 
 const NexusHero = dynamic(() => import("@/components/NexusHero"), {
   ssr: false,
@@ -22,8 +28,8 @@ const ScrollAnimation = dynamic(() => import("@/components/ScrollAnimation"), {
 });
 
 const STATS_DATA = [
-  { value: "45+", label: "Χρόνια Εμπειρίας", speed: 0.8 },
-  { value: "10.000+", label: "Προϊόντα σε Stock", speed: 1.5 },
+  { value: String(FOUNDING_YEAR), label: "Έτος Ίδρυσης", speed: 0.8 },
+  { value: PRODUCT_COUNT, label: "Προϊόντα σε Stock", speed: 1.5 },
   { value: "500+", label: "Ενεργοί Συνεργάτες", speed: 1.2 },
   { value: "24ωρη", label: "Αποστολή", speed: 1.8 },
 ] as const;
@@ -298,7 +304,7 @@ export default function HomePageClient() {
             </p>
             <div className="contact__ctas">
               <Button asChild variant="glass-accent" size="hero">
-                <a href="tel:2103461645">📞 210 3461645</a>
+                <a href={BUSINESS_PHONE_HREF}>📞 {BUSINESS_PHONE_DISPLAY}</a>
               </Button>
               <Button asChild variant="glass-secondary" size="hero">
                 <Link href="/contact">Φόρμα Επικοινωνίας</Link>

@@ -12,6 +12,10 @@ import {
   productShowcaseItems,
   type ProductShowcaseItem,
 } from "@/data/product-showcase";
+import {
+  BUSINESS_EMAIL_HREF,
+  BUSINESS_PHONE_HREF,
+} from "@/lib/constants/aerofren";
 
 export function ProductsPageContent() {
   const [selectedProduct, setSelectedProduct] =
@@ -80,7 +84,7 @@ export function ProductsPageContent() {
                 <div className="flex flex-wrap gap-3">
                   <a
                     className="inline-flex min-h-11 items-center gap-2 border border-[color-mix(in_srgb,var(--theme-accent)_28%,transparent)] px-4 py-2 text-sm font-semibold text-[var(--theme-text)] transition-[border-color,background] duration-200 hover:border-[color-mix(in_srgb,var(--theme-accent)_46%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-accent)_14%,transparent)]"
-                    href="tel:2103461645"
+                    href={BUSINESS_PHONE_HREF}
                   >
                     <Phone className="h-4 w-4 text-[var(--theme-accent)]" />
                     Κλήση
@@ -198,7 +202,7 @@ export function ProductsPageContent() {
           </div>
           <a
             className="inline-flex min-h-12 items-center justify-center border border-[color-mix(in_srgb,var(--theme-accent)_26%,transparent)] bg-[color-mix(in_srgb,var(--theme-accent)_12%,transparent)] px-5 text-sm font-semibold text-[var(--theme-text)] transition-[border-color,background] duration-200 hover:border-[color-mix(in_srgb,var(--theme-accent)_44%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-accent)_18%,transparent)]"
-            href="mailto:aerofren@gmail.com"
+            href={BUSINESS_EMAIL_HREF}
           >
             Email
           </a>

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ContactFormState } from "@/components/contact/types";
 import { INITIAL_FORM_DATA } from "@/components/contact/constants";
+import { trackLeadEvent } from "@/lib/analytics";
 
 export function ContactFormPanel() {
   const [formData, setFormData] = useState<ContactFormState>(INITIAL_FORM_DATA);
@@ -72,6 +73,10 @@ export function ContactFormPanel() {
       }
 
       setIsSubmitted(true);
+      trackLeadEvent("contact_form_submit", {
+        location: "contact_form_panel",
+        page_type: "contact",
+      });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Αποτυχία αποστολής. Δοκιμάστε ξανά.");
     } finally {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLenis } from "lenis/react";
 import { ArrowUpRight, Mail, Phone, UserRound, X } from "lucide-react";
 
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import type { ProductShowcaseItem } from "@/data/product-showcase";
 
 interface ProductDetailRailProps {
@@ -178,8 +179,14 @@ export function ProductDetailRail({
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
-                  <a
+                  <TrackedLink
                     className="group inline-flex min-h-16 flex-col items-start justify-between gap-4 border border-[color-mix(in_srgb,var(--theme-accent)_26%,transparent)] bg-[color-mix(in_srgb,var(--theme-accent)_14%,transparent)] px-4 py-4 text-left transition-[transform,border-color,background] duration-200 hover:-translate-y-[1px] hover:border-[color-mix(in_srgb,var(--theme-accent)_42%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-accent)_20%,transparent)]"
+                    eventName="phone_click"
+                    eventParams={{
+                      location: "product_detail_rail",
+                      page_type: "products_hub",
+                      subcategory_slug: product.slug,
+                    }}
                     href="tel:2103461645"
                   >
                     <span className="inline-flex items-start gap-3">
@@ -194,10 +201,16 @@ export function ProductDetailRail({
                       </span>
                     </span>
                     <ArrowUpRight className="h-4 w-4 text-[var(--theme-accent)] transition-transform duration-200 group-hover:translate-x-[1px] group-hover:-translate-y-[1px]" />
-                  </a>
+                  </TrackedLink>
 
-                  <a
+                  <TrackedLink
                     className="group inline-flex min-h-16 flex-col items-start justify-between gap-4 border border-[var(--theme-glass-border)] bg-[color-mix(in_srgb,var(--theme-glass-bg)_74%,transparent)] px-4 py-4 text-left transition-[transform,border-color,background] duration-200 hover:-translate-y-[1px] hover:border-[color-mix(in_srgb,var(--theme-accent)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_92%,transparent)]"
+                    eventName="email_click"
+                    eventParams={{
+                      location: "product_detail_rail",
+                      page_type: "products_hub",
+                      subcategory_slug: product.slug,
+                    }}
                     href="mailto:aerofren@gmail.com"
                   >
                     <span className="inline-flex items-start gap-3">
@@ -212,10 +225,16 @@ export function ProductDetailRail({
                       </span>
                     </span>
                     <ArrowUpRight className="h-4 w-4 text-[var(--theme-accent)] transition-transform duration-200 group-hover:translate-x-[1px] group-hover:-translate-y-[1px]" />
-                  </a>
+                  </TrackedLink>
 
-                  <Link
+                  <TrackedLink
                     className="group inline-flex min-h-16 flex-col items-start justify-between gap-4 border border-[var(--theme-glass-border)] bg-transparent px-4 py-4 text-left transition-[transform,border-color,background] duration-200 hover:-translate-y-[1px] hover:border-[color-mix(in_srgb,var(--theme-accent)_28%,transparent)] hover:bg-[color-mix(in_srgb,var(--theme-glass-bg)_58%,transparent)]"
+                    eventName="chat_signup_click"
+                    eventParams={{
+                      location: "product_detail_rail",
+                      page_type: "products_hub",
+                      subcategory_slug: product.slug,
+                    }}
                     href="/signup"
                   >
                     <span className="inline-flex items-start gap-3">
@@ -230,7 +249,7 @@ export function ProductDetailRail({
                       </span>
                     </span>
                     <ArrowUpRight className="h-4 w-4 text-[var(--theme-accent)] transition-transform duration-200 group-hover:translate-x-[1px] group-hover:-translate-y-[1px]" />
-                  </Link>
+                  </TrackedLink>
                 </div>
               </section>
             </div>

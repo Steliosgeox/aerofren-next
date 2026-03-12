@@ -1,6 +1,7 @@
 'use client';
 
 import styles from './AboutPhilosophy.module.css';
+import { FOUNDING_LABEL_EL } from "@/lib/constants/aerofren";
 
 /**
  * AboutPhilosophy Component
@@ -77,7 +78,7 @@ export default function AboutPhilosophy() {
 
                 <section className={`${styles.scrollSection} ${styles.s1}`}>
                     <p className={styles.focusText}>Δεν προμηθεύουμε απλώς εξαρτήματα. Παραδίδουμε ακρίβεια.</p>
-                    <p className={styles.description}>Από το 1990, η AEROFREN είναι ο αξιόπιστος B2B συνεργάτης για επαγγελματίες που απαιτούν τελειότητα στα πνευματικά και υδραυλικά εξαρτήματα.</p>
+                    <p className={styles.description}>{FOUNDING_LABEL_EL}, η AEROFREN είναι ο αξιόπιστος B2B συνεργάτης για επαγγελματίες που απαιτούν τελειότητα στα πνευματικά και υδραυλικά εξαρτήματα.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s2}`}>
@@ -97,7 +98,7 @@ export default function AboutPhilosophy() {
 
                 <section className={`${styles.scrollSection} ${styles.s5}`}>
                     <p className={styles.focusText}>Η τεχνογνωσία είναι ο κινητήριος μοχλός.</p>
-                    <p className={styles.description}>45+ χρόνια τεχνικής γνώσης στη διάθεσή σας. Δεν πουλάμε απλώς προϊόντα — προσφέρουμε λύσεις, καθοδήγηση και υποστήριξη που κάνουν τη διαφορά.</p>
+                    <p className={styles.description}>Τεχνική γνώση με συνέπεια από το 1980. Δεν πουλάμε απλώς προϊόντα — προσφέρουμε λύσεις, καθοδήγηση και υποστήριξη που κάνουν τη διαφορά.</p>
                 </section>
 
                 <section className={`${styles.scrollSection} ${styles.s6}`}>

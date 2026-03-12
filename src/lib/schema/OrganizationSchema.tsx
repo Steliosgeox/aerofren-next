@@ -1,4 +1,21 @@
-import { FOUNDING_YEAR, ORGANIZATION_ID, SITE_URL, YEARS_OF_EXPERIENCE, PRODUCT_COUNT } from "@/lib/constants/aerofren";
+import {
+  BUSINESS_ADDRESS_COUNTRY,
+  BUSINESS_ADDRESS_LOCALITY,
+  BUSINESS_ADDRESS_POSTAL_CODE,
+  BUSINESS_ADDRESS_REGION,
+  BUSINESS_ADDRESS_STREET,
+  BUSINESS_EMAIL,
+  BUSINESS_HOURS_CLOSE,
+  BUSINESS_HOURS_OPEN,
+  BUSINESS_NAME,
+  BUSINESS_PHONE_E164,
+  FOUNDING_LABEL_EL,
+  FOUNDING_YEAR,
+  LOGO_URL,
+  ORGANIZATION_ID,
+  PRODUCT_COUNT,
+  SITE_URL,
+} from "@/lib/constants/aerofren";
 
 export function OrganizationSchema({ nonce }: { nonce?: string | null } = {}) {
   const schema = {
@@ -7,25 +24,25 @@ export function OrganizationSchema({ nonce }: { nonce?: string | null } = {}) {
       {
         "@type": ["Organization", "LocalBusiness"],
         "@id": ORGANIZATION_ID,
-        "name": "AEROFREN",
+        "name": BUSINESS_NAME,
         "url": SITE_URL,
         "logo": {
           "@type": "ImageObject",
-          "url": `${SITE_URL}/images/logo-light.webp`,
+          "url": LOGO_URL,
           "width": 200,
           "height": 60,
         },
-        "description": `B2B προμηθευτής πνευματικών εξαρτημάτων και συστημάτων νερού από το ${FOUNDING_YEAR}. ${YEARS_OF_EXPERIENCE}+ χρόνια εμπειρίας, ${PRODUCT_COUNT} προϊόντα.`,
+        "description": `B2B προμηθευτής πνευματικών εξαρτημάτων και συστημάτων νερού, ${FOUNDING_LABEL_EL.toLowerCase()}, με γκάμα άνω των ${PRODUCT_COUNT} προϊόντων.`,
         "foundingDate": String(FOUNDING_YEAR),
-        "telephone": "+302103461645",
-        "email": "aerofren@gmail.com",
+        "telephone": BUSINESS_PHONE_E164,
+        "email": BUSINESS_EMAIL,
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Χρυσοστόμου Σμύρνης 26",
-          "addressLocality": "Μοσχάτο",
-          "addressRegion": "Αττική",
-          "postalCode": "18344",
-          "addressCountry": "GR",
+          "streetAddress": BUSINESS_ADDRESS_STREET,
+          "addressLocality": BUSINESS_ADDRESS_LOCALITY,
+          "addressRegion": BUSINESS_ADDRESS_REGION,
+          "postalCode": BUSINESS_ADDRESS_POSTAL_CODE,
+          "addressCountry": BUSINESS_ADDRESS_COUNTRY,
         },
         "geo": {
           "@type": "GeoCoordinates",
@@ -36,8 +53,8 @@ export function OrganizationSchema({ nonce }: { nonce?: string | null } = {}) {
           {
             "@type": "OpeningHoursSpecification",
             "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            "opens": "08:00",
-            "closes": "17:00",
+            "opens": BUSINESS_HOURS_OPEN,
+            "closes": BUSINESS_HOURS_CLOSE,
           },
         ],
         "areaServed": [
@@ -52,14 +69,6 @@ export function OrganizationSchema({ nonce }: { nonce?: string | null } = {}) {
           "Compression Fittings",
           "Flow Control Valves",
           "Air Preparation Units",
-        ],
-        "numberOfEmployees": {
-          "@type": "QuantitativeValue",
-          "minValue": 10,
-          "maxValue": 50,
-        },
-        "sameAs": [
-          "https://www.linkedin.com/company/aerofren",
         ],
       },
     ],
