@@ -26,4 +26,13 @@ describe('chat route incident contract', () => {
         expect(source).toMatch(/ζήτησε προώθηση σε εκπρόσωπο/);
         expect(source).toMatch(/FieldValue\.increment\(1\)/);
     });
+
+    it('loads chat history without relying on a composite Firestore index', () => {
+        const source = readSource('src/app/(main)/api/chat/history/route.ts');
+
+        expect(source).toMatch(/collection\('chatMessages'\)/);
+        expect(source).toMatch(/where\('sessionId', '==', sessionId\)/);
+        expect(source).not.toMatch(/orderBy\('timestamp', 'desc'\)/);
+        expect(source).toMatch(/sortedDocs/);
+    });
 });
