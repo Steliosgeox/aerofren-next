@@ -18,4 +18,12 @@ describe('chat route incident contract', () => {
         expect(source).toMatch(/collection\('chatMessages'\)/);
         expect(source).toMatch(/collection\('chatSessions'\)/);
     });
+
+    it('seeds a chat session when escalation happens before prior history exists', () => {
+        const source = readSource('src/app/(main)/api/chat/escalate/route.ts');
+
+        expect(source).toMatch(/messagesSnapshot\.empty/);
+        expect(source).toMatch(/ζήτησε προώθηση σε εκπρόσωπο/);
+        expect(source).toMatch(/FieldValue\.increment\(1\)/);
+    });
 });
