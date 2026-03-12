@@ -11,7 +11,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import * as z from 'zod';
-import { Timestamp } from 'firebase-admin/firestore';
 import { checkRateLimit, getClientIP, RATE_LIMITS } from '@/lib/rate-limit';
 import {
     verifyIdToken,
@@ -109,27 +108,46 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Query latest messages first for pagination
-        let query = db
+        // Keep chat history resilient in production without requiring a
+        // composite Firestore index for (sessionId, timestamp, __name__).
+        const historySnapshot = await db
             .collection('chatMessages')
             .where('sessionId', '==', sessionId)
-            .orderBy('timestamp', 'desc')
-            .orderBy('__name__', 'desc')
-            .limit(limit + 1);
+            .get();
 
+        const sortedDocs = historySnapshot.docs
+            .slice()
+            .sort((left, right) => {
+                const leftMillis = left.data().timestamp?.toMillis?.() ?? 0;
+                const rightMillis = right.data().timestamp?.toMillis?.() ?? 0;
+
+                if (leftMillis !== rightMillis) {
+                    return rightMillis - leftMillis;
+                }
+
+                return right.id.localeCompare(left.id);
+            });
+
+        let filteredDocs = sortedDocs;
         if (cursor) {
             const [tsPart, ...idParts] = cursor.split('_');
             const docId = idParts.join('_');
             const tsMillis = Number(tsPart);
+
             if (docId && Number.isFinite(tsMillis)) {
-                query = query.startAfter(Timestamp.fromMillis(tsMillis), docId);
+                filteredDocs = sortedDocs.filter((doc) => {
+                    const docMillis = doc.data().timestamp?.toMillis?.() ?? 0;
+
+                    if (docMillis < tsMillis) return true;
+                    if (docMillis > tsMillis) return false;
+
+                    return doc.id.localeCompare(docId) < 0;
+                });
             }
         }
 
-        const historySnapshot = await query.get();
-        const docs = historySnapshot.docs;
-        const hasMore = docs.length > limit;
-        const pageDocs = hasMore ? docs.slice(0, limit) : docs;
+        const hasMore = filteredDocs.length > limit;
+        const pageDocs = filteredDocs.slice(0, limit);
 
         // If no messages found, return empty (don't reveal if session exists)
         if (pageDocs.length === 0) {
