@@ -5,7 +5,7 @@
 
 "use client";
 
-import { Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -66,6 +66,13 @@ const QUICK_REPLIES = [
 
 const SESSIONS_PAGE_SIZE = 40;
 const HISTORY_PAGE_SIZE = 50;
+const SEARCH_DEBOUNCE_MS = 300;
+const WORKSPACE_TABS: Array<{ id: WorkspaceTab; label: string }> = [
+  { id: "open", label: "×'×«×¨×ûØÎØ\"×ðØ'" },
+  { id: "in_progress", label: "×œ×æ ×æ×ó×ð×¯×û×ó×ú" },
+  { id: "resolved", label: "×Y×¯×¨×§×¯×úØ?Ø%×¬×ð×«×æØ'" },
+  { id: "all", label: "×O×¯×æØ'" },
+];
 
 function WorkspaceStatusBadge({ status }: { status?: ChatEscalationStatus }) {
   if (!status) return null;
@@ -135,15 +142,18 @@ function ChatsPageContent() {
   const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
   const [statusTab, setStatusTab] = useState<WorkspaceTab>("open");
   const [searchQuery, setSearchQuery] = useState("");
-  const deferredSearch = useDeferredValue(searchQuery.trim());
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [needsReplyOnly, setNeedsReplyOnly] = useState(false);
   const [replyDraft, setReplyDraft] = useState("");
   const [isSendingReply, setIsSendingReply] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [authError, setAuthError] = useState(false);
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const threadScrollerRef = useRef<HTMLDivElement>(null);
   const previousScrollHeightRef = useRef<number | null>(null);
+  const shouldScrollToBottomRef = useRef(false);
 
   useEffect(() => {
     const sessionParam = searchParams.get("session");
@@ -157,6 +167,14 @@ function ChatsPageContent() {
     textarea.style.height = `${Math.min(textarea.scrollHeight, 220)}px`;
   }, [replyDraft]);
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   const currentStatusFilter = useMemo<AdminChatStatusFilter>(() => {
     if (statusTab === "open") return "open";
     if (statusTab === "in_progress") return "in_progress";
@@ -164,7 +182,7 @@ function ChatsPageContent() {
     return "all";
   }, [statusTab]);
 
-  const needsReply = statusTab === "open";
+  const needsReply = needsReplyOnly;
 
   const applySessionPatch = useCallback((sessionId: string, patch: Partial<AdminChatSession>) => {
     setSessions((prev) => prev.map((session) => (session.sessionId === sessionId ? { ...session, ...patch } : session)));
@@ -178,7 +196,7 @@ function ChatsPageContent() {
       userEmail: threadSessionMeta.userEmail,
       userName: threadSessionMeta.userName,
       userPhotoURL: threadSessionMeta.userPhotoURL,
-      messageCount: messages.length,
+      messageCount: 0,
       lastMessage: threadSessionMeta.lastMessageAt ?? new Date().toISOString(),
       adminUnreadCount: 0,
       customerUnreadCount: threadSessionMeta.customerUnreadCount ?? 0,
@@ -186,7 +204,7 @@ function ChatsPageContent() {
       isEscalated: Boolean(threadSessionMeta.escalationStatus),
       escalationStatus: threadSessionMeta.escalationStatus,
     } : null);
-  }, [messages.length, selectedSessionId, sessions, threadSessionMeta]);
+  }, [selectedSessionId, sessions, threadSessionMeta]);
 
   const canReply = Boolean(currentConversation && currentConversation.userId && isOpenEscalationStatus(currentConversation.escalationStatus));
 
@@ -201,7 +219,7 @@ function ChatsPageContent() {
         limit: SESSIONS_PAGE_SIZE,
         status: currentStatusFilter,
         needsReply,
-        search: deferredSearch || undefined,
+        search: debouncedSearch || undefined,
       });
       setSessions((prev) => (append ? [...prev, ...data.items] : data.items));
       setSessionsCursor(data.nextCursor);
@@ -216,7 +234,7 @@ function ChatsPageContent() {
       if (append) setIsLoadingMoreSessions(false);
       else setIsLoadingSessions(false);
     }
-  }, [currentStatusFilter, deferredSearch, needsReply, user]);
+  }, [currentStatusFilter, debouncedSearch, needsReply, user]);
 
   useEffect(() => { if (user) void fetchSessions(); }, [fetchSessions, user]);
 
@@ -227,6 +245,7 @@ function ChatsPageContent() {
       setIsLoadingOlderMessages(true);
       previousScrollHeightRef.current = threadScrollerRef.current?.scrollHeight ?? null;
     } else {
+      shouldScrollToBottomRef.current = true;
       setIsLoadingMessages(true);
       setMessages([]);
       setMessagesCursor(null);
@@ -238,10 +257,6 @@ function ChatsPageContent() {
       setThreadSessionMeta(data.session);
       setMessagesCursor(data.nextCursor);
       setHasMoreMessages(Boolean(data.nextCursor));
-      if ((currentConversation?.adminUnreadCount ?? 0) > 0) {
-        await markAdminChatRead(user, sessionId);
-        applySessionPatch(sessionId, { adminUnreadCount: 0 });
-      }
       setErrorMessage(null);
       setAuthError(false);
     } catch (error) {
@@ -252,7 +267,7 @@ function ChatsPageContent() {
       if (append) setIsLoadingOlderMessages(false);
       else setIsLoadingMessages(false);
     }
-  }, [applySessionPatch, currentConversation?.adminUnreadCount, user]);
+  }, [user]);
 
   useEffect(() => {
     if (selectedSessionId && user) void fetchMessages(selectedSessionId);
@@ -262,6 +277,31 @@ function ChatsPageContent() {
       setReplyDraft("");
     }
   }, [fetchMessages, selectedSessionId, user]);
+
+  useEffect(() => {
+    if (!selectedSessionId || !user || isLoadingMessages || messages.length === 0) return;
+
+    const unreadCount =
+      sessions.find((session) => session.sessionId === selectedSessionId)?.adminUnreadCount ?? 0;
+
+    if (unreadCount <= 0) return;
+
+    let cancelled = false;
+
+    void markAdminChatRead(user, selectedSessionId)
+      .then(() => {
+        if (!cancelled) {
+          applySessionPatch(selectedSessionId, { adminUnreadCount: 0 });
+        }
+      })
+      .catch((error) => {
+        console.warn("[admin chats] failed to mark session as read", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applySessionPatch, isLoadingMessages, messages.length, selectedSessionId, sessions, user]);
 
   useEffect(() => {
     if (!selectedSessionId) return;
@@ -282,14 +322,33 @@ function ChatsPageContent() {
   }, [replyDraft, selectedSessionId]);
 
   useEffect(() => {
-    if (!isLoadingOlderMessages) return;
+    if (isLoadingOlderMessages) return;
+
     requestAnimationFrame(() => {
       const scroller = threadScrollerRef.current;
-      if (!scroller || previousScrollHeightRef.current === null) return;
-      scroller.scrollTop = scroller.scrollHeight - previousScrollHeightRef.current;
-      previousScrollHeightRef.current = null;
+      if (!scroller) return;
+
+      if (previousScrollHeightRef.current !== null) {
+        scroller.scrollTop = scroller.scrollHeight - previousScrollHeightRef.current;
+        previousScrollHeightRef.current = null;
+        return;
+      }
+
+      if (!isLoadingMessages && shouldScrollToBottomRef.current) {
+        scroller.scrollTop = scroller.scrollHeight;
+        shouldScrollToBottomRef.current = false;
+      }
     });
-  }, [isLoadingOlderMessages, messages]);
+  }, [isLoadingMessages, isLoadingOlderMessages, messages]);
+
+  const handleTabChange = useCallback((tab: WorkspaceTab) => {
+    setStatusTab(tab);
+    setSelectedSessionId(null);
+    setMessages([]);
+    setThreadSessionMeta(null);
+    setMobileActionsOpen(false);
+    router.replace("/admin/chats", { scroll: false });
+  }, [router]);
 
   const selectSession = useCallback((sessionId: string) => {
     setSelectedSessionId(sessionId);
@@ -309,9 +368,11 @@ function ChatsPageContent() {
     setMobileActionsOpen(false);
     try {
       await navigator.clipboard.writeText(value);
-      setErrorMessage(successMessage);
-      window.setTimeout(() => setErrorMessage((current) => (current === successMessage ? null : current)), 1400);
+      setErrorMessage(null);
+      setSuccessMessage(successMessage);
+      window.setTimeout(() => setSuccessMessage((current) => (current === successMessage ? null : current)), 1400);
     } catch {
+      setSuccessMessage(null);
       setErrorMessage("Δεν ήταν δυνατή η αντιγραφή.");
     }
   }, []);
@@ -358,8 +419,19 @@ function ChatsPageContent() {
     if (!user || !selectedSessionId || !replyDraft.trim() || !canReply) return;
     const optimisticId = `optimistic-${Date.now()}`;
     const previousDraft = replyDraft.trim();
+    const previousSessionState = currentConversation ? {
+      lastMessage: currentConversation.lastMessage,
+      lastMessagePreview: currentConversation.lastMessagePreview,
+      lastMessageRole: currentConversation.lastMessageRole,
+      waitingOn: currentConversation.waitingOn,
+      escalationStatus: currentConversation.escalationStatus,
+      adminUnreadCount: currentConversation.adminUnreadCount,
+      customerUnreadCount: currentConversation.customerUnreadCount,
+    } : null;
     setIsSendingReply(true);
     setReplyDraft("");
+    setSuccessMessage(null);
+    shouldScrollToBottomRef.current = true;
     setMessages((prev) => [...prev, { id: optimisticId, role: "admin", content: previousDraft, timestamp: new Date().toISOString(), senderLabel: "Ομάδα AEROFREN" }]);
     applySessionPatch(selectedSessionId, {
       lastMessage: new Date().toISOString(),
@@ -373,16 +445,18 @@ function ChatsPageContent() {
     try {
       await replyToChatSession(user, selectedSessionId, previousDraft);
       try { localStorage.removeItem(`admin-chat-draft:${selectedSessionId}`); } catch {}
-      await fetchMessages(selectedSessionId);
     } catch (error) {
       setMessages((prev) => prev.filter((message) => message.id !== optimisticId));
+      if (previousSessionState) {
+        applySessionPatch(selectedSessionId, previousSessionState);
+      }
       setReplyDraft(previousDraft);
+      setSuccessMessage(null);
       setErrorMessage(error instanceof Error ? error.message : "Αποτυχία αποστολής απάντησης.");
-      await fetchMessages(selectedSessionId);
     } finally {
       setIsSendingReply(false);
     }
-  }, [applySessionPatch, canReply, currentConversation?.customerUnreadCount, currentConversation?.escalationStatus, fetchMessages, replyDraft, selectedSessionId, user]);
+  }, [applySessionPatch, canReply, currentConversation, replyDraft, selectedSessionId, user]);
 
   const exportToCSV = useCallback(() => {
     if (!selectedSessionId || messages.length === 0) return;
@@ -417,12 +491,6 @@ function ChatsPageContent() {
   }, [messages]);
 
   const refreshButton = <Button variant="secondary" size="sm" onClick={() => void fetchSessions()} disabled={isLoadingSessions} className="gap-2"><RefreshCw className={`h-4 w-4 ${isLoadingSessions ? "animate-spin" : ""}`} />Ανανέωση</Button>;
-  const workspaceTabs: Array<{ id: WorkspaceTab; label: string }> = [
-    { id: "open", label: "Ανοιχτές" },
-    { id: "in_progress", label: "Σε εξέλιξη" },
-    { id: "resolved", label: "Ολοκληρωμένες" },
-    { id: "all", label: "Όλες" },
-  ];
 
   return (
     <AdminLayout title="Συνομιλίες AI" headerRight={refreshButton} workspace>
@@ -432,6 +500,11 @@ function ChatsPageContent() {
             <p>{errorMessage}</p>
             {authError && <Button size="sm" onClick={() => window.location.reload()}>Σύνδεση ξανά</Button>}
           </div>
+        </div>
+      )}
+      {successMessage && (
+        <div className="mb-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 p-4 text-sm text-emerald-200" role="status" aria-live="polite">
+          <p>{successMessage}</p>
         </div>
       )}
 
@@ -452,11 +525,12 @@ function ChatsPageContent() {
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              {workspaceTabs.map((tab) => (
-                <button key={tab.id} type="button" onClick={() => setStatusTab(tab.id)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${statusTab === tab.id ? "bg-[var(--theme-accent)] text-white shadow-[0_12px_24px_rgba(0,186,226,0.24)]" : "border border-[var(--theme-glass-border)] text-[var(--theme-text-muted)] hover:border-[var(--theme-accent)]/25 hover:text-[var(--theme-text)]"}`}>
+              {WORKSPACE_TABS.map((tab) => (
+                <button key={tab.id} type="button" onClick={() => handleTabChange(tab.id)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${statusTab === tab.id ? "bg-[var(--theme-accent)] text-white shadow-[0_12px_24px_rgba(0,186,226,0.24)]" : "border border-[var(--theme-glass-border)] text-[var(--theme-text-muted)] hover:border-[var(--theme-accent)]/25 hover:text-[var(--theme-text)]"}`}>
                   {tab.label}
                 </button>
               ))}
+              <button type="button" onClick={() => setNeedsReplyOnly((current) => !current)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${needsReplyOnly ? "border border-amber-400/25 bg-amber-400/10 text-amber-300" : "border border-[var(--theme-glass-border)] text-[var(--theme-text-muted)] hover:border-amber-400/25 hover:text-[var(--theme-text)]"}`}>Μόνο αναπάντητες</button>
             </div>
           </div>
 

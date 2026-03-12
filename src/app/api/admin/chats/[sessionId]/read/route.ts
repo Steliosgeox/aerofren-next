@@ -59,13 +59,15 @@ export async function POST(
         }
 
         const { sessionId } = validatedParams.data;
-        await db.collection('chatSessions').doc(sessionId).set(
-            {
-                sessionId,
-                adminUnreadCount: 0,
-            },
-            { merge: true }
-        );
+        const sessionRef = db.collection('chatSessions').doc(sessionId);
+        const sessionSnapshot = await sessionRef.get();
+        if (!sessionSnapshot.exists) {
+            return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+        }
+
+        await sessionRef.update({
+            adminUnreadCount: 0,
+        });
 
         return NextResponse.json(
             { success: true },

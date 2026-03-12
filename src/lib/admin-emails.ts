@@ -10,6 +10,7 @@
  */
 const ADMIN_EMAILS: readonly string[] = [
     "aerofren@gmail.com",
+    "info@aerofren.gr",
     "admin@aerofren.gr",
     "gamerspcexperts@gmail.com",
 ] as const;

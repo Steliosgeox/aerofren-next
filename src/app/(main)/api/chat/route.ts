@@ -402,7 +402,7 @@ export async function POST(request: NextRequest) {
                 persisted: false,
                 traceId,
             },
-            { status: 200 } // Return 200 so frontend handles gracefully
+            { status: 503 }
         );
     }
 }

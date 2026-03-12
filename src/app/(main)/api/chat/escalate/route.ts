@@ -118,7 +118,6 @@ export async function POST(request: NextRequest) {
                     ),
                     lastMessageRole: 'user',
                     waitingOn: 'admin',
-                    adminUnreadCount: 1,
                     customerUnreadCount: 0,
                     messageCount: FieldValue.increment(1),
                 },

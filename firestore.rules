@@ -16,6 +16,7 @@ service cloud.firestore {
       return isAuthenticated() && (
         request.auth.token.admin == true ||
         request.auth.token.email in [
+          'aerofren@gmail.com',
           'info@aerofren.gr',
           'admin@aerofren.gr',
           'gamerspcexperts@gmail.com'

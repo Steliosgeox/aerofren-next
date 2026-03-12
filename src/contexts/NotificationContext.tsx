@@ -68,6 +68,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const prevEscalationIdsRef = useRef<Set<string>>(new Set());
     const prevContactIdsRef = useRef<Set<string>>(new Set());
+    const hasSeededAdminPollRef = useRef(false);
 
     // Load read set from localStorage when user changes
     useEffect(() => {
@@ -78,6 +79,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             setNotifications([]);
             prevEscalationIdsRef.current = new Set();
             prevContactIdsRef.current = new Set();
+            hasSeededAdminPollRef.current = false;
         }
     }, [user?.uid]);
 
@@ -167,6 +169,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             ]);
 
             const newNotifs: AppNotification[] = [];
+            const nextEscalationIds = new Set(
+                sessionsPage.items.map((session) => session.sessionId)
+            );
+            const nextContactIds = new Set(contactsPage.items.map((contact) => contact.id));
+
+            if (!hasSeededAdminPollRef.current) {
+                prevEscalationIdsRef.current = nextEscalationIds;
+                prevContactIdsRef.current = nextContactIds;
+                hasSeededAdminPollRef.current = true;
+                return;
+            }
 
             for (const session of sessionsPage.items) {
                 const notifId = `esc:${session.sessionId}`;
@@ -182,9 +195,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                     });
                 }
             }
-            prevEscalationIdsRef.current = new Set(
-                sessionsPage.items.map((session) => session.sessionId)
-            );
+            prevEscalationIdsRef.current = nextEscalationIds;
 
             for (const contact of contactsPage.items) {
                 const notifId = `contact:${contact.id}`;
@@ -203,7 +214,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                     });
                 }
             }
-            prevContactIdsRef.current = new Set(contactsPage.items.map((c) => c.id));
+            prevContactIdsRef.current = nextContactIds;
 
             if (newNotifs.length > 0) {
                 setNotifications((prev) => {

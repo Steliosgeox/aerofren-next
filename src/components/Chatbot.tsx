@@ -368,11 +368,6 @@ export function Chatbot() {
     }
   }, [hasUnreadSupportReply, isOpen, notifications, refreshHistory, sessionId, user]);
 
-  const handleSuggestionClick = useCallback((suggestion: string) => {
-    void handleSubmit(suggestion);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleSubmit = useCallback(async (text?: string) => {
     const messageText = text || input;
     if (!messageText.trim() || isLoading) return;
@@ -449,6 +444,10 @@ export function Chatbot() {
       setIsLoading(false);
     }
   }, [allowFunctional, cookieConsentReady, input, isLoading, messages, randomID, sessionId, user]);
+
+  const handleSuggestionClick = useCallback((suggestion: string) => {
+    void handleSubmit(suggestion);
+  }, [handleSubmit]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
