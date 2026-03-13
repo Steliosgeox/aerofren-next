@@ -31,7 +31,12 @@ export interface ChatSessionSummary {
     escalationStatus?: ChatEscalationStatus;
     waitingOn?: ChatWaitingOn;
     lastMessageAt?: string;
+    lastMessagePreview?: string;
+    lastMessageRole?: ChatMessageRole;
+    messageCount?: number;
+    adminUnreadCount?: number;
     customerUnreadCount?: number;
+    isEscalated?: boolean;
 }
 
 export interface PaginatedChatHistoryResult {

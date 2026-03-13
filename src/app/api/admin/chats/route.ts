@@ -82,7 +82,10 @@ function mapSession(doc: FirebaseFirestore.QueryDocumentSnapshot): SessionPayloa
         userEmailNormalized: data.userEmailNormalized as string | undefined,
         userNameNormalized: data.userNameNormalized as string | undefined,
         userEmailLocalPartNormalized: data.userEmailLocalPartNormalized as string | undefined,
-        isEscalated: Boolean(data.isEscalated) || Boolean(escalationStatus),
+        isEscalated:
+            escalationStatus !== undefined
+                ? isOpenEscalationStatus(escalationStatus)
+                : Boolean(data.isEscalated),
         escalationStatus,
     };
 }

@@ -13,12 +13,14 @@ import React, {
   useRef,
   useState,
   useCallback,
+  useMemo,
   memo,
 } from "react";
 import {
+  AlertCircle,
   ArrowRight,
+  ChevronsDown,
   Headset,
-  Globe,
   MessageCircle,
   X,
   Package,
@@ -32,21 +34,8 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import { gsap } from "@/lib/gsap/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
-import {
-  requestChatCompletion,
-  requestEscalation,
-  fetchChatHistoryPage,
-  markChatSessionRead,
-  type ChatHistoryMessage,
-} from "@/services/chat";
-import { HttpError } from "@/services/http";
-import { useNotifications } from "@/contexts/NotificationContext";
-import type { ChatEscalationStatus, ChatMessageRole } from "@/lib/chat/types";
+import { type ChatMessage as ChatThreadMessage, useChat } from "@/contexts/ChatContext";
 import "./Chatbot.scss";
 
 const ReactMarkdown = dynamic(
@@ -54,23 +43,13 @@ const ReactMarkdown = dynamic(
   { ssr: false, loading: () => <span>...</span> }
 );
 
-interface Message {
-  id: string;
-  role: ChatMessageRole;
-  content: string;
-  timestamp?: string;
-  senderLabel?: string;
-  optimistic?: boolean;
-}
-
-const STORAGE_KEY = "aerofren_chat_session";
-
 type MarkdownComponents = {
   p: React.ComponentType<{ children?: React.ReactNode }>;
   ul: React.ComponentType<{ children?: React.ReactNode }>;
 };
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+const CHAT_NEAR_BOTTOM_THRESHOLD = 72;
 
 function sanitizeLinkUri(uri: string): string {
   if (!uri) return "#";
@@ -90,6 +69,15 @@ function sanitizeLinkUri(uri: string): string {
   }
 }
 
+function isChatNearBottom(scroller: HTMLDivElement | null): boolean {
+  if (!scroller) return true;
+
+  const distanceFromBottom =
+    scroller.scrollHeight - (scroller.scrollTop + scroller.clientHeight);
+
+  return distanceFromBottom <= CHAT_NEAR_BOTTOM_THRESHOLD;
+}
+
 const MarkdownParagraph = memo(function MarkdownParagraph({ children }: { children?: React.ReactNode }) {
   return <p className="chatbot__message-text">{children}</p>;
 });
@@ -103,60 +91,184 @@ const AIChatText: MarkdownComponents = {
   ul: MarkdownList,
 };
 
-function mapHistoryMessage(message: ChatHistoryMessage): Message {
+const DATE_SEPARATOR_FORMATTER = new Intl.DateTimeFormat("el-GR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const TIME_FORMATTER = new Intl.DateTimeFormat("el-GR", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+type TimelineItem =
+  | {
+      key: string;
+      type: "separator";
+      label: string;
+    }
+  | {
+      key: string;
+      type: "message";
+      message: ChatThreadMessage;
+      timeLabel: string | null;
+    };
+
+function getMessageDate(timestamp?: string) {
+  if (!timestamp) return null;
+
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
+function getMessageDayKey(timestamp?: string) {
+  const parsed = getMessageDate(timestamp);
+  if (!parsed) return null;
+
+  const year = parsed.getFullYear();
+  const month = `${parsed.getMonth() + 1}`.padStart(2, "0");
+  const day = `${parsed.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatMessageDayLabel(timestamp?: string) {
+  const parsed = getMessageDate(timestamp);
+  if (!parsed) return null;
+  return DATE_SEPARATOR_FORMATTER.format(parsed);
+}
+
+function formatMessageTimeLabel(timestamp?: string) {
+  const parsed = getMessageDate(timestamp);
+  if (!parsed) return null;
+  return TIME_FORMATTER.format(parsed);
+}
+
+function buildTimelineItems(messages: ChatThreadMessage[]): TimelineItem[] {
+  const items: TimelineItem[] = [];
+  let previousDayKey: string | null = null;
+
+  messages.forEach((message) => {
+    const nextDayKey = getMessageDayKey(message.timestamp);
+    const nextDayLabel = formatMessageDayLabel(message.timestamp);
+
+    if (nextDayKey && nextDayKey !== previousDayKey && nextDayLabel) {
+      items.push({
+        key: `separator-${nextDayKey}`,
+        type: "separator",
+        label: nextDayLabel,
+      });
+      previousDayKey = nextDayKey;
+    }
+
+    items.push({
+      key: message.id,
+      type: "message",
+      message,
+      timeLabel: formatMessageTimeLabel(message.timestamp),
+    });
+  });
+
+  return items;
+}
+
+function getSupportHeaderStatus(status: "pending" | "in_progress" | "resolved" | "idle") {
+  if (status === "pending") return "Αναμονή ανθρώπινης υποστήριξης";
+  if (status === "in_progress") return "Σε εξέλιξη με εκπρόσωπο";
+  if (status === "resolved") return "Η προηγούμενη υποστήριξη ολοκληρώθηκε";
+  return "AI υποστήριξη";
+}
+
+type SupportCtaTone = "default" | "success" | "neutral" | "error" | "gate";
+
+function getSupportCtaState(
+  status: "pending" | "in_progress" | "resolved" | "idle",
+  errorMessage: string | null,
+  showSupportGate: boolean,
+) {
+  if (showSupportGate) {
+    return {
+      tone: "gate" as SupportCtaTone,
+      title: "Απαιτείται σύνδεση",
+      description: "Για να μιλήσετε με εκπρόσωπο, συνδεθείτε πρώτα στον λογαριασμό σας ή καλέστε μας άμεσα.",
+      actionLabel: null,
+    };
+  }
+
+  if (errorMessage) {
+    return {
+      tone: "error" as SupportCtaTone,
+      title: "Δεν ολοκληρώθηκε η προώθηση.",
+      description: errorMessage,
+      actionLabel: "Δοκιμή ξανά",
+    };
+  }
+
+  if (status === "pending") {
+    return {
+      tone: "success" as SupportCtaTone,
+      title: "Το αίτημά σας καταχωρήθηκε.",
+      description: "Ένας εκπρόσωπός μας θα επικοινωνήσει σύντομα. Εναλλακτικά, καλέστε μας στο 210 3461645.",
+      actionLabel: null,
+    };
+  }
+
+  if (status === "in_progress") {
+    return {
+      tone: "success" as SupportCtaTone,
+      title: "Η ομάδα μας το εξετάζει.",
+      description: "Η συνομιλία σας βρίσκεται ήδη σε εξέλιξη με εκπρόσωπο της AEROFREN.",
+      actionLabel: null,
+    };
+  }
+
+  if (status === "resolved") {
+    return {
+      tone: "neutral" as SupportCtaTone,
+      title: "Η προηγούμενη συνομιλία ολοκληρώθηκε.",
+      description: "Αν χρειάζεστε συνέχεια, πατήστε «Άνοιγμα ξανά» για νέο αίτημα προς εκπρόσωπο.",
+      actionLabel: "Άνοιγμα ξανά",
+    };
+  }
+
   return {
-    id: message.id,
-    role: message.role,
-    content: message.content,
-    timestamp: message.timestamp,
-    senderLabel: message.senderLabel,
+    tone: "default" as SupportCtaTone,
+    title: "Χρειάζεστε άνθρωπο;",
+    description: "Αν το θέμα χρειάζεται τεχνική ή εμπορική υποστήριξη, προωθήστε τη συνομιλία σας απευθείας στην ομάδα μας.",
+    actionLabel: "Μιλήστε με εκπρόσωπο",
   };
 }
 
-function getEscalationActionLabel(status: ChatEscalationStatus | "idle") {
-  if (status === "pending") return "Σε αναμονή";
-  if (status === "in_progress") return "Σε εξέλιξη";
-  if (status === "resolved") return "Άνοιγμα ξανά";
-  return "Μιλήστε με εκπρόσωπο";
-}
-
-function getEscalationErrorContent(error: unknown): string {
-  if (error instanceof HttpError) {
-    if (error.status === 401) {
-      return "Η σύνδεσή σας έληξε. Συνδεθείτε ξανά και δοκιμάστε πάλι.";
-    }
-    if (error.status === 403) {
-      return "Δεν ήταν δυνατή η επιβεβαίωση της συνομιλίας σας για προώθηση σε εκπρόσωπο.";
-    }
-    if (error.status === 404) {
-      return "Δεν βρέθηκε ιστορικό για αυτή τη συνομιλία. Στείλτε ένα μήνυμα και δοκιμάστε ξανά.";
-    }
-    if (error.status === 409) {
-      return error.message;
-    }
-    if (error.status === 429) {
-      return "Υπάρχουν πολλές προσπάθειες αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγο.";
-    }
-    if (error.status === 503) {
-      return "Η υπηρεσία προώθησης σε εκπρόσωπο δεν είναι διαθέσιμη αυτή τη στιγμή. Καλέστε μας στο 210 3461645.";
-    }
-    if (error.message) {
-      return error.message;
-    }
+function getThreadModeLabel(status: "pending" | "in_progress" | "resolved" | "idle") {
+  if (status === "pending" || status === "in_progress") {
+    return "Human Support";
   }
 
-  if (error instanceof Error && error.message) {
-    return error.message;
+  if (status === "resolved") {
+    return "Resolved";
   }
 
-  return "Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.";
+  return "AI First";
 }
 
-const ChatMessage = memo(function ChatMessage({
+const TimelineSeparator = memo(function TimelineSeparator({ label }: { label: string }) {
+  return (
+    <div className="chatbot__timeline-separator" role="presentation">
+      <span className="chatbot__timeline-separator-line" />
+      <span className="chatbot__timeline-separator-label">{label}</span>
+      <span className="chatbot__timeline-separator-line" />
+    </div>
+  );
+});
+
+const ChatMessageItem = memo(function ChatMessageItem({
   message,
+  timeLabel,
   markdownComponents,
 }: {
-  message: Message;
+  message: ChatThreadMessage;
+  timeLabel: string | null;
   markdownComponents: MarkdownComponents;
 }) {
   if (message.role === "system") {
@@ -174,6 +286,8 @@ const ChatMessage = memo(function ChatMessage({
   const isUser = message.role === "user";
   const isAdmin = message.role === "admin";
   const messageClass = `chatbot__message chatbot__message--${message.role}`;
+  const roleBadgeLabel = isUser ? "Εσείς" : isAdmin ? "Υποστήριξη" : "AI";
+  const senderDisplay = isUser ? "Εσείς" : message.senderLabel || (isAdmin ? "Ομάδα AEROFREN" : "Βοηθός AEROFREN");
 
   return (
     <div className={messageClass}>
@@ -182,16 +296,22 @@ const ChatMessage = memo(function ChatMessage({
           <div
             className={`chatbot__icon chatbot__icon--small ${isAdmin ? "chatbot__icon--support" : "chatbot__icon--gradient"}`}
           >
-            {isAdmin ? <Shield className="chatbot__icon-svg" /> : <Headset className="chatbot__icon-svg" />}
+            {isAdmin ? <Shield className="chatbot__icon-svg" /> : <Sparkles className="chatbot__icon-svg" />}
           </div>
         </div>
       )}
       <div className="chatbot__message-content">
-        {(message.senderLabel || isAdmin) && (
-          <p className="chatbot__message-sender">
-            {message.senderLabel || "Ομάδα AEROFREN"}
-          </p>
-        )}
+        <div className="chatbot__message-meta">
+          <span className={`chatbot__message-role chatbot__message-role--${message.role}`}>
+            {roleBadgeLabel}
+          </span>
+          <p className="chatbot__message-sender">{senderDisplay}</p>
+          {timeLabel && (
+            <time className="chatbot__message-time" dateTime={message.timestamp}>
+              {timeLabel}
+            </time>
+          )}
+        </div>
         <ReactMarkdown components={markdownComponents} urlTransform={sanitizeLinkUri}>
           {message.content}
         </ReactMarkdown>
@@ -207,26 +327,28 @@ const ChatMessage = memo(function ChatMessage({
 });
 
 export function Chatbot() {
-  const searchParams = useSearchParams();
-  const chatRootRef = useRef<HTMLElement>(null);
+  const chatRootRef = useRef<HTMLDivElement>(null);
   const chatScrollerRef = useRef<HTMLDivElement>(null);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
-  const hydratedSessionRef = useRef<string | null>(null);
+  const {
+    closeChat,
+    escalateToHuman,
+    escalationErrorMessage,
+    hasUnreadSupportReply,
+    isHydrating,
+    isLoading,
+    isOpen,
+    messages,
+    openChat,
+    sendMessage,
+    supportStatus,
+    escalationStatus,
+  } = useChat();
 
-  const { user } = useAuth();
-  const { allowFunctional, isReady: cookieConsentReady } = useCookieConsent();
-  const { notifications, unreadCount } = useNotifications();
-
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isHydrating, setIsHydrating] = useState<boolean>(false);
-  const [sessionId, setSessionId] = useState<string>(() => uuidv4());
   const [scrollbarWidth, setScrollbarWidth] = useState<number>(0);
-  const [showLoginPrompt, setShowLoginPrompt] = useState<boolean>(false);
-  const [supportStatus, setSupportStatus] = useState<ChatEscalationStatus | "idle">("idle");
-  const [escalationStatus, setEscalationStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [showSupportGate, setShowSupportGate] = useState<boolean>(false);
+  const [hasDetachedMessages, setHasDetachedMessages] = useState<boolean>(false);
 
   const messagesStyle: React.CSSProperties = {
     paddingInlineEnd: `calc(1.5em - ${scrollbarWidth}px)`,
@@ -244,206 +366,31 @@ export function Chatbot() {
     "Τιμές & διαθεσιμότητα",
   ];
   const isConversationMode = messages.length > 0;
-  const hasUnreadSupportReply = notifications.some((notification) => notification.type === "chat_reply" && !notification.isRead);
-
-  useEffect(() => {
-    if (!cookieConsentReady) return;
-
-    if (!allowFunctional) {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // No-op when storage is unavailable.
-      }
-      setSessionId(uuidv4());
-      return;
-    }
-
-    try {
-      let storedSession = localStorage.getItem(STORAGE_KEY);
-      if (!storedSession) {
-        storedSession = uuidv4();
-        localStorage.setItem(STORAGE_KEY, storedSession);
-      }
-      setSessionId(storedSession);
-    } catch (error) {
-      console.warn("Failed to access localStorage for chat session", error);
-      setSessionId(uuidv4());
-    }
-  }, [allowFunctional, cookieConsentReady]);
-
-  useEffect(() => {
-    const shouldOpen = searchParams.get("chat") === "open";
-    const sessionParam = searchParams.get("session");
-
-    if (shouldOpen) {
-      setIsOpen(true);
-    }
-
-    if (sessionParam) {
-      setSessionId(sessionParam);
-      hydratedSessionRef.current = null;
-      if (allowFunctional && cookieConsentReady) {
-        try {
-          localStorage.setItem(STORAGE_KEY, sessionParam);
-        } catch {
-          // ignore storage failures
-        }
-      }
-    }
-  }, [allowFunctional, cookieConsentReady, searchParams]);
-
-  const randomID = useCallback(() => {
-    const random = crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
-    return Math.floor(random * 2 ** 32).toString(16).padStart(8, "0");
-  }, []);
-
-  const refreshHistory = useCallback(async () => {
-    if (!isOpen || !user || !sessionId) return;
-
-    setIsHydrating(true);
-    try {
-      const history = await fetchChatHistoryPage(user, sessionId, { limit: 50 });
-      setMessages(history.items.map(mapHistoryMessage));
-      setSupportStatus(history.session?.escalationStatus ?? "idle");
-
-      if ((history.session?.customerUnreadCount ?? 0) > 0) {
-        await markChatSessionRead(user, sessionId);
-      }
-    } catch (error) {
-      console.warn("[chatbot] failed to refresh history", error);
-    } finally {
-      setIsHydrating(false);
-    }
-  }, [isOpen, sessionId, user]);
-
-  useEffect(() => {
-    if (!isOpen || !user || !sessionId) return;
-
-    const hydrationKey = `${user.uid}:${sessionId}`;
-    if (hydratedSessionRef.current === hydrationKey) {
-      return;
-    }
-
-    let cancelled = false;
-    setIsHydrating(true);
-
-    fetchChatHistoryPage(user, sessionId, { limit: 50 })
-      .then(async (history) => {
-        if (cancelled) return;
-
-        hydratedSessionRef.current = hydrationKey;
-        setMessages(history.items.map(mapHistoryMessage));
-        setSupportStatus(history.session?.escalationStatus ?? "idle");
-
-        if ((history.session?.customerUnreadCount ?? 0) > 0) {
-          await markChatSessionRead(user, sessionId);
-        }
-      })
-      .catch((error) => {
-        console.warn("[chatbot] failed to hydrate history", error);
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setIsHydrating(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, sessionId, user]);
-
-  useEffect(() => {
-    if (!isOpen || !user || !sessionId) return;
-    if (!hasUnreadSupportReply) return;
-
-    const currentThreadNotification = notifications.find((notification) => {
-      if (notification.type !== "chat_reply") return false;
-      return notification.href.includes(encodeURIComponent(sessionId));
-    });
-
-    if (currentThreadNotification) {
-      void refreshHistory();
-    }
-  }, [hasUnreadSupportReply, isOpen, notifications, refreshHistory, sessionId, user]);
+  const toggleAriaLabel = hasUnreadSupportReply
+    ? "Άνοιγμα συνομιλίας, νέα απάντηση διαθέσιμη"
+    : "Άνοιγμα συνομιλίας";
+  const shouldShowHydrationIndicator = isHydrating && !isLoading;
+  const latestMessageSignature = useMemo(() => {
+    const latestMessage = messages[messages.length - 1];
+    return `${messages.length}:${latestMessage?.id ?? ""}:${latestMessage?.timestamp ?? ""}`;
+  }, [messages]);
+  const timelineItems = useMemo(() => buildTimelineItems(messages), [messages]);
+  const supportCta = useMemo(
+    () => getSupportCtaState(supportStatus, escalationErrorMessage, showSupportGate),
+    [escalationErrorMessage, showSupportGate, supportStatus],
+  );
+  const prevMessageSignatureRef = useRef<string | null>(null);
+  const forceScrollToLatestRef = useRef(false);
 
   const handleSubmit = useCallback(async (text?: string) => {
     const messageText = text || input;
     if (!messageText.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: randomID(),
-      role: "user",
-      content: messageText,
-      timestamp: new Date().toISOString(),
-      senderLabel: user?.displayName ?? user?.email ?? undefined,
-    };
-
-    setIsLoading(true);
-    setMessages((prev) => [...prev, userMessage]);
+    forceScrollToLatestRef.current = true;
+    setHasDetachedMessages(false);
     setInput("");
-
-    try {
-      const history = messages.slice(-10).map((msg) => ({
-        role: msg.role === "user" ? "user" as const : "assistant" as const,
-        content: msg.content,
-      }));
-
-      const data = await requestChatCompletion(user, {
-        message: messageText,
-        sessionId,
-        history,
-      });
-
-      if (data.sessionId && data.sessionId !== sessionId) {
-        setSessionId(data.sessionId);
-        hydratedSessionRef.current = null;
-        if (allowFunctional && cookieConsentReady) {
-          try {
-            localStorage.setItem(STORAGE_KEY, data.sessionId);
-          } catch (error) {
-            console.warn("Failed to persist updated sessionId", error);
-          }
-        }
-      }
-
-      if (data.persisted === false) {
-        console.warn(
-          "[chatbot] server persistence unavailable",
-          JSON.stringify({
-            sessionId: data.sessionId,
-            traceId: data.traceId ?? null,
-            persistenceError: data.persistenceError ?? null,
-          })
-        );
-      }
-
-      const aiContent =
-        data.response ||
-        "Λυπούμαστε, δεν μπορέσαμε να απαντήσουμε. Παρακαλούμε δοκιμάστε ξανά.";
-
-      const aiMessage: Message = {
-        id: randomID(),
-        role: "assistant",
-        content: aiContent,
-        timestamp: new Date().toISOString(),
-        senderLabel: "AI AEROFREN",
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
-      console.error("Chat error:", error);
-      const errorMessage: Message = {
-        id: randomID(),
-        role: "system",
-        content: "Παρουσιάστηκε πρόβλημα. Δοκιμάστε ξανά ή καλέστε μας στο 210 3461645.",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [allowFunctional, cookieConsentReady, input, isLoading, messages, randomID, sessionId, user]);
+    await sendMessage(messageText);
+  }, [input, isLoading, sendMessage]);
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
     void handleSubmit(suggestion);
@@ -457,75 +404,89 @@ export function Chatbot() {
   }, [handleSubmit]);
 
   const handleEscalation = useCallback(async () => {
-    if (!user) {
-      setShowLoginPrompt(true);
+    const result = await escalateToHuman();
+    if (result === "requires_auth") {
+      setShowSupportGate(true);
       return;
     }
+    setShowSupportGate(false);
+  }, [escalateToHuman]);
 
-    if (supportStatus === "pending" || supportStatus === "in_progress") {
-      return;
-    }
+  const handleSupportGateDismiss = useCallback(() => {
+    setShowSupportGate(false);
+  }, []);
 
-    setEscalationStatus("loading");
-
-    try {
-      const result = await requestEscalation(user, sessionId);
-
-      if (result.success) {
-        setSupportStatus(result.status);
-        setEscalationStatus("success");
-
-        const confirmationMessage: Message = {
-          id: randomID(),
-          role: "system",
-          content:
-            result.status === "resolved"
-              ? "Το αίτημά σας επανενεργοποιήθηκε."
-              : `✅ **Το αίτημά σας καταχωρήθηκε.**\n\nΈνας εκπρόσωπός μας θα επικοινωνήσει σύντομα στο **${user.email}**.\n\nΕναλλακτικά, καλέστε μας στο **210 3461645**.`,
-        };
-        setMessages((prev) => [...prev, confirmationMessage]);
-      } else {
-        setEscalationStatus("error");
-        const errorMessage: Message = {
-          id: randomID(),
-          role: "system",
-          content:
-            "Δεν καταφέραμε να προωθήσουμε το αίτημά σας σε εκπρόσωπο. Δοκιμάστε ξανά ή καλέστε μας στο **210 3461645**.",
-        };
-        setMessages((prev) => [...prev, errorMessage]);
-      }
-    } catch (error) {
-      console.error("Escalation error:", error);
-      setEscalationStatus("error");
-      const errorMessage: Message = {
-        id: randomID(),
-        role: "system",
-        content: getEscalationErrorContent(error),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    }
-  }, [randomID, sessionId, supportStatus, user]);
-
-  const prevMessageCountRef = useRef(0);
   useEffect(() => {
-    const newCount = messages.length;
-    const prevCount = prevMessageCountRef.current;
+    if (!isOpen) {
+      setShowSupportGate(false);
+    }
+  }, [isOpen]);
 
-    if (newCount > prevCount && chatScrollerRef.current) {
-      const scroller = chatScrollerRef.current;
-      requestAnimationFrame(() => {
-        if (scroller) {
-          gsap.to(scroller, {
-            scrollTop: scroller.scrollHeight,
-            duration: 0.6,
-            ease: "power2.out",
-          });
-        }
+  useEffect(() => {
+    if (supportStatus !== "idle" || escalationStatus === "loading") {
+      setShowSupportGate(false);
+    }
+  }, [escalationStatus, supportStatus]);
+
+  const scrollToLatest = useCallback(() => {
+    const scroller = chatScrollerRef.current;
+    if (!scroller) return;
+
+    setHasDetachedMessages(false);
+    requestAnimationFrame(() => {
+      gsap.to(scroller, {
+        scrollTop: scroller.scrollHeight,
+        duration: 0.6,
+        ease: "power2.out",
       });
+    });
+  }, []);
+
+  const wasOpenRef = useRef(isOpen);
+  useEffect(() => {
+    if (isOpen && !wasOpenRef.current && messages.length > 0) {
+      forceScrollToLatestRef.current = true;
+      scrollToLatest();
     }
 
-    prevMessageCountRef.current = newCount;
-  }, [messages.length]);
+    wasOpenRef.current = isOpen;
+  }, [isOpen, messages.length, scrollToLatest]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      prevMessageSignatureRef.current = latestMessageSignature;
+      forceScrollToLatestRef.current = false;
+      return;
+    }
+
+    if (messages.length === 0) {
+      prevMessageSignatureRef.current = latestMessageSignature;
+      setHasDetachedMessages(false);
+      forceScrollToLatestRef.current = false;
+      return;
+    }
+
+    const previousSignature = prevMessageSignatureRef.current;
+    const hasMessageChanged =
+      previousSignature !== null && previousSignature !== latestMessageSignature;
+    const shouldPinToLatest =
+      forceScrollToLatestRef.current || isChatNearBottom(chatScrollerRef.current);
+
+    if (previousSignature === null || (hasMessageChanged && shouldPinToLatest)) {
+      scrollToLatest();
+    } else if (hasMessageChanged) {
+      setHasDetachedMessages(true);
+    }
+
+    prevMessageSignatureRef.current = latestMessageSignature;
+    forceScrollToLatestRef.current = false;
+  }, [isOpen, latestMessageSignature, scrollToLatest]);
+
+  const handleScrollerScroll = useCallback(() => {
+    if (isChatNearBottom(chatScrollerRef.current)) {
+      setHasDetachedMessages(false);
+    }
+  }, []);
 
   const hasMessages = messages.length > 0;
   useLayoutEffect(() => {
@@ -605,26 +566,141 @@ export function Chatbot() {
     };
   }, [isConversationMode, isOpen]);
 
+  const supportCtaArea = (
+    <>
+      <div
+        className="chatbot__support-cta-region"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {supportCta.tone !== "error" && (
+          <div className={`chatbot__support-cta chatbot__support-cta--${supportCta.tone}`}>
+            <div className="chatbot__support-cta-main">
+              <div className="chatbot__support-cta-icon">
+                {supportCta.tone === "gate" ? (
+                  <LogIn className="chatbot__support-cta-icon-svg" />
+                ) : supportCta.tone === "neutral" ? (
+                  <Headset className="chatbot__support-cta-icon-svg" />
+                ) : supportCta.tone === "success" ? (
+                  <CheckCircle className="chatbot__support-cta-icon-svg" />
+                ) : (
+                  <User className="chatbot__support-cta-icon-svg" />
+                )}
+              </div>
+              <div className="chatbot__support-cta-copy">
+                <p className="chatbot__support-cta-title">{supportCta.title}</p>
+                <p className="chatbot__support-cta-text">{supportCta.description}</p>
+              </div>
+            </div>
+            <div className="chatbot__support-cta-actions">
+              {supportCta.tone === "gate" ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="chatbot__support-cta-button chatbot__support-cta-button--primary"
+                    onClick={handleSupportGateDismiss}
+                  >
+                    <LogIn className="chatbot__support-cta-button-icon" />
+                    <span>Σύνδεση</span>
+                  </Link>
+                  <button
+                    type="button"
+                    className="chatbot__support-cta-button chatbot__support-cta-button--secondary"
+                    onClick={() => {
+                      handleSupportGateDismiss();
+                      window.location.href = "tel:+302103461645";
+                    }}
+                  >
+                    <Phone className="chatbot__support-cta-button-icon" />
+                    <span>Κλήση 210 3461645</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="chatbot__support-cta-button chatbot__support-cta-button--ghost"
+                    onClick={handleSupportGateDismiss}
+                  >
+                    Συνέχεια με AI
+                  </button>
+                </>
+              ) : supportCta.actionLabel ? (
+                <button
+                  type="button"
+                  className="chatbot__support-cta-button chatbot__support-cta-button--primary"
+                  onClick={handleEscalation}
+                  disabled={escalationStatus === "loading"}
+                >
+                  {escalationStatus === "loading" ? (
+                    <div className="chatbot__quick-action-spinner" />
+                  ) : supportCta.tone === "neutral" ? (
+                    <Headset className="chatbot__support-cta-button-icon" />
+                  ) : (
+                    <User className="chatbot__support-cta-button-icon" />
+                  )}
+                  <span>{supportCta.actionLabel}</span>
+                </button>
+              ) : (
+                <p className="chatbot__support-cta-meta">Η ενημέρωση θα εμφανιστεί στο ίδιο νήμα.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {supportCta.tone === "error" && (
+        <div
+          className={`chatbot__support-cta chatbot__support-cta--${supportCta.tone}`}
+          role="alert"
+        >
+          <div className="chatbot__support-cta-main">
+            <div className="chatbot__support-cta-icon">
+              <AlertCircle className="chatbot__support-cta-icon-svg" />
+            </div>
+            <div className="chatbot__support-cta-copy">
+              <p className="chatbot__support-cta-title">{supportCta.title}</p>
+              <p className="chatbot__support-cta-text">{supportCta.description}</p>
+            </div>
+          </div>
+          <div className="chatbot__support-cta-actions">
+            <button
+              type="button"
+              className="chatbot__support-cta-button chatbot__support-cta-button--primary"
+              onClick={handleEscalation}
+              disabled={escalationStatus === "loading"}
+            >
+              {escalationStatus === "loading" ? (
+                <div className="chatbot__quick-action-spinner" />
+              ) : (
+                <User className="chatbot__support-cta-button-icon" />
+              )}
+              <span>{supportCta.actionLabel}</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <>
       {!isOpen && (
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={openChat}
           className="chatbot-toggle"
-          aria-label="Άνοιγμα συνομιλίας"
+          aria-label={toggleAriaLabel}
         >
           <MessageCircle />
-          {unreadCount > 0 && (
-            <span className="chatbot-toggle__badge">
-              {unreadCount > 99 ? "99+" : unreadCount}
+          {hasUnreadSupportReply && (
+            <span className="chatbot-toggle__badge" aria-hidden="true">
+              !
             </span>
           )}
         </button>
       )}
 
       {isOpen && (
-        <main
+        <div
           aria-label="Βοηθός AEROFREN"
           aria-modal="true"
           className={`chatbot ${isConversationMode ? "chatbot--conversation" : "chatbot--welcome"}`}
@@ -636,21 +712,31 @@ export function Chatbot() {
         >
           <div className="chatbot__header">
             <div className="chatbot__header-info">
-              <div className="chatbot__header-icon">
-                <Sparkles className="chatbot__header-icon-svg" />
+              <div className={`chatbot__header-icon ${supportStatus === "idle" ? "" : "chatbot__header-icon--support"}`}>
+                {supportStatus === "idle" ? (
+                  <Sparkles className="chatbot__header-icon-svg" />
+                ) : (
+                  <Headset className="chatbot__header-icon-svg" />
+                )}
               </div>
               <div className="chatbot__header-text">
-                <h3 className="chatbot__header-title">Βοηθός AEROFREN</h3>
+                <div className="chatbot__header-eyebrow-row">
+                  <span className="chatbot__header-eyebrow">AEROFREN support channel</span>
+                  <span className={`chatbot__header-mode chatbot__header-mode--${supportStatus}`}>
+                    {getThreadModeLabel(supportStatus)}
+                  </span>
+                </div>
+                <h2 className="chatbot__header-title">
+                  {supportStatus === "idle" ? "Βοηθός AEROFREN" : "Συνομιλία Υποστήριξης AEROFREN"}
+                </h2>
                 <span className="chatbot__header-status">
-                  {supportStatus === "idle"
-                    ? "Online • AI υποστήριξη"
-                    : `Online • ${getEscalationActionLabel(supportStatus)}`}
+                  {`Online • ${getSupportHeaderStatus(supportStatus)}`}
                 </span>
               </div>
             </div>
             <button
               className="chatbot__header-close"
-              onClick={() => setIsOpen(false)}
+              onClick={closeChat}
               aria-label="Κλείσιμο"
             >
               <X />
@@ -658,10 +744,10 @@ export function Chatbot() {
           </div>
 
           <div className="chatbot__quick-actions">
-            <button className="chatbot__quick-action" onClick={() => window.open("/products", "_blank")}>
+            <Link className="chatbot__quick-action" href="/products">
               <Package className="chatbot__quick-action-icon" />
               <span>Προϊόντα</span>
-            </button>
+            </Link>
             <button className="chatbot__quick-action" onClick={() => (window.location.href = "tel:+302103461645")}>
               <Phone className="chatbot__quick-action-icon" />
               <span>Τηλέφωνο</span>
@@ -670,132 +756,104 @@ export function Chatbot() {
               <Mail className="chatbot__quick-action-icon" />
               <span>E-mail</span>
             </button>
-            <button
-              className={`chatbot__quick-action ${supportStatus !== "idle" ? "chatbot__quick-action--success" : ""} ${escalationStatus === "loading" ? "chatbot__quick-action--loading" : ""}`}
-              onClick={handleEscalation}
-              disabled={supportStatus === "pending" || supportStatus === "in_progress" || escalationStatus === "loading"}
-            >
-              {supportStatus === "pending" || supportStatus === "in_progress" ? (
-                <CheckCircle className="chatbot__quick-action-icon chatbot__quick-action-icon--success" />
-              ) : escalationStatus === "loading" ? (
-                <div className="chatbot__quick-action-spinner" />
-              ) : (
-                <User className="chatbot__quick-action-icon" />
-              )}
-              <span>{getEscalationActionLabel(supportStatus)}</span>
-            </button>
           </div>
-
-          {showLoginPrompt && (
-            <div className="chatbot__login-modal">
-              <div
-                className="chatbot__login-modal-backdrop"
-                role="button"
-                tabIndex={0}
-                aria-label="Κλείσιμο modal"
-                onClick={() => setShowLoginPrompt(false)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") setShowLoginPrompt(false);
-                }}
-              />
-              <div className="chatbot__login-modal-content">
-                <button
-                  className="chatbot__login-modal-close"
-                  onClick={() => setShowLoginPrompt(false)}
-                  aria-label="Κλείσιμο"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-                <div className="chatbot__login-modal-icon">
-                  <LogIn className="w-8 h-8" />
-                </div>
-                <h3 className="chatbot__login-modal-title">Απαιτείται σύνδεση</h3>
-                <p className="chatbot__login-modal-text">
-                  Για να μιλήσετε με εκπρόσωπο, συνδεθείτε πρώτα στον λογαριασμό σας.
-                </p>
-                <div className="chatbot__login-modal-actions">
-                  <Link
-                    href="/login"
-                    className="chatbot__login-modal-btn chatbot__login-modal-btn--primary"
-                    onClick={() => setShowLoginPrompt(false)}
-                  >
-                    <LogIn className="w-4 h-4" />
-                    Σύνδεση
-                  </Link>
-                  <button
-                    className="chatbot__login-modal-btn chatbot__login-modal-btn--secondary"
-                    onClick={() => {
-                      setShowLoginPrompt(false);
-                      window.location.href = "tel:+302103461645";
-                    }}
-                  >
-                    <Phone className="w-4 h-4" />
-                    Κλήση (210 3461645)
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="chatbot__container">
             {!isConversationMode ? (
               <div className="chatbot__welcome-content">
-                <div className="chatbot__icon-wrapper">
-                  <div className="chatbot__icon chatbot__icon--gradient">
-                    <Sparkles className="chatbot__icon-svg" strokeWidth={1.5} />
+                <div className="chatbot__welcome-shell">
+                  <div className="chatbot__welcome-hero">
+                    <div className="chatbot__icon-wrapper">
+                      <div className="chatbot__icon chatbot__icon--gradient">
+                        <Sparkles className="chatbot__icon-svg" strokeWidth={1.5} />
+                      </div>
+                    </div>
+                    <p className="chatbot__welcome-eyebrow">AI first, άνθρωπος όταν χρειάζεται</p>
+                    <h1 className="chatbot__title">Άμεση τεχνική καθοδήγηση και ομαλή μετάβαση σε υποστήριξη.</h1>
+                    <p className="chatbot__welcome-lead">
+                      Ξεκινήστε με ερώτηση προϊόντος ή διαθεσιμότητας. Αν το θέμα χρειάζεται άνθρωπο,
+                      η ίδια συνομιλία περνά στην ομάδα μας χωρίς νέο νήμα.
+                    </p>
+                    <div className="chatbot__welcome-facts">
+                      <div className="chatbot__welcome-fact">
+                        <span className="chatbot__welcome-fact-label">Ροή</span>
+                        <strong>AI → Support</strong>
+                      </div>
+                      <div className="chatbot__welcome-fact">
+                        <span className="chatbot__welcome-fact-label">Κανάλι</span>
+                        <strong>Ίδιο νήμα</strong>
+                      </div>
+                      <div className="chatbot__welcome-fact">
+                        <span className="chatbot__welcome-fact-label">Άμεση επαφή</span>
+                        <strong>210 3461645</strong>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <h1 className="chatbot__title">Πώς μπορούμε να βοηθήσουμε;</h1>
-                <div className="chatbot__suggestions-box">
-                  {welcomeSuggestions.map((suggestion, index) => (
-                    <button
-                      key={`suggestion${index + 1}`}
-                      className="chatbot__suggestion"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                  <div className="chatbot__input-wrapper">
-                    <label className="chatbot__label" htmlFor="chat-input">
-                      Ερώτημα
-                    </label>
-                    <input
-                      id="chat-input"
-                      className="chatbot__input"
-                      type="text"
-                      placeholder={placeholder}
-                      value={input}
-                      onChange={(event) => setInput(event.target.value)}
-                      onKeyDown={handleKeyDown}
-                    />
-                    <button
-                      className="chatbot__submit"
-                      onClick={() => void handleSubmit()}
-                      disabled={!input.trim()}
-                      aria-label="Αποστολή"
-                    >
-                      <ArrowRight className="chatbot__submit-icon" />
-                    </button>
+                  <div className="chatbot__suggestions-box">
+                    <p className="chatbot__suggestions-title">Συχνές εκκινήσεις</p>
+                    <div className="chatbot__welcome-suggestions">
+                      {welcomeSuggestions.map((suggestion, index) => (
+                        <button
+                          key={`suggestion${index + 1}`}
+                          className="chatbot__suggestion"
+                          onClick={() => handleSuggestionClick(suggestion)}
+                        >
+                          <span>{suggestion}</span>
+                          <ArrowRight className="chatbot__suggestion-icon" />
+                        </button>
+                      ))}
+                    </div>
+                    <div className="chatbot__input-wrapper">
+                      <label className="chatbot__label" htmlFor="chat-input">
+                        Ερώτημα
+                      </label>
+                      <input
+                        id="chat-input"
+                        className="chatbot__input"
+                        type="text"
+                        placeholder={placeholder}
+                        value={input}
+                        onChange={(event) => setInput(event.target.value)}
+                        onKeyDown={handleKeyDown}
+                      />
+                      <button
+                        className="chatbot__submit"
+                        onClick={() => void handleSubmit()}
+                        disabled={!input.trim()}
+                        aria-label="Αποστολή"
+                      >
+                        <ArrowRight className="chatbot__submit-icon" />
+                      </button>
+                    </div>
+                    {supportCtaArea}
                   </div>
                 </div>
               </div>
             ) : (
               <div className="chatbot__conversation-content">
-                <div className="chatbot__message-scroller" ref={chatScrollerRef}>
+                <div
+                  className="chatbot__message-scroller"
+                  onScroll={handleScrollerScroll}
+                  ref={chatScrollerRef}
+                >
                   <div
                     className="chatbot__messages"
                     ref={chatMessagesRef}
                     style={messagesStyle}
                   >
-                    {messages.map((message) => (
-                      <ChatMessage
-                        key={message.id}
-                        message={message}
-                        markdownComponents={AIChatText}
-                      />
-                    ))}
-                    {isHydrating && messages.length === 0 && (
+                    {timelineItems.map((item) =>
+                      item.type === "separator" ? (
+                        <TimelineSeparator key={item.key} label={item.label} />
+                      ) : (
+                        <ChatMessageItem
+                          key={item.key}
+                          message={item.message}
+                          timeLabel={item.timeLabel}
+                          markdownComponents={AIChatText}
+                        />
+                      ),
+                    )}
+                    {shouldShowHydrationIndicator && (
                       <div className="chatbot__message chatbot__message--assistant chatbot__message--ai-loading">
                         <div className="chatbot__message-icon">
                           <div className="chatbot__icon chatbot__icon--gradient chatbot__icon--small">
@@ -819,11 +877,28 @@ export function Chatbot() {
                 </div>
 
                 <div className="chatbot__input-box">
-                  {hasUnreadSupportReply && (
+                  {hasDetachedMessages && (
+                    <div className="chatbot__jump-to-latest-wrap">
+                      <button
+                        type="button"
+                        className="chatbot__jump-to-latest"
+                        onClick={scrollToLatest}
+                      >
+                        <ChevronsDown className="chatbot__jump-to-latest-icon" />
+                        <span>Νέα μηνύματα • Μετάβαση στο πιο πρόσφατο</span>
+                      </button>
+                    </div>
+                  )}
+                  {hasUnreadSupportReply && !hasDetachedMessages && (
                     <div className="chatbot__support-pill">
                       Έχετε νέα απάντηση από την ομάδα υποστήριξης.
                     </div>
                   )}
+                  {supportCtaArea}
+                  <div className="chatbot__composer-header">
+                    <p className="chatbot__composer-title">Γρήγορες ενέργειες</p>
+                    <p className="chatbot__composer-hint">Επιλέξτε εκκίνηση ή γράψτε το δικό σας μήνυμα.</p>
+                  </div>
                   <div className="chatbot__suggestion-tags">
                     {conversationSuggestions.map((suggestion, index) => (
                       <button
@@ -844,16 +919,13 @@ export function Chatbot() {
                     <textarea
                       id="chat-textarea"
                       className="chatbot__textarea"
-                      placeholder={placeholder}
+                      placeholder="Περιγράψτε το αίτημά σας με λίγες λέξεις..."
                       value={input}
                       disabled={isLoading}
                       onChange={(event) => setInput(event.target.value)}
                       onKeyDown={handleKeyDown}
                       rows={1}
                     />
-                    <button className="chatbot__globe-button" aria-label="Globe">
-                      <Globe className="chatbot__globe-icon" />
-                    </button>
                     <button
                       className="chatbot__submit chatbot__submit--textarea"
                       onClick={() => void handleSubmit()}
@@ -867,7 +939,7 @@ export function Chatbot() {
               </div>
             )}
           </div>
-        </main>
+        </div>
       )}
     </>
   );

@@ -8,6 +8,7 @@ import { debounce } from "@/lib/debounce";
 import { getDeviceInfo } from "./nexus-hero/device";
 import { createPresets } from "./nexus-hero/theme-presets";
 import { vertexShader, createFragmentShader } from "./nexus-hero/shader";
+import { PRODUCT_COUNT } from "@/lib/constants/aerofren";
 
 /**
  * NexusHero - Premium Three.js Metaballs Hero Section
@@ -115,6 +116,11 @@ export default function NexusHero() {
         }
     }, [screenToWorldJS]);
 
+    const markWebGlUnavailable = useCallback(() => {
+        setWebGLFailed(true);
+        setIsLoaded(true);
+    }, []);
+
     // Apply theme preset
     const applyPreset = useCallback((theme: "dark" | "light" | "dim") => {
         if (!materialRef.current) return;
@@ -167,8 +173,8 @@ export default function NexusHero() {
         const testCanvas = document.createElement("canvas");
         const glCtx = testCanvas.getContext("webgl2") || testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl");
         if (!glCtx) {
-            setWebGLFailed(true);
-            setIsLoaded(true);
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: WebGL availability is an external capability check; setting failure state on mount is the correct pattern.
+            markWebGlUnavailable();
             return;
         }
 
@@ -183,8 +189,7 @@ export default function NexusHero() {
                 premultipliedAlpha: false,
             });
         } catch {
-            setWebGLFailed(true);
-            setIsLoaded(true);
+            markWebGlUnavailable();
             return;
         }
 
@@ -450,10 +455,10 @@ export default function NexusHero() {
                 loadedRevealTimeout = null;
             }
         };
-    }, [handlePointerMove]);
+    }, [handlePointerMove, markWebGlUnavailable]);
 
     return (
-        <section className="nexus-hero">
+        <section className="nexus-hero" aria-label="Αρχική — B2B εξαρτήματα νερού και αέρα">
             {/* Three.js Canvas Container — hidden when WebGL unavailable */}
             <div ref={containerRef} className="nexus-hero__canvas" style={webGLFailed ? { display: "none" } : undefined} />
 
@@ -468,22 +473,23 @@ export default function NexusHero() {
             {/* Content Overlay */}
             <div className={`nexus-hero__content ${isLoaded ? "nexus-hero__content--visible" : ""}`}>
                 {/* Eyebrow */}
-                <span className="nexus-hero__eyebrow">AEROFREN</span>
+                <span className="nexus-hero__eyebrow">AEROFREN • B2B Water &amp; Air Systems</span>
 
                 {/* Main Headline */}
                 <h1 className="nexus-hero__headline">
-                    Εκεί που το νερό<br />
-                    γίνεται <span className="nexus-hero__headline--accent">Εξέλιξη</span>
+                    B2B προμηθευτής για εξαρτήματα<br />
+                    <span className="nexus-hero__headline--accent">νερού, φίλτρα και πνευματικά συστήματα</span>
                 </h1>
 
                 {/* Description */}
                 <p className="nexus-hero__description">
-                    Συστήματα αέρος και εξοπλισμός επεξεργασίας νερού για επαγγελματίες, με 45+ χρόνια εμπειρίας.
+                    Ρακόρ, φίλτρα νερού, πνευματικά και τεχνικές λύσεις εφαρμογής για βιομηχανία,
+                    συντήρηση και επαγγελματικές εγκαταστάσεις.
                 </p>
 
                 {/* Tagline */}
                 <p className="nexus-hero__tagline">
-                    Η ποιότητα ξεκινά από τη σωστή εγκατάσταση.
+                    {PRODUCT_COUNT} προϊόντα • χονδρική διαθεσιμότητα • τεχνική υποστήριξη
                 </p>
 
                 {/* CTA */}

@@ -19,6 +19,7 @@ import {
     isUserAdmin,
     getAdminFirestore,
 } from '@/lib/firebase-admin';
+import { isOpenEscalationStatus } from '@/lib/chat/session-metadata';
 import type { ChatMessageRole } from '@/lib/chat/types';
 
 export async function GET(request: NextRequest) {
@@ -180,8 +181,20 @@ export async function GET(request: NextRequest) {
                           lastMessageAt:
                               sessionDoc.data()?.lastMessageAt?.toDate?.()?.toISOString() ??
                               undefined,
+                          lastMessagePreview:
+                              sessionDoc.data()?.lastMessagePreview as string | undefined,
+                          lastMessageRole:
+                              sessionDoc.data()?.lastMessageRole as ChatMessageRole | undefined,
+                          messageCount:
+                              (sessionDoc.data()?.messageCount as number | undefined) ?? 0,
+                          adminUnreadCount:
+                              (sessionDoc.data()?.adminUnreadCount as number | undefined) ?? 0,
                           customerUnreadCount:
                               (sessionDoc.data()?.customerUnreadCount as number | undefined) ?? 0,
+                          isEscalated:
+                              sessionDoc.data()?.escalationStatus !== undefined
+                                  ? isOpenEscalationStatus(sessionDoc.data()?.escalationStatus)
+                                  : Boolean(sessionDoc.data()?.isEscalated),
                       }
                     : null,
                 messages,

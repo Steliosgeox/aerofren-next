@@ -336,10 +336,11 @@ export function Footer({ currentYear }: FooterProps) {
       role="contentinfo"
       aria-label="Υποσέλιδο"
     >
-      <SimpleGradientBg />
-      <WatermarkText />
+      <div data-nosnippet>
+        <SimpleGradientBg />
+        <WatermarkText />
 
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-24">
+        <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-24">
         {/* PERF: Disabled spotlight - getBoundingClientRect on every mouse move kills 4K */}
         <MagicBento
           enableSpotlight={false}
@@ -510,6 +511,7 @@ export function Footer({ currentYear }: FooterProps) {
               Χάρτης ιστότοπου
             </Link>
           </nav>
+        </div>
         </div>
       </div>
 
