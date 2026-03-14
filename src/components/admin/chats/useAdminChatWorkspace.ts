@@ -70,6 +70,9 @@ import {
 import { fetchChatHistoryPage, type ChatHistoryMessage, type ChatSessionSummary } from '@/services/chat';
 import { HttpError } from '@/services/http';
 
+const THREAD_UPDATES_ERROR_MESSAGE = 'Αποτυχία λήψης ενημερώσεων συνομιλίας.';
+const THREAD_POLL_INTERVAL_MS = 5000;
+
 function readAdminChatDraftIndex(): Record<string, number> {
     try {
         const raw = localStorage.getItem(ADMIN_CHAT_DRAFT_INDEX_KEY);
@@ -141,6 +144,9 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
     const [hasMoreMessages, setHasMoreMessages] = useState(false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
+    const [threadSyncMode, setThreadSyncMode] = useState<'connecting' | 'live' | 'polling'>(
+        'connecting',
+    );
     const [statusTab, setStatusTab] = useState<WorkspaceTab>('open');
     const [searchQuery, setSearchQueryState] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -261,6 +267,7 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         setHasMoreMessages(false);
         setIsLoadingOlderMessages(false);
         setHasDetachedThreadMessages(false);
+        setThreadSyncMode('connecting');
         shouldScrollToBottomRef.current = false;
         realtimeSignatureRef.current = null;
         previousScrollHeightRef.current = null;
@@ -323,6 +330,62 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
     const refreshSessions = useCallback(async () => {
         await fetchSessions();
     }, [fetchSessions]);
+
+    const syncLatestMessages = useCallback(
+        async (
+            sessionId: string,
+            options?: {
+                background?: boolean;
+                suppressError?: boolean;
+            },
+        ) => {
+            if (!user) return false;
+            if (!options?.background) {
+                setIsLoadingMessages(true);
+            }
+
+            try {
+                const data = await fetchChatHistoryPage(user, sessionId, {
+                    limit: HISTORY_PAGE_SIZE,
+                });
+
+                setRealtimeMessages(data.items);
+                if (olderMessagesRef.current.length === 0) {
+                    setMessagesCursor(data.nextCursor);
+                    setHasMoreMessages(Boolean(data.nextCursor));
+                }
+
+                if (data.session) {
+                    setThreadSessionMeta((prev) =>
+                        prev?.sessionId === sessionId ? { ...prev, ...data.session } : data.session,
+                    );
+                    applySessionPatch(sessionId, buildSessionPatchFromSummary(data.session));
+                }
+
+                setErrorMessage((current) => {
+                    if (!options?.suppressError) return null;
+                    return current === THREAD_UPDATES_ERROR_MESSAGE ? null : current;
+                });
+                setAuthError(false);
+                return true;
+            } catch (error) {
+                if (!options?.suppressError) {
+                    const message =
+                        error instanceof Error ? error.message : 'Αποτυχία φόρτωσης μηνυμάτων.';
+                    setErrorMessage(message);
+                }
+                if (error instanceof HttpError && (error.status === 401 || error.status === 403)) {
+                    setAuthError(true);
+                }
+                return false;
+            } finally {
+                if (!options?.background) {
+                    setIsLoadingMessages(false);
+                }
+            }
+        },
+        [applySessionPatch, user],
+    );
 
     const fetchOlderMessages = useCallback(async (sessionId: string, cursor: string | null) => {
         if (!user || !cursor) return;
@@ -544,8 +607,13 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
 
         resetThreadState();
         shouldScrollToBottomRef.current = true;
-        setIsLoadingMessages(true);
-    }, [resetThreadState, selectedSessionId]);
+        if (!user) {
+            setIsLoadingMessages(false);
+            return;
+        }
+
+        void syncLatestMessages(selectedSessionId);
+    }, [resetThreadState, selectedSessionId, syncLatestMessages, user]);
 
     useEffect(() => {
         if (!selectedSessionId || !user) return;
@@ -554,7 +622,7 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         try {
             db = getFirestoreDb();
         } catch {
-            setIsLoadingMessages(false);
+            setThreadSyncMode('polling');
             return;
         }
 
@@ -616,6 +684,7 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
                 shouldScrollToBottomRef.current ||
                 (hasThreadChanged && isThreadNearBottom(threadScrollerRef.current));
 
+            setThreadSyncMode('live');
             realtimeSignatureRef.current = nextSignature;
             setRealtimeMessages(nextRealtimeMessages);
 
@@ -631,13 +700,15 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
                 setHasDetachedThreadMessages(true);
             }
 
-            setErrorMessage(null);
+            setErrorMessage((current) =>
+                current === THREAD_UPDATES_ERROR_MESSAGE ? null : current,
+            );
             setAuthError(false);
             setIsLoadingMessages(false);
         }, (error) => {
             console.warn('[admin chats] message listener error', error);
+            setThreadSyncMode('polling');
             setIsLoadingMessages(false);
-            setErrorMessage('Αποτυχία λήψης ενημερώσεων συνομιλίας.');
             const errorCode =
                 typeof error === 'object' && error !== null && 'code' in error
                     ? String(error.code)
@@ -645,8 +716,25 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
             if (errorCode === 'permission-denied' || errorCode === 'unauthenticated') {
                 setAuthError(true);
             }
+            void syncLatestMessages(selectedSessionId, {
+                background: true,
+                suppressError: true,
+            });
         });
-    }, [selectedSessionId, threadScrollerRef, user]);
+    }, [selectedSessionId, syncLatestMessages, threadScrollerRef, user]);
+
+    useEffect(() => {
+        if (!selectedSessionId || !user || threadSyncMode !== 'polling') return;
+
+        const intervalId = window.setInterval(() => {
+            void syncLatestMessages(selectedSessionId, {
+                background: true,
+                suppressError: true,
+            });
+        }, THREAD_POLL_INTERVAL_MS);
+
+        return () => window.clearInterval(intervalId);
+    }, [selectedSessionId, syncLatestMessages, threadSyncMode, user]);
 
     useEffect(() => {
         if (!selectedSessionId || !user || isLoadingMessages || messages.length === 0) return;
@@ -822,6 +910,10 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         try {
             await replyToChatSession(user, selectedSessionId, previousDraft);
             removeAdminChatDraft(selectedSessionId);
+            await syncLatestMessages(selectedSessionId, {
+                background: true,
+                suppressError: true,
+            });
         } catch (error) {
             setReplyDraftState(previousDraft);
             setSuccessMessage(null);
@@ -829,7 +921,7 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         } finally {
             setIsSendingReply(false);
         }
-    }, [canReply, replyDraft, selectedSessionId, user]);
+    }, [canReply, replyDraft, selectedSessionId, syncLatestMessages, user]);
 
     const exportToCSV = useCallback(() => {
         if (!selectedSessionId || messages.length === 0) return;
@@ -870,6 +962,7 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         hasMoreMessages,
         isLoadingMessages,
         isLoadingOlderMessages,
+        threadSyncMode,
         statusTab,
         activeWorkspaceTab,
         queueInsights,

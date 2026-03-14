@@ -92,7 +92,9 @@ export interface AdminChatWorkspaceState {
     groupedMessages: AdminChatGroupedMessageEntry[];
     messagesCursor: string | null;
     hasMoreMessages: boolean;
+    isLoadingMessages: boolean;
     isLoadingOlderMessages: boolean;
+    threadSyncMode: 'connecting' | 'live' | 'polling';
     statusTab: AdminChatWorkspaceTab;
     queueInsights: {
         waitingOnAdmin: number;

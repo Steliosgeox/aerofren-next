@@ -133,6 +133,7 @@ export async function POST(
                     lastMessageAt: sentAt,
                     lastMessagePreview: buildMessagePreview(content),
                     lastMessageRole: 'admin',
+                    messageCount: FieldValue.increment(1),
                     waitingOn: 'customer',
                     adminUnreadCount: 0,
                     customerUnreadCount: FieldValue.increment(1),

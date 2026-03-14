@@ -444,6 +444,16 @@
   flex: 1;
 }
 
+.threadEmptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}
+
 .quickReplies {
   display: flex;
   flex-wrap: wrap;
@@ -505,6 +515,62 @@
   border-color: rgba(22, 163, 74, 0.18);
   background: rgba(22, 163, 74, 0.08);
   color: #166534;
+}
+
+.composerCard {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(191, 219, 254, 0.95);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(148, 163, 184, 0.12);
+}
+
+.composerInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 140px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 4px 6px;
+}
+
+.composerInput::placeholder {
+  color: #94a3b8;
+}
+
+.sendButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 160ms ease, opacity 160ms ease;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .detailHeading {
@@ -733,42 +799,6 @@
   background: #ef4444;
 }
 
-:global(.admin-chat-rce .admin-chat-rce__composer .rce-container-input) {
-  border: 1px solid rgba(191, 219, 254, 0.95);
-  border-radius: 18px;
-  background: #ffffff;
-  padding: 6px 8px;
-  box-shadow: 0 12px 30px rgba(148, 163, 184, 0.12);
-}
-
-:global(.admin-chat-rce .admin-chat-rce__composer .rce-input) {
-  min-height: 42px;
-  color: #0f172a;
-  font-size: 14px;
-  background: transparent;
-}
-
-:global(.admin-chat-rce .admin-chat-rce__composer .rce-input::placeholder) {
-  color: #94a3b8;
-}
-
-:global(.admin-chat-rce .admin-chat-rce__composer .rce-input-buttons) {
-  margin: 0;
-}
-
-:global(.admin-chat-rce .rce-button) {
-  border-radius: 999px;
-  background: #2563eb;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-:global(.admin-chat-rce .rce-button.outline) {
-  color: #2563eb;
-  border-color: #2563eb;
-}
-
 @media (max-width: 1279px) {
   .layout {
     grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
@@ -844,6 +874,15 @@
   .composerMeta {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .composerCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sendButton {
+    width: 100%;
   }
 
   .quickReplies {

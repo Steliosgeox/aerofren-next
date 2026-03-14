@@ -42,6 +42,7 @@ describe('chat route incident contract', () => {
         const source = readSource('src/app/api/admin/chats/[sessionId]/reply/route.ts');
 
         expect(source).toMatch(/role:\s*'admin'/);
+        expect(source).toMatch(/messageCount:\s*FieldValue\.increment\(1\)/);
         expect(source).toMatch(/customerUnreadCount:\s*FieldValue\.increment\(1\)/);
         expect(source).toMatch(/waitingOn:\s*'customer'/);
     });

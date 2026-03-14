@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Button, Input, MessageList } from '@/vendor/react-chat-elements';
+import { MessageList } from '@/vendor/react-chat-elements';
 import { buildInitials } from '@/lib/chat/session-metadata';
 import { buildFallbackAvatar } from './adapter-helpers';
 import { AdminChatRceDetails } from './AdminChatRceDetails';
@@ -58,14 +58,12 @@ export function AdminChatRceThread({
             void workspace.fetchOlderMessages(currentConversation.sessionId, workspace.messagesCursor);
         }
     };
-
-    const sendButton = (
-        <Button
-            text={workspace.isSendingReply ? 'Sending…' : 'Send'}
-            disabled={!workspace.replyDraft.trim() || workspace.isSendingReply || !workspace.canReply}
-            onClick={() => void workspace.handleReplySubmit()}
-        />
-    );
+    const threadSyncLabel =
+        workspace.threadSyncMode === 'live'
+            ? 'Live updates active'
+            : workspace.threadSyncMode === 'polling'
+                ? 'Server sync fallback active'
+                : 'Connecting thread updates…';
 
     return (
         <div className={styles.threadShell}>
@@ -172,18 +170,26 @@ export function AdminChatRceThread({
             ) : null}
 
             <div className={styles.messagePane}>
-                <div className={styles.messageListWrap}>
-                    <MessageList
-                        referance={threadScrollerRef}
-                        className="admin-chat-rce__message-list"
-                        lockable={true}
-                        toBottomHeight={240}
-                        downButton={true}
-                        downButtonBadge={workspace.hasDetachedThreadMessages ? 1 : undefined}
-                        dataSource={messageListItems}
-                        onScroll={handleThreadScroll}
-                    />
-                </div>
+                {workspace.isLoadingMessages ? (
+                    <div className={styles.threadEmptyState}>Loading conversation…</div>
+                ) : messageListItems.length === 0 ? (
+                    <div className={styles.threadEmptyState}>
+                        No messages were loaded for this thread yet.
+                    </div>
+                ) : (
+                    <div className={styles.messageListWrap}>
+                        <MessageList
+                            referance={threadScrollerRef}
+                            className="admin-chat-rce__message-list"
+                            lockable={true}
+                            toBottomHeight={240}
+                            downButton={true}
+                            downButtonBadge={workspace.hasDetachedThreadMessages ? 1 : undefined}
+                            dataSource={messageListItems}
+                            onScroll={handleThreadScroll}
+                        />
+                    </div>
+                )}
             </div>
 
             <div className={styles.composerSection}>
@@ -206,7 +212,7 @@ export function AdminChatRceThread({
                             <span className={styles.composerHint}>
                                 Enter sends. Shift+Enter inserts a new line.
                             </span>
-                            <span>Live Firestore thread connected</span>
+                            <span>{threadSyncLabel}</span>
                         </div>
 
                         <div className={styles.quickReplies}>
@@ -245,27 +251,34 @@ export function AdminChatRceThread({
                             </button>
                         </div>
 
-                        <div className="admin-chat-rce__composer">
-                            <Input
-                                referance={composerRef}
-                                multiline={true}
-                                autoHeight={true}
-                                minHeight={44}
-                                maxHeight={140}
-                                maxlength={5000}
+                        <div className={styles.composerCard}>
+                            <textarea
+                                ref={composerRef}
                                 value={workspace.replyDraft}
                                 placeholder="Type a human reply to the customer..."
-                                onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
-                                    workspace.setReplyDraft(event.target.value)
-                                }
-                                onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                className={styles.composerInput}
+                                rows={1}
+                                maxLength={5000}
+                                onChange={(event) => workspace.setReplyDraft(event.target.value)}
+                                onKeyDown={(event) => {
                                     if (event.key === 'Enter' && !event.shiftKey) {
                                         event.preventDefault();
                                         void workspace.handleReplySubmit();
                                     }
                                 }}
-                                rightButtons={sendButton}
                             />
+                            <button
+                                type="button"
+                                className={styles.sendButton}
+                                disabled={
+                                    !workspace.replyDraft.trim() ||
+                                    workspace.isSendingReply ||
+                                    !workspace.canReply
+                                }
+                                onClick={() => void workspace.handleReplySubmit()}
+                            >
+                                {workspace.isSendingReply ? 'Sending…' : 'Send'}
+                            </button>
                         </div>
                     </>
                 )}
