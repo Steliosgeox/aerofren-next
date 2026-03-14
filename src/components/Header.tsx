@@ -24,6 +24,7 @@ import {
 import { NotificationBell } from './NotificationBell';
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_HREF } from "@/lib/constants/aerofren";
+import { shouldHideHeaderOnRoute } from "@/lib/layout/route-chrome";
 
 const desktopNavItems = SITE_NAV_ITEMS.map(({ name, path, hasDropdown }) => ({
   name,
@@ -264,6 +265,10 @@ function HeaderComponent() {
 
 
   const showMobileDock = !(pathname?.startsWith('/admin'));
+
+  if (shouldHideHeaderOnRoute(pathname)) {
+    return null
+  }
 
   return (
     <>

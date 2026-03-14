@@ -1004,3 +1004,39 @@ body.perf-no-blur *::after {
     bottom: calc(1.5rem + 72px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* ========================================
+   ADMIN CHAT TEAMS THEME
+   Route-scoped override for /admin/chats
+   ======================================== */
+
+.admin-teams-theme {
+  --theme-bg-solid: #1f2029;
+  --theme-bg: rgba(31, 32, 41, 0.96);
+  --theme-glass-bg: rgba(255, 255, 255, 0.04);
+  --theme-glass-border: rgba(255, 255, 255, 0.08);
+  --theme-text: #f3f4fb;
+  --theme-text-muted: #a3acc2;
+  --theme-accent: #6d72ff;
+  --theme-accent-hover: #5b60ef;
+  --theme-accent-rgb: 109, 114, 255;
+  --theme-mega-bg: rgba(31, 32, 41, 0.98);
+  background:
+    radial-gradient(circle at top left, rgba(109, 114, 255, 0.12), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(45, 212, 191, 0.08), transparent 24%),
+    #1f2029;
+}
+
+.admin-teams-theme [data-role="teams-surface"] {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-teams-theme ::-webkit-scrollbar-track {
+  background: rgba(19, 20, 28, 0.92);
+}
+
+.admin-teams-theme ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(109, 114, 255, 0.7), rgba(109, 114, 255, 0.28));
+  border-color: rgba(19, 20, 28, 0.92);
+}

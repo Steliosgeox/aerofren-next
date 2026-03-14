@@ -2,6 +2,7 @@
 
 import { useState, useCallback, memo } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   Facebook,
@@ -15,6 +16,7 @@ import {
 import { MagicBento, ParticleCard } from "@/components/MagicBento";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
+import { shouldHideFooterOnRoute } from "@/lib/layout/route-chrome";
 import {
   BUSINESS_ADDRESS_CITY_LINE_EL,
   BUSINESS_ADDRESS_STREET,
@@ -297,6 +299,7 @@ interface FooterProps {
 }
 
 export function Footer({ currentYear }: FooterProps) {
+  const pathname = usePathname();
   const glowColor = "var(--theme-accent-rgb)";
   const { openPreferences } = useCookieConsent();
   const [email, setEmail] = useState("");
@@ -329,6 +332,10 @@ export function Footer({ currentYear }: FooterProps) {
       setEmailError(null);
     }
   }, [emailError]);
+
+  if (shouldHideFooterOnRoute(pathname)) {
+    return null;
+  }
 
   return (
     <footer
