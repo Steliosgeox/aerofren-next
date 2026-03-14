@@ -8,8 +8,17 @@ import {
 } from './adapter-helpers';
 
 export function useAdminChatRceAdapter(workspace: AdminChatWorkspaceState) {
-    const chatListItems = useMemo(() => buildRceChatListItems(workspace), [workspace]);
-    const messageListItems = useMemo(() => buildRceMessageListItems(workspace), [workspace]);
+    const { sessionRows, currentConversation, groupedMessages } = workspace;
+
+    const chatListItems = useMemo(
+        () => buildRceChatListItems({ sessionRows }),
+        [sessionRows],
+    );
+
+    const messageListItems = useMemo(
+        () => buildRceMessageListItems({ currentConversation, groupedMessages }),
+        [currentConversation, groupedMessages],
+    );
 
     return {
         chatListItems,

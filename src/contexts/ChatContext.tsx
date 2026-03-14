@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCookieConsent } from '@/components/cookies/CookieConsentProvider';
 import { getFirestoreDb } from '@/lib/firebase';
@@ -84,6 +85,8 @@ function getStoredSessionId(): string | null {
 }
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const isAdminRoute = pathname?.startsWith('/admin') ?? false;
     const { user } = useAuth();
     const { allowFunctional, isReady: cookieConsentReady } = useCookieConsent();
 
@@ -186,12 +189,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }, [applyHistory, sessionId, user]);
 
     useEffect(() => {
-        if (!user || !sessionId) return;
+        if (isAdminRoute || !user || !sessionId) return;
         void refreshHistory();
-    }, [refreshHistory, sessionId, user]);
+    }, [isAdminRoute, refreshHistory, sessionId, user]);
 
     useEffect(() => {
-        if (!user || !sessionId) return;
+        if (isAdminRoute || !user || !sessionId) return;
 
         let db;
         try {
@@ -243,7 +246,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }, (error) => {
             console.warn('[chat] session listener error', error);
         });
-    }, [refreshHistory, sessionId, user]);
+    }, [isAdminRoute, refreshHistory, sessionId, user]);
 
     useEffect(() => {
         lastSessionSnapshotRef.current = null;

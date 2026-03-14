@@ -649,3 +649,235 @@ External sources used for this plan:
   - `https://detaysoft.github.io/docs-react-chat-elements/docs/input/`
 - React 19 support issue:
   - `https://github.com/Detaysoft/react-chat-elements/issues/230`
+
+---
+
+## 13. Senior Dev Post-Mortem — RCE Implementation Review
+
+**Date reviewed:** 2026-03-14
+**Reviewer:** Claude Sonnet 4.6 (senior full-stack review mode)
+**Status of implementation at review time:** live, crashing in production
+
+---
+
+### Executive Summary
+
+The AI that wrote the RCE implementation read the plan and produced an 80% correct adapter integration. The vendor is properly set up, `ChatList` and `MessageList` are genuinely wired, and the adapter pattern is clean. That's the good news.
+
+The bad news: it shipped a crash-inducing layout bug it should have caught in 30 seconds by reading `(main)/layout.tsx`. It skipped the `Input` component mandate. It destroyed the feature flag. And it left a debug artifact in a production header that says "React Chat Elements" in an eyebrow label visible to every admin.
+
+Overall grade: **C+**. Good bones, bad execution.
+
+---
+
+### Crash Root Cause — The One That Actually Matters
+
+**Severity: P0 — production server actively crashing**
+
+The crash is not in any RCE file. Every RCE file is read-only relative to data fetching. The crash is here:
+
+```tsx
+// src/app/(main)/layout.tsx — line 26
+<ChatProvider>
+  ...
+  <main>{children}</main>   // ← /admin/chats renders inside here
+```
+
+`ChatProvider` (customer-facing chatbot context) wraps every route in the `(main)` group, including `/admin/chats`. When an admin user opens the workspace, `ChatContext` initializes with their auth token. If a chat session ID is present in state, `refreshHistory()` fires immediately and on every Firestore snapshot.
+
+`refreshHistory()` calls `/api/chat/history?sessionId=...&limit=50`. The endpoint is rate-limited per IP. The admin workspace's own thread-polling fallback (`THREAD_POLL_INTERVAL_MS = 5000` in `useAdminChatWorkspace.ts`) also hits `/api/chat/history` from the same IP when Firestore listeners fail or degrade.
+
+Two independent polling systems sharing one IP-bucketed rate limit = death spiral:
+
+```
+Firestore snapshot fires
+→ ChatContext.refreshHistory() → POST /api/chat/history → 500
+→ console.warn, no backoff
+→ next Firestore snapshot → same 500
+→ rate limit window saturated → 429
+→ ChatContext catches 429 as console.warn, no abort
+→ polling continues
+→ 500 → 429 → 500 → 429...
+```
+
+**The developer should have read `(main)/layout.tsx` before shipping.** This is a two-minute audit. The file is 45 lines. The `ChatProvider` import is on line 6. This is not a subtle bug — it is an obvious layout conflict that manifests the moment you look at what wraps the route.
+
+**Fix required (in `ChatContext.tsx`):**
+
+```tsx
+// At the top of ChatProvider function body
+const pathname = usePathname();
+if (pathname?.startsWith('/admin')) {
+    // Skip all initialization — admin routes handle their own chat state
+    return <>{children}</>;
+}
+```
+
+Or alternatively, wrap `ChatProvider` in a client component that checks `pathname` before rendering.
+
+---
+
+### Plan Violations — By Priority
+
+#### Violation 1: `Input` component not used (Stage 4 non-negotiable)
+
+The plan states this explicitly at three different points:
+
+> Rule 1: Do not rewrite ChatList, MessageList, or Input as local clones.
+
+> Stage 4: Replace the current textarea shell with RCE `Input`.
+
+> Phase 1 behavior: use upstream `Input`. No custom glass composer. No oversized bottom tray.
+
+What was shipped: a custom `<textarea>` with a custom Send `<button>` inside `.composerCard`. This is exactly "reimplementing an upstream component in local code." The plan was unambiguous.
+
+The quick-reply chips above the composer are fine — the plan explicitly allowed those as local UI. The composer itself was not allowed to be local, and it is.
+
+#### Violation 2: Stage 1 feature flag destroyed
+
+The plan was precise about rollout safety:
+
+> Stage 1: Switch the export path in `index.ts` to a wrapper that can choose legacy UI or RCE UI. Rollback is one line, not a rescue refactor.
+
+What was shipped:
+
+```ts
+// src/components/admin/chats/index.ts
+export { AdminChatRceWorkspace as AdminTeamsWorkspace } from './rce';
+```
+
+This is a hard cutover with no flag. `AdminTeamsWorkspace.tsx` is now a dead file that the page doesn't load. Rolling back requires code changes. The plan said this exact pattern was the one to avoid.
+
+#### Violation 3: Stage 2 adapter outputs incomplete
+
+The plan specifies the adapter must export six prop groups:
+
+- `chatListItems` ✅
+- `messageListItems` ✅
+- `composerProps` ❌ not created
+- `headerProps` ❌ not created
+- `detailsProps` ❌ not created
+- `actionProps` ❌ not created
+
+Four of six were skipped. The adapter hook currently returns only two values. As a result, all thread header, detail panel, action button, and composer props are assembled inline across `AdminChatRceThread.tsx` and `AdminChatRceDetails.tsx`, creating exactly the "logic scattered across render components" pattern the adapter was designed to prevent.
+
+#### Violation 4: `AdminChatRceActions.tsx` not created
+
+The plan lists this file as an explicit deliverable (§6, §5 Stage 5, §8 Files To Add). It does not exist. Actions (`handleStatusChange`, `handleCopy`, `exportToCSV`) are inline in `AdminChatRceThread.tsx` and `AdminChatRceDetails.tsx`. These belong in a dedicated actions component.
+
+#### Violation 5: Stage 8 tests not written
+
+The plan specifies a full test suite for the adapter layer:
+
+> - adapter tests for `useAdminChatRceAdapter`
+> - mapping tests for sessions → `ChatList`
+> - mapping tests for grouped messages → `MessageList`
+> - render tests for: selected session, read-only anonymous thread, resolved thread, detached-thread down button
+
+None of these exist. The `src/__tests__/adminChat/` directory has the two pre-existing test files (`routeChrome.test.ts`, `workspaceHelpers.test.ts`) and nothing new.
+
+---
+
+### Code Quality Issues
+
+#### Bug: `useMemo` with unstable object dependency
+
+```ts
+// src/components/admin/chats/rce/useAdminChatRceAdapter.ts
+const chatListItems = useMemo(() => buildRceChatListItems(workspace), [workspace]);
+const messageListItems = useMemo(() => buildRceMessageListItems(workspace), [workspace]);
+```
+
+`workspace` is the object literal returned by `useAdminChatWorkspace()`. It is a new reference on every render. These `useMemo` calls never memoize — they recompute both lists on every render, including renders triggered by unrelated state (draft typing, search input, etc.). The memoization provides zero benefit.
+
+Fix: memoize on the specific inputs that `buildRce*` functions actually read:
+
+```ts
+const chatListItems = useMemo(
+    () => buildRceChatListItems({ sessionRows: workspace.sessionRows }),
+    [workspace.sessionRows],
+);
+const messageListItems = useMemo(
+    () => buildRceMessageListItems({
+        currentConversation: workspace.currentConversation,
+        groupedMessages: workspace.groupedMessages,
+    }),
+    [workspace.currentConversation, workspace.groupedMessages],
+);
+```
+
+#### Bug: debug label shipped to production
+
+```tsx
+// src/components/admin/chats/rce/AdminChatRceWorkspace.tsx — line 38
+<span className={styles.eyebrow}>React Chat Elements</span>
+```
+
+This is a developer artifact. "React Chat Elements" is the name of the npm package, not a label an admin user should see in a production workspace. It should read something like "Support Workspace" or "Admin".
+
+#### TypeScript bug: `messageCount` access
+
+`AdminChatRceThread.tsx` line 99: `{currentConversation.messageCount} messages`. Per existing notes, `messageCount` on the `AdminChatConversation` interface is typed as `number` in `adapter-helpers.ts`, but this field may not be present in the actual Firestore data shape. This was a pre-existing tsc error from the page file and has been carried forward.
+
+---
+
+### What Was Done Correctly
+
+To be fair, these parts were executed well:
+
+1. **Vendor snapshot**: `src/vendor/react-chat-elements/` is a proper complete vendor snapshot. Stage 0 was executed. The package compatibility gate passed.
+
+2. **Hook boundary respected**: `useAdminChatWorkspace` remains the single source of truth. No logic was duplicated or forked. The adapter reads from the hook; it does not shadow it.
+
+3. **`ChatList` and `MessageList` genuinely used**: These are not reimplemented in Tailwind. The upstream components are mounted with real data flowing through `buildRceChatListItems` and `buildRceMessageListItems`.
+
+4. **Adapter functions are pure**: `adapter-helpers.ts` contains clean, side-effect-free mapping functions. `buildFallbackAvatar` (inline SVG data URL) is a good solution for the avatar gap. The message role → position/color mapping is correct.
+
+5. **CSS module structure**: Using `:global(.admin-chat-rce .rce-*)` selectors to override upstream classes from within a scoped module is the correct pattern. The specificity chain is tight and won't leak.
+
+6. **Responsive layout**: Three-column → two-column → single-column breakpoints are correct and complete.
+
+7. **`threadScrollerRef` wiring to `MessageList`**: `referance={threadScrollerRef}` (the upstream typo) is correctly passed to `MessageList`, satisfying the hook's scroll dependency.
+
+8. **Route-chrome**: Header and footer are properly hidden on `/admin/chats`. Tests pass.
+
+9. **Status action logic**: Resolve, reopen, and mark-in-progress conditions are correct and match the workspace hook's expected inputs.
+
+10. **Quick replies**: Three contextually appropriate default replies. Wired to `injectQuickReply()`. Plan explicitly allowed these as local UI.
+
+---
+
+### Delivery Gap Summary
+
+| Plan requirement | Status |
+|---|---|
+| Stage 0: vendor snapshot or package integration | ✅ done (vendor snapshot) |
+| Stage 1: reversible feature flag | ❌ hard cutover, no flag |
+| Stage 2: adapter with 6 prop groups | ❌ only 2 of 6 implemented |
+| Stage 3: inbox with `ChatList` | ✅ done |
+| Stage 4: thread with `MessageList` + upstream `Input` | ⚠️ `MessageList` done, `Input` skipped |
+| Stage 5: `AdminChatRceActions.tsx` | ❌ file not created, logic scattered inline |
+| Stage 6: mobile layout | ✅ done (CSS breakpoints present) |
+| Stage 7: route-scoped styling | ✅ done |
+| Stage 8: adapter tests | ❌ not written |
+| Layout audit (`ChatProvider` conflict) | ❌ missed entirely, causes P0 crash |
+
+---
+
+### Required Fixes Before This Is Releasable
+
+1. **Fix the crash** — add pathname check in `ChatContext.tsx` so it skips initialization on `/admin/*` routes.
+
+2. **Fix `useMemo` deps** — memoize on `sessionRows`, `currentConversation`, `groupedMessages` instead of the whole workspace object.
+
+3. **Fix the eyebrow label** — change "React Chat Elements" to something appropriate for an admin user.
+
+4. **Replace custom composer with upstream `Input`** — Stage 4 non-negotiable.
+
+5. **Restore the feature flag** — revert `index.ts` to a flag-driven export. Keep `AdminTeamsWorkspace.tsx` as the stable fallback.
+
+6. **Create `AdminChatRceActions.tsx`** — move action logic out of the thread component.
+
+7. **Write the Stage 8 test suite** — adapter mapping tests, render tests for anonymous/resolved/detached states.
+
+Items 4–7 are medium-term. Items 1–3 are blockers that must go out now.

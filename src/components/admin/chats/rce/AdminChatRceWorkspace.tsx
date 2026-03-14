@@ -35,10 +35,10 @@ export function AdminChatRceWorkspace() {
                     </Link>
 
                     <div className={styles.headerTitle}>
-                        <span className={styles.eyebrow}>React Chat Elements</span>
-                        <h1>Admin chat workspace</h1>
+                        <span className={styles.eyebrow}>Support Workspace</span>
+                        <h1>Admin conversations</h1>
                         <span className={styles.subtitle}>
-                            Upstream chat surface wired to the existing Firestore admin workflow.
+                            Live Firestore feed — realtime inbox and thread sync.
                         </span>
                     </div>
                 </div>
