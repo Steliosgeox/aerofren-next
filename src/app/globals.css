@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../vendor/react-chat-elements/dist/main.css";
 
 /* ========================================
    AEROFREN Design System v3.0
