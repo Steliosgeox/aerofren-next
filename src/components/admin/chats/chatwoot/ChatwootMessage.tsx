@@ -84,15 +84,15 @@ function getBubbleConfig(role: AdminChatThreadMessage['role']): BubbleConfig {
         case 'user':
             return {
                 bgColor: 'var(--cw-msg-user)',
-                textColor: '#cdd3e4',
+                textColor: '#d4dcef',
                 isRight: false,
                 borderRadius: '0px 8px 8px 8px',
-                avatarBg: '#2a3a4f',
+                avatarBg: '#1e3050',
             };
         case 'assistant':
             return {
                 bgColor: 'var(--cw-msg-bot)',
-                textColor: '#b5bce0',
+                textColor: '#c8d0e8',
                 isRight: false,
                 borderRadius: '0px 8px 8px 8px',
                 avatarBg: '#3d2a4f',

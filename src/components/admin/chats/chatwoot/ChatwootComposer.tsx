@@ -72,7 +72,7 @@ export function ChatwootComposer({ workspace, composerRef }: ChatwootComposerPro
     const pillTabClass = (active: boolean) =>
         `px-3 h-7 rounded text-[11px] font-medium transition-colors cursor-pointer ${
             active
-                ? 'bg-[var(--cw-accent-dim)] text-[var(--cw-accent)]'
+                ? 'bg-white/[0.08] text-[var(--cw-text-1)]'
                 : 'text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.04]'
         }`;
 

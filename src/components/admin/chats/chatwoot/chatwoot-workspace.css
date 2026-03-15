@@ -1,9 +1,9 @@
 .chatwoot-workspace {
   --cw-bg-rail:    #151922;
-  --cw-bg-sidebar: #1c2133;
-  --cw-bg-main:    #161a27;
-  --cw-bg-panel:   #1c2133;
-  --cw-border:     rgba(255,255,255,0.09);
+  --cw-bg-sidebar: #1c1f2e;
+  --cw-bg-main:    #14161f;
+  --cw-bg-panel:   #1c1f2e;
+  --cw-border:     rgba(255,255,255,0.06);
   --cw-text-1:     #e8ecf4;
   --cw-text-2:     #9aa3b8;
   --cw-text-3:     #6b7a9a;
@@ -11,9 +11,9 @@
   --cw-accent:     #1f93ff;
   --cw-accent-dim: rgba(31,147,255,0.12);
   /* Message bubbles — must be clearly visible on dark bg */
-  --cw-msg-user:   #3d4b6a;  /* medium blue-gray for inbound */
-  --cw-msg-bot:    #2e3b5e;  /* slightly darker for bot */
-  --cw-msg-admin:  #1f93ff;  /* bright woot blue for outbound (agent) */
+  --cw-msg-user:   #1d2b45;  /* medium blue-gray for inbound */
+  --cw-msg-bot:    #1a2440;  /* slightly darker for bot */
+  --cw-msg-admin:  #2563eb;  /* dark navy blue for outbound (agent) */
 }
 
 /* Card selection animation */

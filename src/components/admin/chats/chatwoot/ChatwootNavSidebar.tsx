@@ -64,7 +64,7 @@ function SectionHeader({ icon, label, expanded, onToggle, badge }: SectionHeader
         <button
             type="button"
             onClick={onToggle}
-            className="flex items-center gap-2 px-1.5 py-1 rounded-lg h-8 min-w-0 w-full text-left text-[var(--cw-text-2)] hover:bg-white/[0.05] transition-colors"
+            className="flex items-center gap-2 px-1.5 py-1 rounded-r-md h-8 min-w-0 w-full text-left text-[var(--cw-text-2)] hover:bg-white/[0.05] transition-colors"
         >
             <span className="flex-shrink-0 text-[var(--cw-text-3)]">{icon}</span>
             <span className="flex-1 truncate text-[12px] font-medium">{label}</span>
@@ -95,9 +95,9 @@ function LeafItem({ label, active, onClick }: LeafItemProps) {
                 onClick={onClick}
                 title={label}
                 className={[
-                    'flex h-7 items-center px-2 py-1 rounded-lg w-full text-left min-w-0 transition-colors',
+                    'flex h-7 items-center px-2 py-1 rounded-r-md w-full text-left min-w-0 transition-colors',
                     active
-                        ? 'text-[var(--cw-text-1)] bg-[var(--cw-accent-dim)] font-medium'
+                        ? 'text-[var(--cw-text-1)] bg-[var(--cw-accent-dim)] font-medium border-l-2 border-l-[var(--cw-accent)]'
                         : 'text-[var(--cw-text-2)] hover:bg-white/[0.05]',
                 ].join(' ')}
             >
@@ -175,9 +175,9 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                             type="button"
                             onClick={() => handleTabChange('waiting_on_admin')}
                             className={[
-                                'flex items-center gap-2 px-1.5 py-1 rounded-lg h-8 min-w-0 w-full text-left transition-colors',
+                                'flex items-center gap-2 px-1.5 py-1 rounded-r-md h-8 min-w-0 w-full text-left transition-colors',
                                 statusTab === 'waiting_on_admin'
-                                    ? 'text-[var(--cw-text-1)] bg-[var(--cw-accent-dim)]'
+                                    ? 'text-[var(--cw-text-1)] bg-[var(--cw-accent-dim)] border-l-2 border-l-[var(--cw-accent)]'
                                     : 'text-[var(--cw-text-2)] hover:bg-white/[0.05]',
                             ].join(' ')}
                         >

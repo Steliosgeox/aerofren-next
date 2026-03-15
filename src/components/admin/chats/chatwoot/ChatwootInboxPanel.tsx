@@ -63,9 +63,14 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
         <div className="w-[300px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
             {/* Top header row — title + icon actions */}
             <div className="h-14 flex-shrink-0 px-4 flex items-center justify-between border-b border-[var(--cw-border)]">
-                <span className="text-[15px] font-semibold text-[var(--cw-text-1)]">
-                    Συνομιλίες
-                </span>
+                <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[15px] font-semibold text-[var(--cw-text-1)]">
+                        Συνομιλίες
+                    </span>
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-white/[0.06] text-[var(--cw-text-3)] border border-[var(--cw-border)] whitespace-nowrap">
+                        Open
+                    </span>
+                </div>
                 <div className="flex items-center gap-0.5">
                     {([SortDesc, SlidersHorizontal, RotateCcw] as const).map((Icon, i) => (
                         <button
