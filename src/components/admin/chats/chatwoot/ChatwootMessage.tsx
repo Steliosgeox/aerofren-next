@@ -101,9 +101,9 @@ export default function ChatwootMessage({ entry, prevEntry }: ChatwootMessagePro
     // Day separator
     if (entry.type === 'day') {
         return (
-            <div className="flex items-center gap-2 my-1.5">
+            <div className="flex items-center gap-2 my-3">
                 <div className="flex-1 h-px bg-[var(--cw-border)]" />
-                <span className="text-[9px] text-[var(--cw-text-3)] font-medium uppercase tracking-wider flex-shrink-0 px-1">
+                <span className="text-[10px] text-[var(--cw-text-3)] font-medium uppercase tracking-wider flex-shrink-0 px-1">
                     {entry.label}
                 </span>
                 <div className="flex-1 h-px bg-[var(--cw-border)]" />
@@ -113,11 +113,11 @@ export default function ChatwootMessage({ entry, prevEntry }: ChatwootMessagePro
 
     const { message } = entry;
 
-    // System message — centered, no bubble
+    // System message — centered activity pill (Chatwoot style)
     if (message.role === 'system') {
         return (
-            <div className="text-center my-1">
-                <span className="text-[10px] text-[var(--cw-text-3)] italic bg-[var(--cw-border)] px-2 py-0.5 rounded">
+            <div className="flex items-center justify-center my-2 px-4">
+                <span className="text-[10px] text-[var(--cw-text-3)] bg-white/[0.06] border border-[var(--cw-border)] px-3 py-1 rounded-full leading-tight text-center">
                     {message.content}
                 </span>
             </div>

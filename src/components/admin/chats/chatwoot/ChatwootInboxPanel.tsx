@@ -1,6 +1,7 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, SortDesc, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import ChatwootConversationItem from './ChatwootConversationItem';
 import type { AdminChatSessionRow } from './ChatwootConversationItem';
 
@@ -37,6 +38,14 @@ interface ChatwootInboxPanelProps {
 // Component
 // ---------------------------------------------------------------------------
 
+type TabKey = 'mine' | 'unassigned' | 'all';
+
+const TABS: { key: TabKey; label: string }[] = [
+    { key: 'mine', label: 'Εμένα' },
+    { key: 'unassigned', label: 'Ανάθετα' },
+    { key: 'all', label: 'Όλα' },
+];
+
 export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProps) {
     const {
         sessionRows,
@@ -48,13 +57,50 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
         fetchSessions,
     } = workspace;
 
+    const [activeTab, setActiveTab] = useState<TabKey>('all');
+
     return (
         <div className="w-[300px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
-            {/* Thin header — session count */}
-            <div className="flex items-center px-3 h-8 flex-shrink-0 border-b border-[var(--cw-border)]">
-                <span className="text-[10px] text-[var(--cw-text-3)] font-medium">
-                    {sessionRows.length} συνομιλίες
+            {/* Top header row — title + icon actions */}
+            <div className="h-14 flex-shrink-0 px-4 flex items-center justify-between border-b border-[var(--cw-border)]">
+                <span className="text-[15px] font-semibold text-[var(--cw-text-1)]">
+                    Συνομιλίες
                 </span>
+                <div className="flex items-center gap-0.5">
+                    {([SortDesc, SlidersHorizontal, RotateCcw] as const).map((Icon, i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            className="w-6 h-6 rounded flex items-center justify-center text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors"
+                        >
+                            <Icon size={13} />
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Mine / Unassigned / All tabs */}
+            <div className="flex border-b border-[var(--cw-border)] flex-shrink-0">
+                {TABS.map(({ key, label }) => (
+                    <button
+                        key={key}
+                        type="button"
+                        onClick={() => setActiveTab(key)}
+                        className={[
+                            'px-3 h-9 text-[11px] font-medium border-b-2 -mb-px transition-colors',
+                            activeTab === key
+                                ? 'text-[var(--cw-accent)] border-[var(--cw-accent)]'
+                                : 'text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] border-transparent',
+                        ].join(' ')}
+                    >
+                        {label}
+                        {key === 'all' && (
+                            <span className="ml-1 text-[9px] rounded bg-white/[0.08] px-1">
+                                {sessionRows.length}
+                            </span>
+                        )}
+                    </button>
+                ))}
             </div>
 
             {/* Session list */}

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, MessageSquare, AlertTriangle, BellOff, Share2, ChevronDown } from 'lucide-react';
 import { ChatwootComposer } from './ChatwootComposer';
 import ChatwootMessage from './ChatwootMessage';
 
@@ -145,9 +145,9 @@ export default function ChatwootThread({
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--cw-bg-main)] min-w-0">
-            {/* Thread header */}
-            <div className="flex items-center gap-2.5 px-3 h-11 flex-shrink-0 border-b border-[var(--cw-border)]">
-                {/* Avatar */}
+            {/* Thread header — Chatwoot ConversationHeader h-14 */}
+            <div className="flex items-center gap-2 px-3 h-14 flex-shrink-0 border-b border-[var(--cw-border)] bg-[var(--cw-bg-main)]">
+                {/* Avatar — 32px circle */}
                 {photoURL ? (
                     <img
                         src={photoURL}
@@ -161,37 +161,56 @@ export default function ChatwootThread({
                 )}
 
                 {/* Name + source */}
-                <div className="min-w-0 flex flex-col">
-                    <span className="text-[13px] font-semibold text-[var(--cw-text-1)] truncate leading-tight">
-                        {currentConversationLabel}
-                    </span>
-                    <span className="text-[10px] text-[var(--cw-text-3)] truncate leading-tight">
-                        Aerofren Chat
-                    </span>
+                <div className="min-w-0 flex-1 flex flex-col">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[13px] font-semibold text-[var(--cw-text-1)] truncate leading-tight">
+                            {currentConversationLabel}
+                        </span>
+                        {/* Warning icon shown when escalated */}
+                        {currentConversation?.isEscalated && (
+                            <AlertTriangle size={12} className="flex-shrink-0 text-amber-400" />
+                        )}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-[var(--cw-text-3)] leading-tight">
+                            Aerofren Chat
+                        </span>
+                        <SyncIndicator mode={workspace.threadSyncMode} />
+                    </div>
                 </div>
 
-                {/* Right side controls */}
-                <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
-                    <SyncIndicator mode={workspace.threadSyncMode} />
-
-                    {escalationStatus && <StatusPill status={escalationStatus} />}
-
-                    <button
-                        onClick={() => workspace.handleStatusChange('resolved')}
-                        disabled={isResolved}
-                        className="px-2.5 py-1 rounded bg-[var(--cw-accent)] text-white text-[11px] font-medium hover:bg-[var(--cw-accent)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Κλείσιμο
+                {/* Right side actions — Chatwoot ConversationHeader actions */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                    {/* Mute icon button */}
+                    <button type="button" title="Σίγαση" className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors">
+                        <BellOff size={15} />
                     </button>
-
-                    {isResolved && (
+                    {/* Share/Export icon button */}
+                    <button type="button" title="Κοινοποίηση" className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors">
+                        <Share2 size={15} />
+                    </button>
+                    {/* Divider */}
+                    <div className="w-px h-5 bg-[var(--cw-border)] mx-1" />
+                    {/* Resolve button — Chatwoot: bg-woot-500 (blue), with chevron dropdown */}
+                    <div className="flex items-center">
                         <button
-                            onClick={() => workspace.handleStatusChange('in_progress')}
-                            className="px-2.5 py-1 rounded border border-[var(--cw-border)] text-[var(--cw-text-2)] text-[11px] hover:bg-white/[0.05] transition-colors"
+                            type="button"
+                            onClick={() => workspace.handleStatusChange(isResolved ? 'in_progress' : 'resolved')}
+                            className="h-8 px-3 rounded-l text-[12px] font-semibold text-white transition-colors"
+                            style={{ background: 'var(--cw-accent)' }}
                         >
-                            Επαναφορά
+                            {isResolved ? 'Επαναφορά' : 'Επίλυση'}
                         </button>
-                    )}
+                        {/* Chevron dropdown part of the split button */}
+                        <button
+                            type="button"
+                            className="h-8 w-7 rounded-r border-l border-white/20 flex items-center justify-center text-white transition-colors"
+                            style={{ background: 'var(--cw-accent)' }}
+                            title="Επιλογές"
+                        >
+                            <ChevronDown size={12} />
+                        </button>
+                    </div>
                 </div>
             </div>
 

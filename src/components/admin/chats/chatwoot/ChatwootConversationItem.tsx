@@ -73,8 +73,8 @@ export default function ChatwootConversationItem({ row, onClick }: ChatwootConve
                     : 'px-3 hover:bg-white/[0.04]',
             ].join(' ')}
         >
-            {/* Avatar — mt-8 to clear the InboxName row above the contact name (Chatwoot: mt-8 when showInboxName) */}
-            <div className="flex-shrink-0 relative mt-8 mr-2">
+            {/* Avatar — mt-6 to clear the InboxName row above the contact name (Chatwoot: mt-8 when showInboxName) */}
+            <div className="flex-shrink-0 relative mt-6 mr-2">
                 <div className="w-8 h-8 rounded-full overflow-hidden">
                     {row.avatarUrl ? (
                         <img
@@ -95,8 +95,8 @@ export default function ChatwootConversationItem({ row, onClick }: ChatwootConve
                 />
             </div>
 
-            {/* Content — py-3 border-b, fills width, matches Chatwoot .px-0.py-3.border-b.flex-1 */}
-            <div className="flex-1 min-w-0 py-3 border-b border-[var(--cw-border)]">
+            {/* Content — py-3, fills width, matches Chatwoot .px-0.py-3.flex-1 */}
+            <div className="flex-1 min-w-0 py-3">
                 {/* Row 1: InboxName equivalent — "Aerofren Chat" (Chatwoot shows inbox source here) */}
                 <div className="flex items-center gap-1 mx-2 mb-0.5">
                     <span className="text-[10px] text-[var(--cw-text-3)] truncate flex items-center gap-0.5">
