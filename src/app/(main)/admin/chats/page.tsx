@@ -3,12 +3,12 @@
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { AdminPageGuard } from '@/components/admin';
-import { AdminTeamsWorkspace } from '@/components/admin/chats';
+import { ChatwootWorkspace } from '@/components/admin/chats/chatwoot';
 
 function AdminChatsWorkspacePage() {
     return (
         <AdminPageGuard>
-            <AdminTeamsWorkspace />
+            <ChatwootWorkspace />
         </AdminPageGuard>
     );
 }

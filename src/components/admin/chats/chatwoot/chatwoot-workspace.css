@@ -1,0 +1,15 @@
+.chatwoot-workspace {
+  --cw-bg-rail:    #151a23;
+  --cw-bg-sidebar: #1c2233;
+  --cw-bg-main:    #1a1f2b;
+  --cw-bg-panel:   #1c2233;
+  --cw-border:     rgba(255,255,255,0.08);
+  --cw-text-1:     #e4e7f0;
+  --cw-text-2:     #8f99ab;
+  --cw-text-3:     #4e5a6f;
+  --cw-accent:     #3b82f6;
+  --cw-accent-dim: rgba(59,130,246,0.10);
+  --cw-msg-user:   rgba(255,255,255,0.06);
+  --cw-msg-bot:    rgba(79,70,229,0.12);
+  --cw-msg-admin:  rgba(59,130,246,0.88);
+}
