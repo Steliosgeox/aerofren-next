@@ -41,8 +41,8 @@ interface ChatwootInboxPanelProps {
 type TabKey = 'mine' | 'unassigned' | 'all';
 
 const TABS: { key: TabKey; label: string }[] = [
-    { key: 'mine', label: 'Εμένα' },
-    { key: 'unassigned', label: 'Ανάθετα' },
+    { key: 'mine', label: 'Δικά μου' },
+    { key: 'unassigned', label: 'Χωρίς ανάθεση' },
     { key: 'all', label: 'Όλα' },
 ];
 
@@ -68,7 +68,7 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
                         Συνομιλίες
                     </span>
                     <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-white/[0.06] text-[var(--cw-text-3)] border border-[var(--cw-border)] whitespace-nowrap">
-                        Open
+                        Ανοιχτά
                     </span>
                 </div>
                 <div className="flex items-center gap-0.5">

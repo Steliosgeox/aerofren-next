@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     MessageCircle,
     ChevronUp,
@@ -113,6 +114,7 @@ function LeafItem({ label, active, onClick }: LeafItemProps) {
 
 export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProps) {
     const { statusTab, queueInsights, searchQuery, setSearchQuery, handleTabChange } = workspace;
+    const router = useRouter();
 
     const [conversationsExpanded, setConversationsExpanded] = useState(true);
     const [foldersExpanded, setFoldersExpanded] = useState(false);
@@ -286,12 +288,17 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
 
             {/* ── Profile footer ────────────────────────────────────────── */}
             <section className="flex-shrink-0 border-t border-[var(--cw-border)] px-2 py-2 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-[var(--cw-accent)] flex items-center justify-center text-white text-[10px] font-bold select-none flex-shrink-0">
+                <button
+                    type="button"
+                    onClick={() => router.push('/admin')}
+                    title="Πίνακας διαχείρισης"
+                    className="w-7 h-7 rounded-full bg-[var(--cw-accent)] flex items-center justify-center text-white text-[10px] font-bold select-none flex-shrink-0 hover:opacity-80 transition-opacity"
+                >
                     A
-                </div>
+                </button>
                 <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-medium text-[var(--cw-text-1)] truncate leading-tight">Admin</p>
-                    <p className="text-[10px] text-[var(--cw-text-3)] truncate leading-tight">aerofren.com</p>
+                    <p className="text-[10px] text-[var(--cw-text-3)] truncate leading-tight">aerofren.gr</p>
                 </div>
             </section>
         </aside>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Loader2, MessageSquare, AlertTriangle, BellOff, Share2, ChevronDown } from 'lucide-react';
+import { Loader2, MessageSquare, AlertTriangle, ChevronDown, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { ChatwootComposer } from './ChatwootComposer';
 import ChatwootMessage from './ChatwootMessage';
 
@@ -79,6 +79,8 @@ interface ChatwootThreadProps {
     workspace: AdminChatWorkspaceState;
     composerRef: React.RefObject<HTMLTextAreaElement | null>;
     threadScrollerRef: React.RefObject<HTMLDivElement | null>;
+    showContextPanel?: boolean;
+    onToggleContextPanel?: () => void;
 }
 
 function getInitials(label: string): string {
@@ -128,6 +130,8 @@ export default function ChatwootThread({
     workspace,
     composerRef,
     threadScrollerRef,
+    showContextPanel = true,
+    onToggleContextPanel,
 }: ChatwootThreadProps) {
     if (!workspace.selectedSessionId) {
         return (
@@ -179,16 +183,19 @@ export default function ChatwootThread({
                     </div>
                 </div>
 
-                {/* Right side actions — Chatwoot ConversationHeader actions */}
+                {/* Right side actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
-                    {/* Mute icon button */}
-                    <button type="button" title="Σίγαση" className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors">
-                        <BellOff size={15} />
-                    </button>
-                    {/* Share/Export icon button */}
-                    <button type="button" title="Κοινοποίηση" className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors">
-                        <Share2 size={15} />
-                    </button>
+                    {/* Panel toggle */}
+                    {onToggleContextPanel && (
+                        <button
+                            type="button"
+                            title={showContextPanel ? 'Απόκρυψη πλαισίου' : 'Εμφάνιση πλαισίου'}
+                            onClick={onToggleContextPanel}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors"
+                        >
+                            {showContextPanel ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
+                        </button>
+                    )}
                     {/* Divider */}
                     <div className="w-px h-5 bg-[var(--cw-border)] mx-1" />
                     {/* Resolve button — Chatwoot: bg-woot-500 (blue), with chevron dropdown */}

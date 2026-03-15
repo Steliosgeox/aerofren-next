@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useAdminChatWorkspace } from '../useAdminChatWorkspace';
 import ChatwootNavSidebar from './ChatwootNavSidebar';
 import ChatwootInboxPanel from './ChatwootInboxPanel';
@@ -11,6 +11,7 @@ import './chatwoot-workspace.css';
 export function ChatwootWorkspace() {
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const threadScrollerRef = useRef<HTMLDivElement>(null);
+  const [showPanel, setShowPanel] = useState(true);
 
   const workspace = useAdminChatWorkspace({ composerRef, threadScrollerRef });
 
@@ -50,10 +51,14 @@ export function ChatwootWorkspace() {
         workspace={workspace}
         composerRef={composerRef}
         threadScrollerRef={threadScrollerRef}
+        showContextPanel={showPanel}
+        onToggleContextPanel={() => setShowPanel((p) => !p)}
       />
 
-      {/* Context panel — 260px */}
-      <ChatwootContextPanel workspace={workspace} />
+      {/* Context panel — 320px, collapsible */}
+      {showPanel && (
+        <ChatwootContextPanel workspace={workspace} onClose={() => setShowPanel(false)} />
+      )}
     </div>
   );
 }
