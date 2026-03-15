@@ -14,3 +14,16 @@
   --cw-msg-bot:    #1e1f3a;
   --cw-msg-admin:  #2563eb;
 }
+
+/* Card selection animation */
+@keyframes card-select {
+  0%   { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+.animate-card-select { animation: card-select 0.2s ease; }
+
+/* Reply box */
+.reply-box {
+  border-top: 1px solid var(--cw-border);
+  background: var(--cw-bg-main);
+}

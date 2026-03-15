@@ -141,7 +141,6 @@ export default function ChatwootThread({
     const { currentConversation, currentConversationLabel } = workspace;
     const escalationStatus = currentConversation?.escalationStatus ?? null;
     const photoURL = currentConversation?.userPhotoURL ?? null;
-    const userEmail = currentConversation?.userEmail ?? null;
     const isResolved = escalationStatus === 'resolved';
 
     return (
@@ -161,16 +160,14 @@ export default function ChatwootThread({
                     </div>
                 )}
 
-                {/* Name + email */}
+                {/* Name + source */}
                 <div className="min-w-0 flex flex-col">
-                    <span className="text-[14px] font-semibold text-[var(--cw-text-1)] truncate leading-tight">
+                    <span className="text-[13px] font-semibold text-[var(--cw-text-1)] truncate leading-tight">
                         {currentConversationLabel}
                     </span>
-                    {userEmail && (
-                        <span className="text-[11px] text-[var(--cw-text-3)] truncate leading-tight">
-                            {userEmail}
-                        </span>
-                    )}
+                    <span className="text-[10px] text-[var(--cw-text-3)] truncate leading-tight">
+                        Aerofren Chat
+                    </span>
                 </div>
 
                 {/* Right side controls */}

@@ -26,7 +26,7 @@ export function ChatwootNavRail({ workspace }: ChatwootNavRailProps) {
   const waitingCount = workspace.queueInsights.waitingOnAdmin;
 
   return (
-    <aside className="w-[52px] flex-shrink-0 h-full bg-[var(--cw-bg-rail)] border-r border-[var(--cw-border)] flex flex-col items-center">
+    <aside className="w-14 flex-shrink-0 h-full bg-[var(--cw-bg-rail)] border-r border-[var(--cw-border)] flex flex-col items-center">
       {/* Icon group */}
       <nav className="flex flex-col items-center gap-1 pt-3 pb-2">
         {NAV_ITEMS.map((item, index) => {

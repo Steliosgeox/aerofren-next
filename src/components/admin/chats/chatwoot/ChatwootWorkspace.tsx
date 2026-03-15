@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { useAdminChatWorkspace } from '../useAdminChatWorkspace';
 import { ChatwootNavRail } from './ChatwootNavRail';
+import ChatwootNavSidebar from './ChatwootNavSidebar';
 import ChatwootInboxPanel from './ChatwootInboxPanel';
 import ChatwootThread from './ChatwootThread';
 import { ChatwootContextPanel } from './ChatwootContextPanel';
@@ -42,7 +43,10 @@ export function ChatwootWorkspace() {
       {/* NavRail — 52px */}
       <ChatwootNavRail workspace={workspace} />
 
-      {/* Inbox panel — 260px */}
+      {/* Nav sidebar — 180px */}
+      <ChatwootNavSidebar workspace={workspace} />
+
+      {/* Inbox panel — 300px */}
       <ChatwootInboxPanel workspace={workspace} />
 
       {/* Thread — flex-1 */}

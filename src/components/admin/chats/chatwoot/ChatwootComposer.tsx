@@ -50,7 +50,7 @@ export function ChatwootComposer({ workspace, composerRef }: ChatwootComposerPro
     const [tab, setTab] = useState<'reply' | 'note'>('reply');
 
     const tabClass = (active: boolean) =>
-        `px-3 h-8 text-[11px] font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
+        `px-3 h-10 text-[11px] font-medium border-b-2 -mb-px transition-colors cursor-pointer ${
             active
                 ? 'text-[var(--cw-accent)] border-[var(--cw-accent)]'
                 : 'text-[var(--cw-text-3)] border-transparent hover:text-[var(--cw-text-2)]'
@@ -97,7 +97,7 @@ export function ChatwootComposer({ workspace, composerRef }: ChatwootComposerPro
                         : 'Αυτή η συνομιλία δεν μπορεί να απαντηθεί.'
                 }
                 disabled={!workspace.canReply || workspace.isSendingReply}
-                className="w-full resize-none px-3 pt-2 pb-1 bg-transparent text-[13px] text-[var(--cw-text-1)] placeholder-[var(--cw-text-3)] outline-none disabled:opacity-40 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.1)_transparent]"
+                className="w-full resize-none px-3 pt-2 pb-1 bg-transparent text-[13px] text-[var(--cw-text-1)] placeholder-[var(--cw-text-3)] outline-none disabled:opacity-40 min-h-[80px] [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.1)_transparent]"
             />
 
             {/* Bottom toolbar */}

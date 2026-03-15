@@ -82,7 +82,7 @@ export function ChatwootContextPanel({ workspace }: ChatwootContextPanelProps) {
 
     if (!workspace.selectedSessionId) {
         return (
-            <div className="w-[260px] flex-shrink-0 h-full bg-[var(--cw-bg-panel)] border-l border-[var(--cw-border)] flex flex-col">
+            <div className="w-[320px] flex-shrink-0 h-full bg-[var(--cw-bg-panel)] border-l border-[var(--cw-border)] flex flex-col">
                 <div className="flex-1 flex items-center justify-center">
                     <p className="text-[11px] text-[var(--cw-text-3)]">Καμία επιλογή</p>
                 </div>
@@ -93,7 +93,7 @@ export function ChatwootContextPanel({ workspace }: ChatwootContextPanelProps) {
     const conv = workspace.currentConversation;
 
     return (
-        <div className="w-[260px] flex-shrink-0 h-full bg-[var(--cw-bg-panel)] border-l border-[var(--cw-border)] flex flex-col">
+        <div className="w-[320px] flex-shrink-0 h-full bg-[var(--cw-bg-panel)] border-l border-[var(--cw-border)] flex flex-col">
             {/* Tab bar */}
             <div className="flex border-b border-[var(--cw-border)]">
                 <button

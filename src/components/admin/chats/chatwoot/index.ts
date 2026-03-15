@@ -6,3 +6,4 @@ export { default as ChatwootThread } from './ChatwootThread';
 export { default as ChatwootMessage } from './ChatwootMessage';
 export { ChatwootContextPanel } from './ChatwootContextPanel';
 export { ChatwootComposer } from './ChatwootComposer';
+export { default as ChatwootNavSidebar } from './ChatwootNavSidebar';
