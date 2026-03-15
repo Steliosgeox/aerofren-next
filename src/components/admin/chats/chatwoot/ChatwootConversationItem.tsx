@@ -65,15 +65,16 @@ export default function ChatwootConversationItem({ row, onClick }: ChatwootConve
         <button
             type="button"
             onClick={onClick}
+            // Root is `relative` so timestamp can be absolutely positioned — exact Chatwoot ConversationCard pattern
             className={[
-                'w-full flex items-start gap-2.5 border-b border-[var(--cw-border)] transition-colors cursor-pointer text-left py-2.5',
+                'w-full relative flex items-start gap-0 border-b border-[var(--cw-border)] transition-colors cursor-pointer text-left',
                 row.isSelected
                     ? 'bg-[var(--cw-accent-dim)] border-l-2 border-l-[var(--cw-accent)] px-3 pl-[10px]'
                     : 'px-3 hover:bg-white/[0.04]',
             ].join(' ')}
         >
-            {/* Avatar with status dot */}
-            <div className="flex-shrink-0 relative mt-0.5">
+            {/* Avatar — mt-8 to clear the InboxName row above the contact name (Chatwoot: mt-8 when showInboxName) */}
+            <div className="flex-shrink-0 relative mt-8 mr-2">
                 <div className="w-8 h-8 rounded-full overflow-hidden">
                     {row.avatarUrl ? (
                         <img
@@ -94,42 +95,44 @@ export default function ChatwootConversationItem({ row, onClick }: ChatwootConve
                 />
             </div>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-                {/* Row 1: channel source + time */}
-                <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[10px] text-[var(--cw-text-3)] flex items-center gap-0.5 truncate">
-                        <span className="opacity-70">↩</span>
+            {/* Content — py-3 border-b, fills width, matches Chatwoot .px-0.py-3.border-b.flex-1 */}
+            <div className="flex-1 min-w-0 py-3 border-b border-[var(--cw-border)]">
+                {/* Row 1: InboxName equivalent — "Aerofren Chat" (Chatwoot shows inbox source here) */}
+                <div className="flex items-center gap-1 mx-2 mb-0.5">
+                    <span className="text-[10px] text-[var(--cw-text-3)] truncate flex items-center gap-0.5">
+                        <span className="opacity-60">↩</span>
                         <span>Aerofren Chat</span>
                     </span>
-                    <span className="text-[10px] text-[var(--cw-text-3)] flex-shrink-0 ml-1.5">
-                        {row.timestampLabel}
-                    </span>
                 </div>
 
-                {/* Row 2: name */}
-                <div className="mb-0.5">
-                    <span className="text-[12px] font-semibold text-[var(--cw-text-1)] block truncate leading-tight">
-                        {row.name}
+                {/* Row 2: Contact name — pr-14 reserves space for absolute timestamp (Chatwoot: ltr:pr-16) */}
+                <h4 className="text-[13px] font-semibold text-[var(--cw-text-1)] mx-2 pt-0.5 pr-14 overflow-hidden text-ellipsis whitespace-nowrap leading-tight">
+                    {row.name}
+                </h4>
+
+                {/* Row 3: Message preview — text-sm h-6, matches Chatwoot MessagePreview */}
+                <p className="text-[12px] text-[var(--cw-text-2)] mx-2 leading-6 h-6 overflow-hidden text-ellipsis whitespace-nowrap">
+                    {row.preview}
+                </p>
+
+                {/* Row 4: Status tag (Chatwoot: CardLabels) */}
+                <div className="mx-2 mt-0.5">
+                    <span className={`inline-block text-[9px] px-1.5 py-0.5 rounded-sm font-medium leading-tight ${tagColor}`}>
+                        {row.statusLabel}
                     </span>
                 </div>
+            </div>
 
-                {/* Row 3: preview + unread badge */}
-                <div className="flex items-center gap-1 mb-1">
-                    <span className="text-[11px] text-[var(--cw-text-2)] truncate flex-1 leading-tight">
-                        {row.preview}
-                    </span>
-                    {row.unreadCount > 0 && (
-                        <span className="flex-shrink-0 min-w-[16px] px-1 h-4 rounded-full bg-[var(--cw-accent)] text-white text-[9px] font-bold flex items-center justify-center">
-                            {row.unreadCount > 99 ? '99+' : row.unreadCount}
-                        </span>
-                    )}
-                </div>
-
-                {/* Row 4: status tag */}
-                <span className={`inline-block text-[9px] px-1.5 py-0.5 rounded-sm font-medium leading-tight ${tagColor}`}>
-                    {row.statusLabel}
+            {/* Timestamp + unread badge — ABSOLUTELY POSITIONED top-right (exact Chatwoot pattern: absolute right-3 top-8) */}
+            <div className="absolute flex flex-col right-3 top-3 items-end gap-1">
+                <span className="text-[10px] text-[var(--cw-text-3)] font-normal leading-4 whitespace-nowrap">
+                    {row.timestampLabel}
                 </span>
+                {row.unreadCount > 0 && (
+                    <span className="rounded-full text-[9px] font-semibold min-w-[1rem] h-4 px-1 text-center text-white bg-[var(--cw-accent)] flex items-center justify-center leading-none">
+                        {row.unreadCount > 9 ? '9+' : row.unreadCount}
+                    </span>
+                )}
             </div>
         </button>
     );

@@ -87,7 +87,7 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
     } = workspace;
 
     return (
-        <div className="w-[300px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
+        <div className="w-[340px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
             {/* 1. Header bar */}
             <div className="flex items-center justify-between px-3 h-11 flex-shrink-0 border-b border-[var(--cw-border)]">
                 <div className="flex items-center gap-2">
