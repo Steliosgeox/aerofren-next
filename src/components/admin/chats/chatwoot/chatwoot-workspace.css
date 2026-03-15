@@ -27,3 +27,41 @@
   border-top: 1px solid var(--cw-border);
   background: var(--cw-bg-main);
 }
+
+/* ── Sidebar tree lines ─────────────────────────────────────────────────────
+   Mechanical translation of SidebarGroup.vue <style> block.
+   .child-item::before  — vertical connecting line
+   .child-item:last-child::before — shorter line on last item
+   .child-item:last-child::after  — L-shaped corner on last item
+   Color: bg-n-slate-4 → rgba(255,255,255,0.12)
+   ─────────────────────────────────────────────────────────────────────── */
+.sidebar-group-children .child-item::before {
+  content: '';
+  position: absolute;
+  width: 0.125rem;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  left: 0;
+  top: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.sidebar-group-children > .child-item:last-child::before {
+  height: 20%;
+}
+
+.sidebar-group-children > .child-item:last-child::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 12px;
+  bottom: calc(50% - 2px);
+  border-bottom-width: 0.125rem;
+  border-left-width: 0.125rem;
+  border-right-width: 0;
+  border-top-width: 0;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.12);
+  border-radius: 0 0 0 4px;
+  left: 0;
+}
