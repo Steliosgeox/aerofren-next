@@ -30,6 +30,7 @@ type AdminChatGroupedMessageEntry =
 
 interface ChatwootMessageProps {
     entry: AdminChatGroupedMessageEntry;
+    prevEntry?: AdminChatGroupedMessageEntry;
 }
 
 function formatTime(timestamp: string): string {
@@ -45,11 +46,9 @@ function formatTime(timestamp: string): string {
 
 type RoleStyle = {
     bgColor: string;
-    borderColor: string;
     textColor: string;
     alignment: 'left' | 'right';
-    borderTopLeftRadius: string;
-    borderTopRightRadius: string;
+    borderRadius: string;
 };
 
 function getRoleStyle(role: AdminChatThreadMessage['role']): RoleStyle {
@@ -57,38 +56,30 @@ function getRoleStyle(role: AdminChatThreadMessage['role']): RoleStyle {
         case 'user':
             return {
                 bgColor: 'var(--cw-msg-user)',
-                borderColor: 'rgba(255,255,255,0.08)',
                 textColor: '#c5cad8',
                 alignment: 'left',
-                borderTopLeftRadius: '2px',
-                borderTopRightRadius: '8px',
+                borderRadius: '2px 8px 8px 8px',
             };
         case 'assistant':
             return {
                 bgColor: 'var(--cw-msg-bot)',
-                borderColor: 'rgba(79,70,229,0.18)',
                 textColor: '#b5b8f0',
                 alignment: 'left',
-                borderTopLeftRadius: '2px',
-                borderTopRightRadius: '8px',
+                borderRadius: '2px 8px 8px 8px',
             };
         case 'admin':
             return {
                 bgColor: 'var(--cw-msg-admin)',
-                borderColor: 'transparent',
                 textColor: '#ffffff',
                 alignment: 'right',
-                borderTopLeftRadius: '8px',
-                borderTopRightRadius: '2px',
+                borderRadius: '8px 2px 8px 8px',
             };
         default:
             return {
                 bgColor: 'transparent',
-                borderColor: 'transparent',
                 textColor: 'var(--cw-text-3)',
                 alignment: 'left',
-                borderTopLeftRadius: '8px',
-                borderTopRightRadius: '8px',
+                borderRadius: '6px',
             };
     }
 }
@@ -106,13 +97,13 @@ function getSenderLabel(message: AdminChatThreadMessage): string {
     }
 }
 
-export default function ChatwootMessage({ entry }: ChatwootMessageProps) {
+export default function ChatwootMessage({ entry, prevEntry }: ChatwootMessageProps) {
     // Day separator
     if (entry.type === 'day') {
         return (
-            <div className="flex items-center gap-3 my-2">
+            <div className="flex items-center gap-2 my-1.5">
                 <div className="flex-1 h-px bg-[var(--cw-border)]" />
-                <span className="text-[10px] text-[var(--cw-text-3)] font-medium uppercase tracking-wider flex-shrink-0">
+                <span className="text-[9px] text-[var(--cw-text-3)] font-medium uppercase tracking-wider flex-shrink-0 px-1">
                     {entry.label}
                 </span>
                 <div className="flex-1 h-px bg-[var(--cw-border)]" />
@@ -122,11 +113,13 @@ export default function ChatwootMessage({ entry }: ChatwootMessageProps) {
 
     const { message } = entry;
 
-    // System message — no bubble
+    // System message — centered, no bubble
     if (message.role === 'system') {
         return (
-            <div className="text-center text-[10px] text-[var(--cw-text-3)] py-0.5 italic my-1">
-                {message.content}
+            <div className="text-center my-1">
+                <span className="text-[10px] text-[var(--cw-text-3)] italic bg-[var(--cw-border)] px-2 py-0.5 rounded">
+                    {message.content}
+                </span>
             </div>
         );
     }
@@ -135,35 +128,35 @@ export default function ChatwootMessage({ entry }: ChatwootMessageProps) {
     const isAdmin = message.role === 'admin';
     const senderLabel = getSenderLabel(message);
 
+    // Check if previous message was from same sender (group consecutive same-sender messages)
+    const isSameAsPrev =
+        prevEntry?.type === 'message' && prevEntry.message.role === message.role;
+
     return (
-        <div className={`flex flex-col mb-3 ${isAdmin ? 'items-end' : 'items-start'}`}>
-            {/* Sender label */}
-            <span
-                className={`text-[9px] uppercase font-medium tracking-wider mb-1 text-[var(--cw-text-3)] ${isAdmin ? 'text-right' : 'text-left'}`}
-            >
-                {senderLabel}
-            </span>
+        <div className={`flex flex-col mb-1 ${isAdmin ? 'items-end' : 'items-start'}`}>
+            {/* Sender label — only show when sender changes */}
+            {!isSameAsPrev && (
+                <span
+                    className={`text-[9px] font-medium tracking-wide mb-0.5 text-[var(--cw-text-3)] ${isAdmin ? 'text-right' : 'text-left'}`}
+                >
+                    {senderLabel}
+                </span>
+            )}
 
             {/* Message bubble */}
             <div
-                className="relative rounded-lg border px-3 py-2 max-w-[65%]"
+                className="px-2.5 py-1.5 max-w-[62%]"
                 style={{
                     background: style.bgColor,
-                    borderColor: style.borderColor,
-                    borderTopLeftRadius: style.borderTopLeftRadius,
-                    borderTopRightRadius: style.borderTopRightRadius,
-                    borderBottomLeftRadius: '8px',
-                    borderBottomRightRadius: '8px',
+                    borderRadius: style.borderRadius,
+                    color: style.textColor,
                 }}
             >
-                <p
-                    className="text-[13px] leading-relaxed whitespace-pre-wrap break-words"
-                    style={{ color: style.textColor }}
-                >
+                <p className="text-[12px] leading-snug whitespace-pre-wrap break-words">
                     {message.content}
                 </p>
                 <time
-                    className="block text-[9px] mt-1 opacity-60 text-right"
+                    className="block text-[9px] mt-0.5 opacity-60 text-right"
                     style={{ color: style.textColor }}
                 >
                     {formatTime(message.timestamp)}

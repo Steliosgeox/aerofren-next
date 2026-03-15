@@ -87,12 +87,17 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
     } = workspace;
 
     return (
-        <div className="w-[260px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
+        <div className="w-[300px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
             {/* 1. Header bar */}
             <div className="flex items-center justify-between px-3 h-11 flex-shrink-0 border-b border-[var(--cw-border)]">
-                <span className="text-[13px] font-semibold text-[var(--cw-text-1)]">
-                    Συνομιλίες
-                </span>
+                <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-semibold text-[var(--cw-text-1)]">
+                        Συνομιλίες
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium text-[var(--cw-text-3)] bg-white/[0.06]">
+                        Ανοιχτά
+                    </span>
+                </div>
                 {queueInsights.waitingOnAdmin > 0 && (
                     <span className="px-1.5 py-0.5 rounded-full bg-red-500/90 text-white text-[10px] font-bold">
                         {queueInsights.waitingOnAdmin}
