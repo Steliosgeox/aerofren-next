@@ -95,8 +95,8 @@ export default function ChatwootConversationItem({ row, onClick }: ChatwootConve
                 />
             </div>
 
-            {/* Content — py-3, fills width, matches Chatwoot .px-0.py-3.flex-1 */}
-            <div className="flex-1 min-w-0 py-3">
+            {/* Content — py-2.5, fills width */}
+            <div className="flex-1 min-w-0 py-2.5">
                 {/* Row 1: InboxName equivalent — "Aerofren Chat" (Chatwoot shows inbox source here) */}
                 <div className="flex items-center gap-1 mx-2 mb-0.5">
                     <span className="text-[10px] text-[var(--cw-text-3)] truncate flex items-center gap-0.5">

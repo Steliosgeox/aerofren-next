@@ -218,7 +218,7 @@ export default function ChatwootThread({
             <div
                 ref={threadScrollerRef}
                 onScroll={workspace.handleThreadScroll}
-                className="flex-1 overflow-y-auto px-3 py-2 flex flex-col [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.1)_transparent]"
+                className="flex-1 overflow-y-auto px-0 py-3 flex flex-col [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.1)_transparent]"
             >
                 {/* Spacer — pushes messages to the bottom when thread is sparse (Chatwoot first:mt-auto pattern) */}
                 <div className="flex-1 min-h-0" />

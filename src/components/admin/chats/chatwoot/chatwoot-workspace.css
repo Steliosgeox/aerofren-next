@@ -1,18 +1,19 @@
 .chatwoot-workspace {
-  --cw-bg-rail:    #161b24;
-  --cw-bg-sidebar: #1b2030;
-  --cw-bg-main:    #1a1e2b;
-  --cw-bg-panel:   #1b2030;
-  --cw-border:     rgba(255,255,255,0.07);
-  --cw-text-1:     #e3e6f0;
-  --cw-text-2:     #8b95a8;
-  --cw-text-3:     #4a5568;
-  --cw-accent:     #3b82f6;
-  --cw-accent-dim: rgba(59,130,246,0.10);
-  /* Solid surfaces — user bubbles are now visible, not ghost-transparent */
-  --cw-msg-user:   #222b3d;
-  --cw-msg-bot:    #1e1f3a;
-  --cw-msg-admin:  #2563eb;
+  --cw-bg-rail:    #151922;
+  --cw-bg-sidebar: #1c2133;
+  --cw-bg-main:    #161a27;
+  --cw-bg-panel:   #1c2133;
+  --cw-border:     rgba(255,255,255,0.09);
+  --cw-text-1:     #e8ecf4;
+  --cw-text-2:     #9aa3b8;
+  --cw-text-3:     #6b7a9a;
+  /* Chatwoot woot-500 = #1f93ff — matches the bright blue in the reference */
+  --cw-accent:     #1f93ff;
+  --cw-accent-dim: rgba(31,147,255,0.12);
+  /* Message bubbles — must be clearly visible on dark bg */
+  --cw-msg-user:   #3d4b6a;  /* medium blue-gray for inbound */
+  --cw-msg-bot:    #2e3b5e;  /* slightly darker for bot */
+  --cw-msg-admin:  #1f93ff;  /* bright woot blue for outbound (agent) */
 }
 
 /* Card selection animation */
