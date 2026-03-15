@@ -128,18 +128,25 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setIsOpen(false);
     }, []);
 
+    // When functional cookies are revoked: clear storage and assign a fresh ephemeral ID.
+    // sessionId is intentionally NOT a dep here — adding it would cause an infinite loop
+    // because setSessionId(uuidv4()) itself changes sessionId.
     useEffect(() => {
         if (!cookieConsentReady) return;
+        if (allowFunctional) return;
 
-        if (!allowFunctional) {
-            try {
-                localStorage.removeItem(STORAGE_KEY);
-            } catch {
-                // ignore storage failures
-            }
-            setSessionId(uuidv4());
-            return;
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch {
+            // ignore storage failures
         }
+        setSessionId(uuidv4());
+    }, [allowFunctional, cookieConsentReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // When functional cookies are allowed: sync sessionId with localStorage.
+    useEffect(() => {
+        if (!cookieConsentReady) return;
+        if (!allowFunctional) return;
 
         try {
             const storedSessionId = localStorage.getItem(STORAGE_KEY);

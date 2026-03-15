@@ -31,25 +31,25 @@ export function AdminChatRceDetails({
         <div className={mobile ? 'hidden max-xl:block' : undefined}>
             {/* ── Section heading ───────────────────────────────────── */}
             <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40">
+                <span className="text-[9px] font-bold tracking-[0.12em] uppercase text-white/35">
                     Στοιχεία
                 </span>
-                <h3 className="m-0 text-sm font-semibold tracking-tight text-[var(--theme-text)]">
+                <h3 className="m-0 text-[12px] font-semibold tracking-tight text-white/70">
                     Μεταδεδομένα
                 </h3>
             </div>
 
             {/* ── Detail rows ───────────────────────────────────────── */}
-            <div className="grid gap-2 mt-3">
+            <div className="grid gap-1.5 mt-2">
                 {workspace.conversationDetails.map((detail) => (
                     <div
                         key={detail.label}
-                        className="grid gap-1 p-3 rounded-[12px] bg-white/[0.03] border border-white/[0.06]"
+                        className="grid gap-0.5 p-2 rounded-lg bg-white/[0.025] border border-white/[0.05]"
                     >
-                        <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40">
+                        <span className="text-[9px] font-bold tracking-[0.10em] uppercase text-white/35">
                             {detail.label}
                         </span>
-                        <span className="text-xs leading-snug text-white/80 break-words">
+                        <span className="text-[11px] leading-snug text-white/70 break-words">
                             {detail.value}
                         </span>
                     </div>
@@ -57,7 +57,7 @@ export function AdminChatRceDetails({
             </div>
 
             {/* ── Action buttons ────────────────────────────────────── */}
-            <div className="flex flex-col gap-2 mt-3">
+            <div className="flex flex-col gap-1.5 mt-2">
                 <button
                     type="button"
                     className={btn}

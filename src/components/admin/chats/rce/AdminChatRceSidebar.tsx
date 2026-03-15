@@ -21,12 +21,12 @@ export function AdminChatRceSidebar({
     return (
         <>
             {/* ── Sidebar header ────────────────────────────────────── */}
-            <div className="flex flex-col gap-2 px-3 pb-2.5 pt-3 border-b border-white/[0.07]">
+            <div className="flex flex-col gap-1.5 px-2.5 pb-2 pt-2.5 border-b border-white/[0.06]">
                 <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40">
                         ΕΙΣΕΡΧΟΜΕΝΑ
                     </span>
-                    <span className="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/[0.10] text-white/60 text-[10px] font-bold">
+                    <span className="inline-flex items-center justify-center min-w-[22px] px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.08] text-white/50 text-[9px] font-bold">
                         {workspace.sessions.length}
                     </span>
                 </div>
@@ -48,7 +48,7 @@ export function AdminChatRceSidebar({
 
                 {/* ── Queue tabs ──────────────────────────────────────── */}
                 <div
-                    className="flex gap-1.5 overflow-x-auto pb-0.5"
+                    className="flex gap-1 overflow-x-auto pb-0.5"
                     role="radiogroup"
                     aria-label="Φίλτρα συνομιλιών"
                 >
@@ -66,7 +66,7 @@ export function AdminChatRceSidebar({
                                     workspace.handleTabKeyDown(event, index)
                                 }
                                 className={[
-                                    'inline-flex items-center justify-center min-h-[30px] px-2.5 rounded-full border text-[11px] font-bold whitespace-nowrap cursor-pointer transition-colors duration-150',
+                                    'inline-flex items-center justify-center min-h-[26px] px-2 rounded border text-[10px] font-semibold whitespace-nowrap cursor-pointer transition-colors duration-100',
                                     isActive
                                         ? 'bg-[var(--theme-accent)]/15 border-[var(--theme-accent)]/30 text-[var(--theme-accent)]'
                                         : 'border-white/[0.08] bg-white/[0.04] text-white/50 hover:bg-white/[0.07] hover:text-white/70',
@@ -80,7 +80,7 @@ export function AdminChatRceSidebar({
             </div>
 
             {/* ── Chat list ─────────────────────────────────────────── */}
-            <div className="min-h-0 flex-1 px-2 pt-2 pb-2.5 overflow-y-auto">
+            <div className="min-h-0 flex-1 px-1.5 pt-1.5 pb-2 overflow-y-auto">
                 {chatListItems.length > 0 ? (
                     <ChatList
                         id="admin-chat-rce-list"
