@@ -1,5 +1,6 @@
 'use client';
 
+import { Search } from 'lucide-react';
 import { ChatList } from '@/vendor/react-chat-elements';
 import { WORKSPACE_TABS } from '@/lib/admin-chat/workspace';
 import type { AdminChatWorkspaceState } from './adapter-helpers';
@@ -11,7 +12,7 @@ interface AdminChatRceSidebarProps {
 }
 
 const btn =
-    'inline-flex items-center gap-2 min-h-[42px] px-3.5 rounded-full border border-slate-300/25 bg-white text-slate-900 text-[13px] font-semibold cursor-pointer transition-colors duration-150 hover:border-blue-600/30 hover:text-blue-700 disabled:opacity-55 disabled:cursor-not-allowed';
+    'inline-flex items-center gap-1.5 min-h-[30px] px-3 rounded-full border border-white/[0.10] bg-white/[0.05] text-white/60 text-xs font-semibold cursor-pointer transition-colors duration-150 hover:bg-white/[0.08] hover:text-white/80 disabled:opacity-40';
 
 export function AdminChatRceSidebar({
     workspace,
@@ -20,35 +21,36 @@ export function AdminChatRceSidebar({
     return (
         <>
             {/* ── Sidebar header ────────────────────────────────────── */}
-            <div className="flex flex-col gap-3 px-5 pb-4 pt-5 border-b border-slate-200/90">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500">
-                            Inbox
-                        </span>
-                        <h2 className="m-0 text-xl font-bold tracking-tight text-slate-900 leading-tight">
-                            Admin conversations
-                        </h2>
-                        <span className="text-[13px] text-slate-500">
-                            {workspace.inboxSummary}
-                        </span>
-                    </div>
-
-                    <div className="inline-flex flex-col items-end justify-center gap-0.5 min-w-[68px] px-3 py-2.5 rounded-[18px] bg-slate-50 border border-slate-200/95 shrink-0">
-                        <span className="text-lg font-bold text-slate-900">
-                            {workspace.sessions.length}
-                        </span>
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                            Threads
-                        </span>
-                    </div>
+            <div className="flex flex-col gap-2 px-3 pb-2.5 pt-3 border-b border-white/[0.07]">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40">
+                        ΕΙΣΕΡΧΟΜΕΝΑ
+                    </span>
+                    <span className="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/[0.10] text-white/60 text-[10px] font-bold">
+                        {workspace.sessions.length}
+                    </span>
                 </div>
+
+                {/* ── Search input ──────────────────────────────────── */}
+                <label
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/[0.07]"
+                    aria-label="Αναζήτηση συνομιλιών"
+                >
+                    <Search size={13} className="text-white/30 shrink-0" />
+                    <input
+                        type="search"
+                        className="flex-1 min-w-0 border-0 outline-none bg-transparent text-[var(--theme-text)] text-xs placeholder:text-white/30"
+                        placeholder="Αναζήτηση..."
+                        value={workspace.searchQuery}
+                        onChange={(e) => workspace.setSearchQuery(e.target.value)}
+                    />
+                </label>
 
                 {/* ── Queue tabs ──────────────────────────────────────── */}
                 <div
-                    className="flex gap-2 overflow-x-auto pb-1"
+                    className="flex gap-1.5 overflow-x-auto pb-0.5"
                     role="radiogroup"
-                    aria-label="Chat queue tabs"
+                    aria-label="Φίλτρα συνομιλιών"
                 >
                     {WORKSPACE_TABS.map((tab, index) => {
                         const isActive = workspace.statusTab === tab.id;
@@ -64,10 +66,10 @@ export function AdminChatRceSidebar({
                                     workspace.handleTabKeyDown(event, index)
                                 }
                                 className={[
-                                    'inline-flex items-center justify-center min-h-[38px] px-3.5 rounded-full border text-xs font-bold whitespace-nowrap cursor-pointer transition-colors duration-150',
+                                    'inline-flex items-center justify-center min-h-[30px] px-2.5 rounded-full border text-[11px] font-bold whitespace-nowrap cursor-pointer transition-colors duration-150',
                                     isActive
-                                        ? 'border-blue-600/25 bg-blue-100 text-blue-700'
-                                        : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-blue-600/20 hover:text-blue-800',
+                                        ? 'bg-[var(--theme-accent)]/15 border-[var(--theme-accent)]/30 text-[var(--theme-accent)]'
+                                        : 'border-white/[0.08] bg-white/[0.04] text-white/50 hover:bg-white/[0.07] hover:text-white/70',
                                 ].join(' ')}
                             >
                                 {tab.shortLabel}
@@ -78,7 +80,7 @@ export function AdminChatRceSidebar({
             </div>
 
             {/* ── Chat list ─────────────────────────────────────────── */}
-            <div className="min-h-0 flex-1 px-2.5 pt-2.5 pb-3">
+            <div className="min-h-0 flex-1 px-2 pt-2 pb-2.5 overflow-y-auto">
                 {chatListItems.length > 0 ? (
                     <ChatList
                         id="admin-chat-rce-list"
@@ -87,16 +89,15 @@ export function AdminChatRceSidebar({
                         onClick={(item) => workspace.selectSession(String(item.id))}
                     />
                 ) : (
-                    <div className="flex flex-1 items-center justify-center p-8 text-center text-slate-500 text-sm">
-                        No conversations match the active filters. Adjust the search or queue
-                        tab.
+                    <div className="flex flex-1 items-center justify-center p-8 text-center text-white/30 text-sm">
+                        Δεν βρέθηκαν συνομιλίες.
                     </div>
                 )}
             </div>
 
             {/* ── Load more footer ──────────────────────────────────── */}
             {workspace.hasMoreSessions ? (
-                <div className="flex justify-center px-3 py-2 pb-3.5 border-t border-slate-200/75">
+                <div className="flex justify-center px-3 py-2 pb-3 border-t border-white/[0.07]">
                     <button
                         type="button"
                         className={btn}
@@ -108,7 +109,7 @@ export function AdminChatRceSidebar({
                         }
                         disabled={workspace.isLoadingMoreSessions}
                     >
-                        {workspace.isLoadingMoreSessions ? 'Loading…' : 'Load more threads'}
+                        {workspace.isLoadingMoreSessions ? 'Φόρτωση...' : 'Περισσότερα'}
                     </button>
                 </div>
             ) : null}

@@ -16,21 +16,28 @@ interface AdminChatRceThreadProps {
 }
 
 const btn =
-    'inline-flex items-center gap-2 min-h-[42px] px-3.5 rounded-full border border-slate-300/25 bg-white text-slate-900 text-[13px] font-semibold cursor-pointer transition-colors duration-150 hover:border-blue-600/30 hover:text-blue-700 disabled:opacity-55 disabled:cursor-not-allowed';
+    'inline-flex items-center gap-1.5 min-h-[30px] px-3 rounded-full border border-white/[0.12] bg-white/[0.06] text-white/75 text-xs font-semibold cursor-pointer transition-colors duration-150 hover:bg-white/[0.10] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed';
 
 const pill =
-    'inline-flex items-center gap-1.5 min-h-7 px-2.5 rounded-full border text-[11px] font-bold tracking-[0.04em] uppercase';
+    'inline-flex items-center gap-1.5 min-h-[22px] px-2.5 rounded-full border text-[10px] font-bold tracking-[0.04em] uppercase';
 
-const neutralPill = `${pill} bg-slate-50 border-slate-200 text-slate-500`;
+const neutralPill = `${pill} bg-white/[0.05] border-white/[0.10] text-white/40`;
 
 const quickReplyBtn =
-    'inline-flex items-center justify-center min-h-8 px-3 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-semibold cursor-pointer whitespace-nowrap transition-colors duration-150 hover:bg-blue-100';
+    'inline-flex items-center justify-center min-h-7 px-2.5 rounded-full border border-[var(--theme-accent)]/30 bg-[var(--theme-accent)]/10 text-[var(--theme-accent)] text-xs font-semibold cursor-pointer whitespace-nowrap transition-colors duration-150 hover:bg-[var(--theme-accent)]/20';
 
 function getStatusPillClass(status?: string | null): string {
-    if (status === 'resolved') return 'bg-green-600/10 border-green-600/20 text-green-700';
-    if (status === 'in_progress') return 'bg-blue-600/10 border-blue-600/15 text-blue-700';
-    if (status === 'pending') return 'bg-amber-500/10 border-amber-500/20 text-amber-700';
-    return 'bg-slate-50 border-slate-200 text-slate-500';
+    if (status === 'resolved') return 'bg-green-600/10 border-green-600/20 text-green-400';
+    if (status === 'in_progress') return 'bg-[var(--theme-accent)]/10 border-[var(--theme-accent)]/20 text-[var(--theme-accent)]';
+    if (status === 'pending') return 'bg-amber-500/10 border-amber-500/20 text-amber-400';
+    return 'bg-white/[0.05] border-white/[0.10] text-white/40';
+}
+
+function getStatusLabel(status?: string | null): string {
+    if (status === 'resolved') return 'Ολοκληρωμένο';
+    if (status === 'in_progress') return 'Σε εξέλιξη';
+    if (status === 'pending') return 'Σε αναμονή';
+    return 'Άγνωστο';
 }
 
 export function AdminChatRceThread({
@@ -41,8 +48,8 @@ export function AdminChatRceThread({
 }: AdminChatRceThreadProps) {
     if (!workspace.currentConversation) {
         return (
-            <div className="flex flex-1 items-center justify-center p-8 text-center text-slate-500 text-sm">
-                Select a conversation from the queue to open the live support thread.
+            <div className="flex flex-1 items-center justify-center p-8 text-center text-white/30 text-sm">
+                Επίλεξε συνομιλία από τα εισερχόμενα.
             </div>
         );
     }
@@ -73,61 +80,58 @@ export function AdminChatRceThread({
 
     const threadSyncLabel =
         workspace.threadSyncMode === 'live'
-            ? 'Live updates active'
+            ? 'Ζωντανά'
             : workspace.threadSyncMode === 'polling'
-              ? 'Server sync fallback active'
-              : 'Connecting thread updates…';
+              ? 'Polling fallback'
+              : 'Σύνδεση...';
 
     return (
         <div className="flex flex-col min-h-0 flex-1">
             {/* ── Thread header ─────────────────────────────────────── */}
-            <div className="flex items-start justify-between gap-4 px-[22px] pb-4 pt-5 border-b border-slate-200/85 max-sm:flex-col max-sm:px-4">
+            <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-white/[0.07] max-sm:flex-col max-sm:items-start max-sm:px-3">
                 {/* Identity block */}
-                <div className="flex flex-col gap-2.5 min-w-0">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <Image
-                            src={avatar}
-                            alt={workspace.currentConversationLabel}
-                            className="w-11 h-11 rounded-full object-cover border border-slate-300/20 bg-slate-300 shrink-0"
-                            width={44}
-                            height={44}
-                            unoptimized={avatar.startsWith('data:image/')}
-                        />
-                        <div className="flex flex-col gap-0.5 min-w-0">
-                            <h2 className="m-0 text-xl font-bold tracking-tight text-slate-900 leading-tight truncate">
-                                {workspace.currentConversationLabel}
-                            </h2>
-                            <span className="text-[13px] text-slate-500 truncate">
-                                {currentConversation.userEmail ||
-                                    currentConversation.sessionId}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Status pills */}
-                    <div className="flex flex-wrap gap-2">
-                        <span
-                            className={`${pill} ${getStatusPillClass(currentConversation.escalationStatus)}`}
-                        >
-                            {currentConversation.escalationStatus || 'unknown'}
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <Image
+                        src={avatar}
+                        alt={workspace.currentConversationLabel}
+                        className="w-8 h-8 rounded-full object-cover border border-white/[0.12] bg-white/[0.10] shrink-0"
+                        width={32}
+                        height={32}
+                        unoptimized={avatar.startsWith('data:image/')}
+                    />
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="text-sm font-semibold text-[var(--theme-text)] leading-tight truncate">
+                            {workspace.currentConversationLabel}
                         </span>
-                        <span className={neutralPill}>
-                            waiting on {currentConversation.waitingOn || 'none'}
-                        </span>
-                        <span className={neutralPill}>
-                            {currentConversation.messageCount} messages
+                        <span className="text-[11px] text-white/50 truncate">
+                            {currentConversation.userEmail ||
+                                currentConversation.sessionId}
                         </span>
                     </div>
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex flex-wrap justify-end gap-2.5 max-sm:w-full max-sm:justify-start">
+                {/* Status pills + actions row */}
+                <div className="flex flex-wrap items-center gap-2 max-sm:w-full">
+                    {/* Status pills */}
+                    <span
+                        className={`${pill} ${getStatusPillClass(currentConversation.escalationStatus)}`}
+                    >
+                        {getStatusLabel(currentConversation.escalationStatus)}
+                    </span>
+                    <span className={neutralPill}>
+                        αναμένει: {currentConversation.waitingOn || 'κανένας'}
+                    </span>
+                    <span className={neutralPill}>
+                        {currentConversation.messageCount} μηνύματα
+                    </span>
+
+                    {/* Action buttons */}
                     <button
                         type="button"
                         className={`${btn} lg:hidden`}
                         onClick={workspace.clearSelection}
                     >
-                        Back to inbox
+                        Πίσω
                     </button>
 
                     {workspace.canReply ? (
@@ -136,7 +140,7 @@ export function AdminChatRceThread({
                             className={btn}
                             onClick={workspace.focusComposer}
                         >
-                            Reply
+                            Απάντηση
                         </button>
                     ) : null}
 
@@ -147,7 +151,7 @@ export function AdminChatRceThread({
                             className={btn}
                             onClick={() => void workspace.handleStatusChange('in_progress')}
                         >
-                            Mark in progress
+                            Σε εξέλιξη
                         </button>
                     ) : null}
 
@@ -157,7 +161,7 @@ export function AdminChatRceThread({
                             className={btn}
                             onClick={() => void workspace.handleStatusChange('pending')}
                         >
-                            Reopen
+                            Επαναφορά
                         </button>
                     ) : (
                         <button
@@ -165,7 +169,7 @@ export function AdminChatRceThread({
                             className={btn}
                             onClick={() => void workspace.handleStatusChange('resolved')}
                         >
-                            Resolve
+                            Κλείσιμο
                         </button>
                     )}
                 </div>
@@ -173,7 +177,7 @@ export function AdminChatRceThread({
 
             {/* ── Load older messages ───────────────────────────────── */}
             {workspace.hasMoreMessages ? (
-                <div className="flex items-center justify-center px-4 pt-3">
+                <div className="flex items-center justify-center px-4 pt-2.5">
                     <button
                         type="button"
                         className={btn}
@@ -186,21 +190,21 @@ export function AdminChatRceThread({
                         disabled={workspace.isLoadingOlderMessages}
                     >
                         {workspace.isLoadingOlderMessages
-                            ? 'Loading older…'
-                            : 'Load older messages'}
+                            ? 'Φόρτωση...'
+                            : 'Παλαιότερα μηνύματα'}
                     </button>
                 </div>
             ) : null}
 
             {/* ── Message list ──────────────────────────────────────── */}
-            <div className="relative min-h-0 flex-1 flex flex-col">
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
                 {workspace.isLoadingMessages ? (
-                    <div className="flex items-center justify-center min-h-[260px] p-6 text-center text-slate-500 text-sm">
-                        Loading conversation…
+                    <div className="flex items-center justify-center min-h-[200px] text-white/40 text-sm">
+                        Φόρτωση συνομιλίας...
                     </div>
                 ) : messageListItems.length === 0 ? (
-                    <div className="flex items-center justify-center min-h-[260px] p-6 text-center text-slate-500 text-sm">
-                        No messages were loaded for this thread yet.
+                    <div className="flex items-center justify-center min-h-[200px] text-white/40 text-sm">
+                        Δεν υπάρχουν μηνύματα.
                     </div>
                 ) : (
                     <div className="min-h-0 flex-1 flex">
@@ -221,33 +225,31 @@ export function AdminChatRceThread({
             </div>
 
             {/* ── Composer ──────────────────────────────────────────── */}
-            <div className="flex flex-col gap-3 px-[18px] pt-4 pb-[18px] border-t border-slate-200/85 bg-slate-50">
+            <div className="flex-shrink-0 flex flex-col gap-2 px-3 pt-2 pb-3 border-t border-white/[0.07] bg-white/[0.02]">
                 {!currentConversation.userId ? (
-                    <div className="px-4 py-3.5 rounded-[18px] border border-slate-200/90 bg-white text-slate-500 text-sm leading-relaxed">
-                        Anonymous sessions remain read-only. In-app replies are only
-                        available for authenticated customers.
+                    <div className="px-3 py-2.5 rounded-[14px] border border-white/[0.07] bg-white/[0.04] text-white/50 text-xs leading-relaxed">
+                        Ανώνυμες συνομιλίες είναι μόνο για ανάγνωση.
                     </div>
                 ) : currentConversation.escalationStatus === 'resolved' ? (
-                    <div className="px-4 py-3.5 rounded-[18px] border border-green-600/20 bg-green-50/60 text-green-800 text-sm leading-relaxed">
-                        This conversation is resolved. Reopen it before sending a new human
-                        reply.
+                    <div className="px-3 py-2.5 rounded-[14px] border border-green-500/20 bg-green-500/10 text-green-400 text-xs leading-relaxed">
+                        Η συνομιλία έχει κλείσει. Επαναφέρετε για νέο μήνυμα.
                     </div>
                 ) : !currentConversation.isEscalated ? (
-                    <div className="px-4 py-3.5 rounded-[18px] border border-slate-200/90 bg-white text-slate-500 text-sm leading-relaxed">
-                        Human reply is only available for escalated support threads.
+                    <div className="px-3 py-2.5 rounded-[14px] border border-white/[0.07] bg-white/[0.04] text-white/50 text-xs leading-relaxed">
+                        Οι απαντήσεις είναι διαθέσιμες μόνο σε κλιμακωμένες συνομιλίες.
                     </div>
                 ) : (
                     <>
                         {/* Meta row */}
-                        <div className="flex items-center justify-between gap-3 text-xs text-slate-500 max-sm:flex-col max-sm:items-start">
-                            <span className="font-semibold">
-                                Enter sends. Shift+Enter inserts a new line.
+                        <div className="flex items-center justify-between gap-3 text-xs max-sm:flex-col max-sm:items-start">
+                            <span className="font-medium text-white/40">
+                                Enter αποστολή · Shift+Enter νέα γραμμή
                             </span>
-                            <span>{threadSyncLabel}</span>
+                            <span className="text-white/30">{threadSyncLabel}</span>
                         </div>
 
                         {/* Quick replies */}
-                        <div className="flex flex-wrap gap-2 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:pb-1">
+                        <div className="flex flex-wrap gap-1.5 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:pb-1">
                             <button
                                 type="button"
                                 className={quickReplyBtn}
@@ -257,7 +259,7 @@ export function AdminChatRceThread({
                                     )
                                 }
                             >
-                                Acknowledge
+                                Επιβεβαίωση
                             </button>
                             <button
                                 type="button"
@@ -268,7 +270,7 @@ export function AdminChatRceThread({
                                     )
                                 }
                             >
-                                Ask for product code
+                                Αίτηση κωδικού
                             </button>
                             <button
                                 type="button"
@@ -279,17 +281,17 @@ export function AdminChatRceThread({
                                     )
                                 }
                             >
-                                Share phone
+                                Αποστολή τηλεφώνου
                             </button>
                         </div>
 
                         {/* Composer card */}
-                        <div className="flex items-end gap-3 px-3 py-2.5 border border-blue-200/95 rounded-[20px] bg-white shadow-[0_12px_30px_rgba(148,163,184,0.12)] max-sm:flex-col max-sm:items-stretch">
+                        <div className="flex items-end gap-2.5 px-3 py-2 border border-white/[0.12] rounded-[16px] bg-white/[0.05] max-sm:flex-col max-sm:items-stretch">
                             <textarea
                                 ref={composerRef}
                                 value={workspace.replyDraft}
-                                placeholder="Type a human reply to the customer..."
-                                className="flex-1 min-w-0 min-h-[44px] max-h-[140px] border-0 outline-none resize-none bg-transparent text-slate-900 text-sm leading-relaxed placeholder:text-slate-400 pt-2.5 pb-1.5 px-1"
+                                placeholder="Γράψε απάντηση..."
+                                className="flex-1 min-w-0 min-h-[38px] max-h-[120px] border-0 outline-none resize-none bg-transparent text-[var(--theme-text)] text-sm leading-relaxed placeholder:text-white/25 py-2 px-1"
                                 rows={1}
                                 maxLength={5000}
                                 onChange={(event) =>
@@ -304,7 +306,7 @@ export function AdminChatRceThread({
                             />
                             <button
                                 type="button"
-                                className="inline-flex items-center justify-center min-w-[72px] min-h-[38px] px-4 rounded-full bg-blue-600 text-white text-xs font-bold cursor-pointer transition-colors duration-150 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed max-sm:w-full"
+                                className="inline-flex items-center justify-center min-w-[68px] min-h-[34px] px-3 rounded-full bg-[var(--theme-accent)] text-white text-xs font-bold cursor-pointer transition-colors duration-150 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed max-sm:w-full"
                                 disabled={
                                     !workspace.replyDraft.trim() ||
                                     workspace.isSendingReply ||
@@ -312,7 +314,7 @@ export function AdminChatRceThread({
                                 }
                                 onClick={() => void workspace.handleReplySubmit()}
                             >
-                                {workspace.isSendingReply ? 'Sending…' : 'Send'}
+                                {workspace.isSendingReply ? 'Αποστολή...' : 'Αποστολή'}
                             </button>
                         </div>
                     </>

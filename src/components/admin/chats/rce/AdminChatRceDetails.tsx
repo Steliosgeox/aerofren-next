@@ -8,14 +8,21 @@ interface AdminChatRceDetailsProps {
 }
 
 const btn =
-    'inline-flex items-center gap-2 min-h-[42px] px-3.5 rounded-full border border-slate-300/25 bg-white text-slate-900 text-[13px] font-semibold cursor-pointer transition-colors duration-150 hover:border-blue-600/30 hover:text-blue-700 disabled:opacity-55 disabled:cursor-not-allowed';
+    'inline-flex items-center gap-1.5 min-h-[30px] px-3 rounded-full border border-white/[0.12] bg-white/[0.06] text-white/75 text-xs font-semibold cursor-pointer transition-colors duration-150 hover:bg-white/[0.10] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed';
 
 export function AdminChatRceDetails({
     workspace,
     mobile = false,
 }: AdminChatRceDetailsProps) {
     if (!workspace.currentConversation) {
-        return null;
+        return (
+            <div className={[
+                'flex flex-1 items-center justify-center p-8 text-center text-white/30 text-sm',
+                mobile ? 'hidden max-xl:flex' : '',
+            ].join(' ')}>
+                Επίλεξε συνομιλία.
+            </div>
+        );
     }
 
     const { currentConversation } = workspace;
@@ -23,29 +30,26 @@ export function AdminChatRceDetails({
     return (
         <div className={mobile ? 'hidden max-xl:block' : undefined}>
             {/* ── Section heading ───────────────────────────────────── */}
-            <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-500">
-                    Conversation Details
+            <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40">
+                    Στοιχεία
                 </span>
-                <h3 className="m-0 text-lg font-bold tracking-tight text-slate-900">
-                    Session metadata
+                <h3 className="m-0 text-sm font-semibold tracking-tight text-[var(--theme-text)]">
+                    Μεταδεδομένα
                 </h3>
-                <span className="text-[13px] text-slate-500">
-                    Operational context and quick utilities for the selected thread.
-                </span>
             </div>
 
             {/* ── Detail rows ───────────────────────────────────────── */}
-            <div className="grid gap-2.5 mt-4">
+            <div className="grid gap-2 mt-3">
                 {workspace.conversationDetails.map((detail) => (
                     <div
                         key={detail.label}
-                        className="grid gap-1.5 p-3.5 rounded-[18px] bg-slate-50 border border-slate-200"
+                        className="grid gap-1 p-3 rounded-[12px] bg-white/[0.03] border border-white/[0.06]"
                     >
-                        <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-slate-400">
+                        <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-white/40">
                             {detail.label}
                         </span>
-                        <span className="text-sm leading-snug text-slate-900 break-words">
+                        <span className="text-xs leading-snug text-white/80 break-words">
                             {detail.value}
                         </span>
                     </div>
@@ -53,7 +57,7 @@ export function AdminChatRceDetails({
             </div>
 
             {/* ── Action buttons ────────────────────────────────────── */}
-            <div className="flex flex-col gap-2.5 mt-4">
+            <div className="flex flex-col gap-2 mt-3">
                 <button
                     type="button"
                     className={btn}
@@ -64,7 +68,7 @@ export function AdminChatRceDetails({
                         )
                     }
                 >
-                    Copy session ID
+                    Αντιγραφή ID
                 </button>
 
                 {currentConversation.userEmail ? (
@@ -78,7 +82,7 @@ export function AdminChatRceDetails({
                             )
                         }
                     >
-                        Copy email
+                        Αντιγραφή email
                     </button>
                 ) : null}
 
@@ -87,7 +91,7 @@ export function AdminChatRceDetails({
                     className={btn}
                     onClick={workspace.exportToCSV}
                 >
-                    Export CSV
+                    Εξαγωγή CSV
                 </button>
             </div>
         </div>
