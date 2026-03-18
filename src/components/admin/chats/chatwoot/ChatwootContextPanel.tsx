@@ -15,6 +15,7 @@ import {
     MessageSquare,
     X,
 } from 'lucide-react';
+import { ADMIN_EMAILS } from '@/lib/admin-emails';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,6 +42,8 @@ interface AdminChatConversation {
     waitingOn?: 'admin' | 'customer' | 'none' | null;
     isEscalated?: boolean;
     escalationStatus?: AdminChatStatusTone | null;
+    assignedAdminEmail?: string | null;
+    teamId?: string | null;
 }
 
 interface AdminChatWorkspaceState {
@@ -56,6 +59,8 @@ interface AdminChatWorkspaceState {
     injectQuickReply: (quickReply: string) => void;
     handleCopy: (value: string, successNotice: string) => Promise<void> | void;
     exportToCSV: () => void;
+    handleAssign: (agentEmail: string | null, teamId?: string | null) => Promise<void> | void;
+    teams: { id: string; name: string }[];
 }
 
 interface ChatwootContextPanelProps {
@@ -177,7 +182,7 @@ export function ChatwootContextPanel({ workspace, onClose }: ChatwootContextPane
         setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
     const selectClass =
-        'flex items-center justify-between px-3 py-2 rounded-lg border border-[var(--cw-border)] text-[11px] text-[var(--cw-text-3)] bg-white/[0.02] w-full opacity-50 cursor-not-allowed';
+        'px-3 py-2 rounded-lg border border-[var(--cw-border)] text-[11px] text-[var(--cw-text-2)] bg-[var(--cw-bg-main)] w-full cursor-pointer hover:border-[var(--cw-accent)] focus:outline-none focus:border-[var(--cw-accent)] transition-colors appearance-none';
 
     if (!workspace.selectedSessionId) {
         return (
@@ -274,25 +279,39 @@ export function ChatwootContextPanel({ workspace, onClose }: ChatwootContextPane
                             <span className="text-[10px] text-[var(--cw-text-3)] uppercase tracking-wider">
                                 Ανάθεση σε
                             </span>
-                            <div className={selectClass}>
-                                <span>Χωρίς ανάθεση</span>
-                                <ChevronDown size={11} />
-                            </div>
+                            <select
+                                className={selectClass}
+                                value={conv?.assignedAdminEmail ?? ''}
+                                onChange={(e) => void workspace.handleAssign(e.target.value || null)}
+                                disabled={!workspace.selectedSessionId}
+                            >
+                                <option value="">Χωρίς ανάθεση</option>
+                                {ADMIN_EMAILS.map((email) => (
+                                    <option key={email} value={email}>{email}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-[10px] text-[var(--cw-text-3)] uppercase tracking-wider">
                                 Ομάδα
                             </span>
-                            <div className={selectClass}>
-                                <span>Χωρίς ομάδα</span>
-                                <ChevronDown size={11} />
-                            </div>
+                            <select
+                                className={selectClass}
+                                value={conv?.teamId ?? ''}
+                                onChange={(e) => void workspace.handleAssign(conv?.assignedAdminEmail ?? null, e.target.value || null)}
+                                disabled={!workspace.selectedSessionId}
+                            >
+                                <option value="">Χωρίς ομάδα</option>
+                                {workspace.teams.map((team) => (
+                                    <option key={team.id} value={team.id}>{team.name}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="flex flex-col gap-1">
                             <span className="text-[10px] text-[var(--cw-text-3)] uppercase tracking-wider">
                                 Ετικέτες συνομιλίας
                             </span>
-                            <div className={selectClass}>
+                            <div className="flex items-center justify-between px-3 py-2 rounded-lg border border-[var(--cw-border)] text-[11px] text-[var(--cw-text-3)] bg-white/[0.02] w-full opacity-50 cursor-not-allowed">
                                 <span>Προσθήκη ετικέτας</span>
                                 <Plus size={11} />
                             </div>

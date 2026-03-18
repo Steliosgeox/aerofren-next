@@ -62,6 +62,7 @@ import {
 } from '@/lib/admin-chat/workspace';
 import {
     type AdminChatSession,
+    assignChatSession,
     fetchChatSessionsPage,
     markAdminChatRead,
     replyToChatSession,
@@ -148,6 +149,11 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         'connecting',
     );
     const [statusTab, setStatusTab] = useState<WorkspaceTab>('open');
+    const [assignmentFilter, setAssignmentFilterState] = useState<'mine' | 'unassigned' | 'all'>('all');
+    const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+    const [teamFilter, setTeamFilterState] = useState<string | null>(null);
+    const [folders, setFolders] = useState<{ id: string; name: string; filter: Record<string, string | null> }[]>([]);
+    const [activeFolder, setActiveFolderState] = useState<{ id: string; name: string; filter: Record<string, string | null> } | null>(null);
     const [searchQuery, setSearchQueryState] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [replyDraft, setReplyDraftState] = useState('');
@@ -166,6 +172,16 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         () => mergeInboxSessions(pagedSessions, realtimeSessions),
         [pagedSessions, realtimeSessions],
     );
+    const filteredSessions = useMemo(() => {
+        const email = user?.email?.toLowerCase() ?? null;
+        if (assignmentFilter === 'mine' && email) {
+            return sessions.filter((s) => (s.assignedAdminEmail ?? '').toLowerCase() === email);
+        }
+        if (assignmentFilter === 'unassigned') {
+            return sessions.filter((s) => !s.assignedAdminEmail);
+        }
+        return sessions;
+    }, [assignmentFilter, sessions, user?.email]);
     const messages = useMemo(
         () => mergeThreadMessages(olderMessages, realtimeMessages),
         [olderMessages, realtimeMessages],
@@ -229,9 +245,67 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         [currentConversation, messages.length],
     );
     const sessionRows = useMemo(
-        () => sessions.map((session) => buildSessionRowViewModel(session, session.sessionId === selectedSessionId)),
-        [selectedSessionId, sessions],
+        () => filteredSessions.map((session) => buildSessionRowViewModel(session, session.sessionId === selectedSessionId)),
+        [selectedSessionId, filteredSessions],
     );
+
+    const setAssignmentFilter = useCallback((value: 'mine' | 'unassigned' | 'all') => {
+        setAssignmentFilterState(value);
+    }, []);
+
+    const setTeamFilter = useCallback((value: string | null) => {
+        setTeamFilterState(value);
+    }, []);
+
+    const setActiveFolder = useCallback((folder: { id: string; name: string; filter: Record<string, string | null> } | null) => {
+        setActiveFolderState(folder);
+    }, []);
+
+    const refreshTeams = useCallback(async () => {
+        if (!user) return;
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/admin/teams', { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json() as { teams: { id: string; name: string }[] };
+            setTeams(data.teams ?? []);
+        } catch { /* non-critical */ }
+    }, [user]);
+
+    const refreshFolders = useCallback(async () => {
+        if (!user) return;
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/admin/folders', { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json() as { folders: { id: string; name: string; filter: Record<string, string | null> }[] };
+            setFolders(data.folders ?? []);
+        } catch { /* non-critical */ }
+    }, [user]);
+
+    const createFolder = useCallback(async (name: string) => {
+        if (!user || !name.trim()) return;
+        try {
+            const token = await user.getIdToken();
+            await fetch('/api/admin/folders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ name: name.trim(), filter: {} }),
+            });
+            await refreshFolders();
+        } catch { /* non-critical */ }
+    }, [refreshFolders, user]);
+
+    const deleteFolder = useCallback(async (id: string) => {
+        if (!user) return;
+        try {
+            const token = await user.getIdToken();
+            await fetch(`/api/admin/folders/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setActiveFolderState((prev) => prev?.id === id ? null : prev);
+            await refreshFolders();
+        } catch { /* non-critical */ }
+    }, [refreshFolders, user]);
 
     const setSearchQuery = useCallback((value: string) => {
         setSearchQueryState(value);
@@ -425,6 +499,48 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
     useEffect(() => {
         olderMessagesRef.current = olderMessages;
     }, [olderMessages]);
+
+    // Fetch teams once on mount (after user is available)
+    useEffect(() => {
+        if (!user) return;
+        let cancelled = false;
+        user.getIdToken().then((token) => {
+            if (cancelled) return;
+            return fetch('/api/admin/teams', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        }).then((res) => {
+            if (!res || cancelled) return;
+            return res.json() as Promise<{ teams: { id: string; name: string }[] }>;
+        }).then((data) => {
+            if (!data || cancelled) return;
+            setTeams(data.teams ?? []);
+        }).catch(() => {
+            // non-critical, ignore
+        });
+        return () => { cancelled = true; };
+    }, [user]);
+
+    // Fetch folders once on mount (after user is available)
+    useEffect(() => {
+        if (!user) return;
+        let cancelled = false;
+        user.getIdToken().then((token) => {
+            if (cancelled) return;
+            return fetch('/api/admin/folders', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        }).then((res) => {
+            if (!res || cancelled) return;
+            return res.json() as Promise<{ folders: { id: string; name: string; filter: Record<string, string | null> }[] }>;
+        }).then((data) => {
+            if (!data || cancelled) return;
+            setFolders(data.folders ?? []);
+        }).catch(() => {
+            // non-critical, ignore
+        });
+        return () => { cancelled = true; };
+    }, [user]);
 
     useEffect(() => {
         setSelectedSessionId(searchParams.get('session'));
@@ -898,6 +1014,19 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         }
     }, [applySessionPatch, applyThreadSessionMetaPatch, currentConversation?.adminUnreadCount, currentConversation?.waitingOn, selectedSessionId, user]);
 
+    const handleAssign = useCallback(async (agentEmail: string | null, teamId?: string | null) => {
+        if (!user || !selectedSessionId) return;
+        try {
+            await assignChatSession(user, selectedSessionId, agentEmail, teamId);
+            applySessionPatch(selectedSessionId, {
+                assignedAdminEmail: agentEmail ?? undefined,
+                ...(teamId !== undefined ? { teamId: teamId ?? undefined } : {}),
+            });
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : 'Αποτυχία ανάθεσης.');
+        }
+    }, [applySessionPatch, selectedSessionId, user]);
+
     const handleReplySubmit = useCallback(async () => {
         if (!user || !selectedSessionId || !replyDraft.trim() || !canReply) return;
         const previousDraft = replyDraft.trim();
@@ -949,6 +1078,8 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         userEmail: user?.email ?? null,
         sessions,
         sessionRows,
+        assignmentFilter,
+        setAssignmentFilter,
         sessionsCursor,
         hasMoreSessions,
         isLoadingSessions,
@@ -989,6 +1120,7 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         clearSelection,
         focusComposer,
         handleStatusChange,
+        handleAssign,
         handleReplySubmit,
         fetchSessions,
         fetchOlderMessages,
@@ -998,5 +1130,15 @@ export function useAdminChatWorkspace({ composerRef, threadScrollerRef }: Worksp
         handleCopy,
         exportToCSV,
         injectQuickReply,
+        teams,
+        setTeamFilter,
+        teamFilter,
+        refreshTeams,
+        folders,
+        activeFolder,
+        setActiveFolder,
+        refreshFolders,
+        createFolder,
+        deleteFolder,
     };
 }

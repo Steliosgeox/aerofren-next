@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Loader2, SortDesc, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import ChatwootConversationItem from './ChatwootConversationItem';
 import type { AdminChatSessionRow } from './ChatwootConversationItem';
@@ -12,6 +11,8 @@ import type { AdminChatSessionRow } from './ChatwootConversationItem';
 type WorkspaceProps = Pick<
     {
         sessionRows: AdminChatSessionRow[];
+        assignmentFilter: 'mine' | 'unassigned' | 'all';
+        setAssignmentFilter: (value: 'mine' | 'unassigned' | 'all') => void;
         sessionsCursor: string | null;
         hasMoreSessions: boolean;
         isLoadingSessions: boolean;
@@ -22,6 +23,8 @@ type WorkspaceProps = Pick<
         ) => Promise<void> | void;
     },
     | 'sessionRows'
+    | 'assignmentFilter'
+    | 'setAssignmentFilter'
     | 'sessionsCursor'
     | 'hasMoreSessions'
     | 'isLoadingSessions'
@@ -49,6 +52,8 @@ const TABS: { key: TabKey; label: string }[] = [
 export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProps) {
     const {
         sessionRows,
+        assignmentFilter,
+        setAssignmentFilter,
         sessionsCursor,
         hasMoreSessions,
         isLoadingSessions,
@@ -56,8 +61,6 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
         selectSession,
         fetchSessions,
     } = workspace;
-
-    const [activeTab, setActiveTab] = useState<TabKey>('all');
 
     return (
         <div className="w-[300px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
@@ -90,10 +93,10 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
                     <button
                         key={key}
                         type="button"
-                        onClick={() => setActiveTab(key)}
+                        onClick={() => setAssignmentFilter(key)}
                         className={[
                             'px-3 h-9 text-[11px] font-medium border-b-2 -mb-px transition-colors',
-                            activeTab === key
+                            assignmentFilter === key
                                 ? 'text-[var(--cw-accent)] border-[var(--cw-accent)]'
                                 : 'text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] border-transparent',
                         ].join(' ')}

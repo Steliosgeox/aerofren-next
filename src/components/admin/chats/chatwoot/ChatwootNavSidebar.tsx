@@ -11,6 +11,10 @@ import {
     FolderOpen,
     Users,
     Hash,
+    Plus,
+    X,
+    Check,
+    Trash2,
 } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 
@@ -20,6 +24,8 @@ import type { KeyboardEvent } from 'react';
 
 type AdminChatWorkspaceTab = 'open' | 'waiting_on_admin' | 'in_progress' | 'resolved' | 'all';
 
+type FolderDef = { id: string; name: string; filter: Record<string, string | null> };
+
 interface WorkspaceNavProps {
     statusTab: AdminChatWorkspaceTab;
     queueInsights: { waitingOnAdmin: number };
@@ -27,6 +33,17 @@ interface WorkspaceNavProps {
     setSearchQuery: (value: string) => void;
     handleTabChange: (tab: AdminChatWorkspaceTab) => void;
     handleTabKeyDown: (event: KeyboardEvent<HTMLButtonElement>, currentIndex: number) => void;
+    teams: { id: string; name: string }[];
+    teamFilter: string | null;
+    setTeamFilter: (id: string | null) => void;
+    refreshTeams: () => Promise<void>;
+    folders: FolderDef[];
+    activeFolder: FolderDef | null;
+    setActiveFolder: (folder: FolderDef | null) => void;
+    refreshFolders: () => Promise<void>;
+    createFolder: (name: string) => Promise<void>;
+    deleteFolder: (id: string) => Promise<void>;
+    userEmail: string | null;
 }
 
 interface ChatwootNavSidebarProps {
@@ -45,9 +62,6 @@ const CONVERSATION_CHILDREN: { label: string; value: AdminChatWorkspaceTab }[] =
     { label: 'Λύθηκαν', value: 'resolved' },
 ];
 
-const TEAM_ITEMS = ['Aerofren Sales', 'Aerofren Support'];
-const CHANNEL_ITEMS = ['Aerofren Chat', 'Aerofren Email'];
-
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
@@ -58,27 +72,40 @@ interface SectionHeaderProps {
     expanded: boolean;
     onToggle: () => void;
     badge?: number;
+    onAdd?: () => void;
 }
 
-function SectionHeader({ icon, label, expanded, onToggle, badge }: SectionHeaderProps) {
+function SectionHeader({ icon, label, expanded, onToggle, badge, onAdd }: SectionHeaderProps) {
     return (
-        <button
-            type="button"
-            onClick={onToggle}
-            className="flex items-center gap-2 px-1.5 py-1 rounded-r-md h-8 min-w-0 w-full text-left text-[var(--cw-text-2)] hover:bg-white/[0.05] transition-colors"
-        >
-            <span className="flex-shrink-0 text-[var(--cw-text-3)]">{icon}</span>
-            <span className="flex-1 truncate text-[12px] font-medium">{label}</span>
-            {badge !== undefined && badge > 0 && (
-                <span className="text-[9px] leading-4 font-semibold rounded-md px-1 bg-white/[0.08] text-[var(--cw-text-2)] flex-shrink-0">
-                    {badge > 99 ? '99+' : badge}
-                </span>
+        <div className="flex items-center gap-0 min-w-0 w-full">
+            <button
+                type="button"
+                onClick={onToggle}
+                className="flex items-center gap-2 px-1.5 py-1 rounded-r-md h-8 min-w-0 flex-1 text-left text-[var(--cw-text-2)] hover:bg-white/[0.05] transition-colors"
+            >
+                <span className="flex-shrink-0 text-[var(--cw-text-3)]">{icon}</span>
+                <span className="flex-1 truncate text-[12px] font-medium">{label}</span>
+                {badge !== undefined && badge > 0 && (
+                    <span className="text-[9px] leading-4 font-semibold rounded-md px-1 bg-white/[0.08] text-[var(--cw-text-2)] flex-shrink-0">
+                        {badge > 99 ? '99+' : badge}
+                    </span>
+                )}
+                <ChevronUp
+                    size={11}
+                    className={`flex-shrink-0 text-[var(--cw-text-3)] transition-transform duration-150 ${expanded ? '' : 'rotate-180'}`}
+                />
+            </button>
+            {onAdd && (
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onAdd(); }}
+                    className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.05] transition-colors"
+                    title="Προσθήκη"
+                >
+                    <Plus size={11} />
+                </button>
             )}
-            <ChevronUp
-                size={11}
-                className={`flex-shrink-0 text-[var(--cw-text-3)] transition-transform duration-150 ${expanded ? '' : 'rotate-180'}`}
-            />
-        </button>
+        </div>
     );
 }
 
@@ -86,11 +113,12 @@ interface LeafItemProps {
     label: string;
     active: boolean;
     onClick: () => void;
+    onDelete?: () => void;
 }
 
-function LeafItem({ label, active, onClick }: LeafItemProps) {
+function LeafItem({ label, active, onClick, onDelete }: LeafItemProps) {
     return (
-        <li className="py-px pl-2 ml-3 relative child-item">
+        <li className="py-px pl-2 ml-3 relative child-item group/leaf">
             <button
                 type="button"
                 onClick={onClick}
@@ -103,6 +131,16 @@ function LeafItem({ label, active, onClick }: LeafItemProps) {
                 ].join(' ')}
             >
                 <span className="flex-1 truncate text-[12px]">{label}</span>
+                {onDelete && (
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                        className="opacity-0 group-hover/leaf:opacity-100 w-4 h-4 flex items-center justify-center rounded text-[var(--cw-text-3)] hover:text-red-400 transition-all flex-shrink-0"
+                        title="Διαγραφή"
+                    >
+                        <Trash2 size={10} />
+                    </button>
+                )}
             </button>
         </li>
     );
@@ -113,15 +151,51 @@ function LeafItem({ label, active, onClick }: LeafItemProps) {
 // ---------------------------------------------------------------------------
 
 export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProps) {
-    const { statusTab, queueInsights, searchQuery, setSearchQuery, handleTabChange } = workspace;
+    const {
+        statusTab, queueInsights, searchQuery, setSearchQuery, handleTabChange,
+        teams, teamFilter, setTeamFilter,
+        folders, activeFolder, setActiveFolder,
+        createFolder, deleteFolder,
+        userEmail,
+    } = workspace;
     const router = useRouter();
 
     const [conversationsExpanded, setConversationsExpanded] = useState(true);
-    const [foldersExpanded, setFoldersExpanded] = useState(false);
+    const [foldersExpanded, setFoldersExpanded] = useState(true);
     const [teamsExpanded, setTeamsExpanded] = useState(true);
     const [channelsExpanded, setChannelsExpanded] = useState(true);
 
+    const [creatingFolder, setCreatingFolder] = useState(false);
+    const [newFolderName, setNewFolderName] = useState('');
+    const [savingFolder, setSavingFolder] = useState(false);
+
     const waitingCount = queueInsights.waitingOnAdmin;
+
+    const handleCreateFolder = async () => {
+        if (!newFolderName.trim()) return;
+        setSavingFolder(true);
+        try {
+            await createFolder(newFolderName.trim());
+            setNewFolderName('');
+            setCreatingFolder(false);
+        } catch {
+            // ignore
+        } finally {
+            setSavingFolder(false);
+        }
+    };
+
+    const handleDeleteFolder = async (id: string) => {
+        try {
+            await deleteFolder(id);
+        } catch {
+            // ignore
+        }
+    };
+
+    // Display name in footer — show first part of email or "Admin"
+    const displayName = userEmail ? userEmail.split('@')[0] ?? 'Admin' : 'Admin';
+    const displayDomain = userEmail ? userEmail.split('@')[1] ?? 'aerofren.gr' : 'aerofren.gr';
 
     return (
         <aside className="w-[220px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col text-sm">
@@ -178,7 +252,7 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                             onClick={() => handleTabChange('waiting_on_admin')}
                             className={[
                                 'flex items-center gap-2 px-1.5 py-1 rounded-r-md h-8 min-w-0 w-full text-left transition-colors',
-                                statusTab === 'waiting_on_admin'
+                                statusTab === 'waiting_on_admin' && !teamFilter && !activeFolder
                                     ? 'text-[var(--cw-text-1)] bg-[var(--cw-accent-dim)] border-l-2 border-l-[var(--cw-accent)]'
                                     : 'text-[var(--cw-text-2)] hover:bg-white/[0.05]',
                             ].join(' ')}
@@ -208,8 +282,8 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                                     <LeafItem
                                         key={item.value}
                                         label={item.label}
-                                        active={statusTab === item.value}
-                                        onClick={() => handleTabChange(item.value)}
+                                        active={statusTab === item.value && !teamFilter && !activeFolder}
+                                        onClick={() => { setTeamFilter(null); setActiveFolder(null); handleTabChange(item.value); }}
                                     />
                                 ))}
                             </ul>
@@ -217,20 +291,68 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                     </li>
 
                     {/* Folders group */}
-                    <li className="grid gap-0.5 cursor-pointer select-none min-w-0">
+                    <li className="grid gap-0.5 select-none min-w-0">
                         <SectionHeader
                             icon={<FolderOpen size={14} />}
                             label="Φάκελοι"
                             expanded={foldersExpanded}
                             onToggle={() => setFoldersExpanded(!foldersExpanded)}
+                            onAdd={() => { setFoldersExpanded(true); setCreatingFolder(true); }}
                         />
                         {foldersExpanded && (
                             <ul className="grid m-0 list-none sidebar-group-children min-w-0">
-                                <li className="py-px pl-2 ml-3">
-                                    <span className="flex h-7 items-center px-2 text-[11px] text-[var(--cw-text-3)] italic">
-                                        Δεν υπάρχουν φάκελοι
-                                    </span>
-                                </li>
+                                {folders.length === 0 && !creatingFolder && (
+                                    <li className="py-px pl-2 ml-3">
+                                        <span className="flex h-7 items-center px-2 text-[11px] text-[var(--cw-text-3)] italic">
+                                            Δεν υπάρχουν φάκελοι
+                                        </span>
+                                    </li>
+                                )}
+                                {folders.map((folder) => (
+                                    <LeafItem
+                                        key={folder.id}
+                                        label={folder.name}
+                                        active={activeFolder?.id === folder.id}
+                                        onClick={() => {
+                                            setActiveFolder(activeFolder?.id === folder.id ? null : folder);
+                                            setTeamFilter(null);
+                                        }}
+                                        onDelete={() => void handleDeleteFolder(folder.id)}
+                                    />
+                                ))}
+                                {creatingFolder && (
+                                    <li className="py-px pl-2 ml-3">
+                                        <div className="flex items-center gap-1 h-7 px-2">
+                                            <input
+                                                autoFocus
+                                                type="text"
+                                                value={newFolderName}
+                                                onChange={(e) => setNewFolderName(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') void handleCreateFolder();
+                                                    if (e.key === 'Escape') { setCreatingFolder(false); setNewFolderName(''); }
+                                                }}
+                                                placeholder="Όνομα φακέλου..."
+                                                className="flex-1 min-w-0 text-[11px] bg-transparent outline-none text-[var(--cw-text-1)] placeholder-[var(--cw-text-3)] border-b border-[var(--cw-border)]"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => void handleCreateFolder()}
+                                                disabled={savingFolder || !newFolderName.trim()}
+                                                className="w-4 h-4 flex items-center justify-center text-emerald-400 hover:text-emerald-300 disabled:opacity-40"
+                                            >
+                                                <Check size={10} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { setCreatingFolder(false); setNewFolderName(''); }}
+                                                className="w-4 h-4 flex items-center justify-center text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)]"
+                                            >
+                                                <X size={10} />
+                                            </button>
+                                        </div>
+                                    </li>
+                                )}
                             </ul>
                         )}
                     </li>
@@ -245,15 +367,23 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                         />
                         {teamsExpanded && (
                             <ul className="grid m-0 list-none sidebar-group-children min-w-0">
-                                {TEAM_ITEMS.map((team) => (
-                                    <li key={team} className="py-px pl-2 ml-3 relative child-item">
-                                        <button
-                                            type="button"
-                                            className="flex h-7 items-center px-2 rounded-lg w-full text-left text-[var(--cw-text-2)] hover:bg-white/[0.05] transition-colors"
-                                        >
-                                            <span className="flex-1 truncate text-[12px]">{team}</span>
-                                        </button>
+                                {teams.length === 0 && (
+                                    <li className="py-px pl-2 ml-3">
+                                        <span className="flex h-7 items-center px-2 text-[11px] text-[var(--cw-text-3)] italic">
+                                            Δεν υπάρχουν ομάδες
+                                        </span>
                                     </li>
+                                )}
+                                {teams.map((team) => (
+                                    <LeafItem
+                                        key={team.id}
+                                        label={team.name}
+                                        active={teamFilter === team.id}
+                                        onClick={() => {
+                                            setTeamFilter(teamFilter === team.id ? null : team.id);
+                                            setActiveFolder(null);
+                                        }}
+                                    />
                                 ))}
                             </ul>
                         )}
@@ -269,16 +399,19 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                         />
                         {channelsExpanded && (
                             <ul className="grid m-0 list-none sidebar-group-children min-w-0">
-                                {CHANNEL_ITEMS.map((ch) => (
-                                    <li key={ch} className="py-px pl-2 ml-3 relative child-item">
-                                        <button
-                                            type="button"
-                                            className="flex h-7 items-center px-2 rounded-lg w-full text-left text-[var(--cw-text-2)] hover:bg-white/[0.05] transition-colors"
-                                        >
-                                            <span className="flex-1 truncate text-[12px]">{ch}</span>
-                                        </button>
-                                    </li>
-                                ))}
+                                <LeafItem
+                                    label="Aerofren Chat"
+                                    active={statusTab === 'all' && !teamFilter && !activeFolder}
+                                    onClick={() => { setTeamFilter(null); setActiveFolder(null); handleTabChange('all'); }}
+                                />
+                                <li className="py-px pl-2 ml-3 relative child-item">
+                                    <button
+                                        type="button"
+                                        className="flex h-7 items-center px-2 rounded-r-md w-full text-left text-[var(--cw-text-3)] opacity-40 cursor-not-allowed"
+                                    >
+                                        <span className="flex-1 truncate text-[12px]">Aerofren Email</span>
+                                    </button>
+                                </li>
                             </ul>
                         )}
                     </li>
@@ -294,11 +427,11 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                     title="Πίνακας διαχείρισης"
                     className="w-7 h-7 rounded-full bg-[var(--cw-accent)] flex items-center justify-center text-white text-[10px] font-bold select-none flex-shrink-0 hover:opacity-80 transition-opacity"
                 >
-                    A
+                    {displayName[0]?.toUpperCase() ?? 'A'}
                 </button>
                 <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-medium text-[var(--cw-text-1)] truncate leading-tight">Admin</p>
-                    <p className="text-[10px] text-[var(--cw-text-3)] truncate leading-tight">aerofren.gr</p>
+                    <p className="text-[12px] font-medium text-[var(--cw-text-1)] truncate leading-tight">{displayName}</p>
+                    <p className="text-[10px] text-[var(--cw-text-3)] truncate leading-tight">{displayDomain}</p>
                 </div>
             </section>
         </aside>

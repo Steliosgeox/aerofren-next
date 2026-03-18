@@ -43,6 +43,7 @@ export interface AdminChatSession {
     customerUnreadCount: number;
     waitingOn?: ChatWaitingOn;
     assignedAdminEmail?: string;
+    teamId?: string;
     userEmailNormalized?: string;
     userNameNormalized?: string;
     userEmailLocalPartNormalized?: string;
@@ -134,6 +135,24 @@ export async function updateChatSessionStatus(
             body: JSON.stringify({ status }),
         }
     );
+}
+
+export async function assignChatSession(
+    user: AuthUser | null,
+    sessionId: string,
+    agentEmail: string | null,
+    teamId?: string | null
+): Promise<boolean> {
+    const data = await fetchWithAuth<{ success: boolean }>(
+        user,
+        `/api/admin/chats/${encodeURIComponent(sessionId)}/assign`,
+        {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agentEmail, ...(teamId !== undefined ? { teamId } : {}) }),
+        }
+    );
+    return data.success === true;
 }
 
 export async function markAdminChatRead(

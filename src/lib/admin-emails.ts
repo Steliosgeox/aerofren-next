@@ -8,7 +8,7 @@
  * NOTE: Firestore security rules (firestore.rules) maintain their own copy
  * and must be updated separately when this list changes.
  */
-const ADMIN_EMAILS: readonly string[] = [
+export const ADMIN_EMAILS: readonly string[] = [
     "aerofren@gmail.com",
     "info@aerofren.gr",
     "admin@aerofren.gr",
