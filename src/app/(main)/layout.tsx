@@ -1,7 +1,9 @@
+import { Suspense } from "react"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { RouteEffects } from "@/components/RouteEffects"
 import { RouteScrollShell } from "@/components/RouteScrollShell"
+import { ChatProvider } from "@/contexts/ChatContext"
 import { NotificationProvider } from "@/contexts/NotificationContext"
 
 export default function MainLayout({
@@ -21,19 +23,23 @@ export default function MainLayout({
       {/* Global waves background (z-index: -1) */}
       <div className="waves-background" aria-hidden="true" />
 
-      {/* Route-scoped fixed effects (z-index handled by components) */}
-      <RouteEffects />
+      <ChatProvider>
+        <NotificationProvider>
+          {/* Route-scoped fixed effects (z-index handled by components) */}
+          <Suspense fallback={null}>
+            <RouteEffects />
+          </Suspense>
 
-      <NotificationProvider>
-        {/* Header - Fixed for accessibility */}
-        <Header />
+          {/* Header - Fixed for accessibility */}
+          <Header />
 
-        {/* Lenis scroll shell keeps motion smooth without ScrollSmoother's heavy wrapper */}
-        <RouteScrollShell>
-          <main className="min-h-screen">{children}</main>
-          <Footer currentYear={currentYear} />
-        </RouteScrollShell>
-      </NotificationProvider>
+          {/* Lenis scroll shell keeps motion smooth without ScrollSmoother's heavy wrapper */}
+          <RouteScrollShell>
+            <main className="min-h-screen">{children}</main>
+            <Footer currentYear={currentYear} />
+          </RouteScrollShell>
+        </NotificationProvider>
+      </ChatProvider>
     </>
   )
 }

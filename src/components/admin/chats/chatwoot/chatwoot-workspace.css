@@ -1,0 +1,70 @@
+.chatwoot-workspace {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Neutral near-black dark palette — Chatwoot dark mode reference */
+  --cw-bg-rail:    #0e1117;
+  --cw-bg-sidebar: #141720;
+  --cw-bg-main:    #0e1117;
+  --cw-bg-panel:   #141720;
+  --cw-border:     #252b38;
+  --cw-text-1:     #ebeff5;
+  --cw-text-2:     #8d96aa;
+  --cw-text-3:     #505b70;
+  /* Muted medium blue — not electric */
+  --cw-accent:     #2563c9;
+  --cw-accent-dim: rgba(37,99,201,0.10);
+  /* Message bubbles */
+  --cw-msg-user:   #1c2438;
+  --cw-msg-bot:    #171e30;
+  --cw-msg-admin:  #1e4da0;
+}
+
+/* Card selection animation */
+@keyframes card-select {
+  0%   { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+.animate-card-select { animation: card-select 0.2s ease; }
+
+/* Reply box */
+.reply-box {
+  border-top: 1px solid var(--cw-border);
+  background: var(--cw-bg-main);
+}
+
+/* ── Sidebar tree lines ─────────────────────────────────────────────────────
+   Mechanical translation of SidebarGroup.vue <style> block.
+   .child-item::before  — vertical connecting line
+   .child-item:last-child::before — shorter line on last item
+   .child-item:last-child::after  — L-shaped corner on last item
+   Color: bg-n-slate-4 → rgba(255,255,255,0.12)
+   ─────────────────────────────────────────────────────────────────────── */
+.sidebar-group-children .child-item::before {
+  content: '';
+  position: absolute;
+  width: 0.125rem;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  left: 0;
+  top: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.sidebar-group-children > .child-item:last-child::before {
+  height: 20%;
+}
+
+.sidebar-group-children > .child-item:last-child::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 12px;
+  bottom: calc(50% - 2px);
+  border-bottom-width: 0.125rem;
+  border-left-width: 0.125rem;
+  border-right-width: 0;
+  border-top-width: 0;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.12);
+  border-radius: 0 0 0 4px;
+  left: 0;
+}

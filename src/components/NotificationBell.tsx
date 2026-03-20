@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, CheckCheck, AlertTriangle, Mail, CheckCircle } from 'lucide-react';
+import { Bell, X, CheckCheck, AlertTriangle, Mail, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useNotifications, type AppNotification } from '@/contexts/NotificationContext';
 
@@ -21,11 +21,11 @@ function formatRelativeTime(date: Date): string {
 function NotificationIcon({ type }: { type: AppNotification['type'] }) {
     if (type === 'escalation') return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />;
     if (type === 'contact') return <Mail className="w-4 h-4 text-[var(--theme-accent)] shrink-0" />;
-    return <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />;
+    return <MessageCircle className="w-4 h-4 text-green-400 shrink-0" />;
 }
 
 export function NotificationBell() {
-    const { notifications, unreadCount, markAllRead, markRead } = useNotifications();
+    const { notifications, unreadCount, canMarkAllRead, markAllRead, markRead } = useNotifications();
     const [open, setOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -49,6 +49,7 @@ export function NotificationBell() {
     return (
         <div className="relative">
             <button
+                type="button"
                 ref={buttonRef}
                 onClick={() => setOpen((v) => !v)}
                 className="relative p-2 rounded-xl transition-colors hover:bg-white/10"
@@ -90,8 +91,9 @@ export function NotificationBell() {
                             )}
                         </span>
                         <div className="flex items-center gap-1">
-                            {unreadCount > 0 && (
+                            {canMarkAllRead && (
                                 <button
+                                    type="button"
                                     onClick={markAllRead}
                                     className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-colors hover:bg-white/10"
                                     style={{ color: 'var(--theme-text-muted)' }}
@@ -101,6 +103,7 @@ export function NotificationBell() {
                                 </button>
                             )}
                             <button
+                                type="button"
                                 onClick={() => setOpen(false)}
                                 className="p-1 rounded-lg transition-colors hover:bg-white/10"
                                 style={{ color: 'var(--theme-text-muted)' }}

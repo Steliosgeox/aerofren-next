@@ -8,15 +8,47 @@ import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
 import { useViewportHeightCssVar } from "@/lib/viewport";
 import { Button } from "@/components/ui/button";
 import {
+  BUSINESS_NAME,
   BUSINESS_PHONE_DISPLAY,
   BUSINESS_PHONE_HREF,
+  FOUNDING_LABEL_EL,
   FOUNDING_YEAR,
   PRODUCT_COUNT,
 } from "@/lib/constants/aerofren";
 
+function HomeHeroFallback() {
+  return (
+    <section className="home-hero-fallback" aria-labelledby="home-hero-title">
+      <div className="home-hero-fallback__inner">
+        <p className="home-hero-fallback__eyebrow">{BUSINESS_NAME} • B2B WATER & AIR SYSTEMS</p>
+        <h1 id="home-hero-title" className="home-hero-fallback__title">
+          B2B προμηθευτής για εξαρτήματα νερού, φίλτρα και πνευματικά συστήματα
+        </h1>
+        <p className="home-hero-fallback__description">
+          Από το 1980 υποστηρίζουμε βιομηχανικές εγκαταστάσεις, τεχνικά έργα και επαγγελματικά δίκτυα με
+          {" "}{PRODUCT_COUNT} προϊόντα, τεχνική καθοδήγηση και άμεση διαθεσιμότητα.
+        </p>
+        <ul className="home-hero-fallback__highlights" aria-label="Βασικά πλεονεκτήματα" role="list">
+          <li>{FOUNDING_LABEL_EL}</li>
+          <li>{PRODUCT_COUNT} προϊόντα</li>
+          <li>Τεχνική υποστήριξη</li>
+        </ul>
+        <div className="home-hero-fallback__cta">
+          <Button asChild variant="glass-accent" size="hero">
+            <Link href="/products">Δείτε τα προϊόντα</Link>
+          </Button>
+          <Button asChild variant="glass-secondary" size="hero">
+            <Link href="/contact">Ζητήστε προσφορά</Link>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const NexusHero = dynamic(() => import("@/components/NexusHero"), {
   ssr: false,
-  loading: () => <div className="min-h-[70vh] w-full bg-[var(--theme-bg-solid)]" />,
+  loading: () => <HomeHeroFallback />,
 });
 const HorizontalGallery = dynamic(() => import("@/components/HorizontalGallery"), {
   ssr: false,
@@ -35,8 +67,8 @@ const STATS_DATA = [
 ] as const;
 
 export default function HomePageClient() {
-  const statsRef = useRef<HTMLDivElement>(null);
-  const contactRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLElement>(null);
+  const contactRef = useRef<HTMLElement>(null);
   const [statsInView, setStatsInView] = useState(false);
   const [contactInView, setContactInView] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -245,7 +277,7 @@ export default function HomePageClient() {
       {/* ============================================
           STATS SECTION - Zero Gravity Parallax
           ============================================ */}
-      <section ref={statsRef} className="stats">
+      <section ref={statsRef} className="stats" aria-label="Αριθμοί που μιλούν">
 
         {/* Ambient Glowing Background */}
         <div className="stats__ambient-bg">
@@ -295,10 +327,10 @@ export default function HomePageClient() {
       {/* ============================================
           CONTACT - Scale entrance
           ============================================ */}
-      <section ref={contactRef} className="contact">
+      <section ref={contactRef} className="contact" aria-labelledby="contact-heading">
         <div className="contact__container">
           <div data-contact-card className="contact__card">
-            <h2 className="contact__heading">Ζητήστε Προσφορά</h2>
+            <h2 id="contact-heading" className="contact__heading">Ζητήστε Προσφορά</h2>
             <p className="contact__text">
               Επικοινωνήστε μαζί μας για τιμές χονδρικής και ειδικές προσφορές.
             </p>
@@ -321,6 +353,78 @@ export default function HomePageClient() {
         .homePage {
           position: relative;
           overflow-x: clip;
+        }
+
+        .home-hero-fallback {
+          position: relative;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 140px 24px 88px;
+          background:
+            radial-gradient(circle at top, color-mix(in srgb, var(--theme-accent) 16%, transparent), transparent 38%),
+            linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-solid) 92%, #03101d) 0%, var(--theme-bg-solid) 100%);
+        }
+
+        .home-hero-fallback__inner {
+          width: min(960px, 100%);
+          text-align: center;
+        }
+
+        .home-hero-fallback__eyebrow {
+          display: inline-block;
+          margin-bottom: 20px;
+          font-size: 0.9rem;
+          font-weight: 700;
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+          color: var(--theme-accent);
+        }
+
+        .home-hero-fallback__title {
+          margin: 0;
+          font-size: clamp(2.6rem, 7vw, 5.1rem);
+          line-height: 1.02;
+          letter-spacing: -0.04em;
+          color: var(--theme-text);
+          text-wrap: balance;
+        }
+
+        .home-hero-fallback__description {
+          width: min(760px, 100%);
+          margin: 24px auto 0;
+          font-size: clamp(1rem, 2vw, 1.2rem);
+          line-height: 1.7;
+          color: var(--theme-text-muted);
+        }
+
+        .home-hero-fallback__highlights {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 12px;
+          margin-top: 28px;
+          padding: 0;
+          list-style: none;
+        }
+
+        .home-hero-fallback__highlights li {
+          padding: 10px 16px;
+          border-radius: 999px;
+          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 88%, transparent);
+          background: color-mix(in srgb, var(--theme-glass-bg) 80%, transparent);
+          color: var(--theme-text);
+          font-size: 0.88rem;
+          font-weight: 600;
+        }
+
+        .home-hero-fallback__cta {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 16px;
+          margin-top: 32px;
         }
 
         /* ==== STATS (Zero Gravity Parallax) ==== */
@@ -575,6 +679,19 @@ export default function HomePageClient() {
         }
 
         @media (max-width: 640px) {
+          .home-hero-fallback {
+            padding: 128px 20px 72px;
+          }
+
+          .home-hero-fallback__eyebrow {
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+          }
+
+          .home-hero-fallback__cta {
+            flex-direction: column;
+          }
+
           .stats {
             min-height: 250vh;
           }

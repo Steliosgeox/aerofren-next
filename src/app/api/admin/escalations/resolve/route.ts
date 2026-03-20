@@ -88,6 +88,8 @@ export async function POST(request: NextRequest) {
             {
                 sessionId,
                 escalationStatus: 'resolved',
+                waitingOn: 'none',
+                adminUnreadCount: 0,
                 resolvedAt: Timestamp.now(),
                 resolvedBy: decodedToken.email ?? decodedToken.uid,
             },

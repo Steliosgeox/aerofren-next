@@ -4,25 +4,18 @@ import React, {
     createContext,
     useContext,
     useEffect,
+    useMemo,
     useRef,
     useState,
     useCallback,
 } from 'react';
-import {
-    collection,
-    query,
-    where,
-    onSnapshot,
-    orderBy,
-    limit,
-} from 'firebase/firestore';
-import { getFirestoreDb } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchEscalations, fetchContactSubmissionsPage } from '@/services/admin';
+import { useChat, type ChatMessage } from '@/contexts/ChatContext';
+import { fetchChatSessionsPage, fetchContactSubmissionsPage } from '@/services/admin';
 
 export interface AppNotification {
     id: string;
-    type: 'escalation' | 'contact' | 'escalation_resolved';
+    type: 'escalation' | 'contact' | 'chat_reply';
     title: string;
     body: string;
     timestamp: Date;
@@ -33,6 +26,7 @@ export interface AppNotification {
 interface NotificationContextValue {
     notifications: AppNotification[];
     unreadCount: number;
+    canMarkAllRead: boolean;
     markAllRead: () => void;
     markRead: (id: string) => void;
 }
@@ -40,6 +34,7 @@ interface NotificationContextValue {
 const NotificationContext = createContext<NotificationContextValue>({
     notifications: [],
     unreadCount: 0,
+    canMarkAllRead: false,
     markAllRead: () => {},
     markRead: () => {},
 });
@@ -61,117 +56,154 @@ function saveReadSet(userId: string, ids: Set<string>) {
     }
 }
 
+function buildChatReplyNotification(sessionId: string, messages: ChatMessage[]): AppNotification | null {
+    const latestSupportReply = [...messages]
+        .reverse()
+        .find((message) => message.role === 'admin');
+
+    if (!latestSupportReply) {
+        return null;
+    }
+
+    const rawTimestamp = latestSupportReply.timestamp ? new Date(latestSupportReply.timestamp) : new Date();
+    const timestamp = Number.isNaN(rawTimestamp.getTime()) ? new Date() : rawTimestamp;
+
+    return {
+        id: `chat:${sessionId}:${latestSupportReply.id}`,
+        type: 'chat_reply',
+        title: 'Νέα απάντηση υποστήριξης',
+        body: latestSupportReply.content || 'Έχουμε νέα απάντηση για τη συνομιλία σας.',
+        timestamp,
+        href: `/?chat=open&session=${encodeURIComponent(sessionId)}`,
+        isRead: false,
+    };
+}
+
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
     const { user, isAdmin } = useAuth();
+    const userId = user?.uid ?? null;
+    // NotificationProvider must be mounted under ChatProvider.
+    // Customer chat notifications are derived from the canonical ChatContext state.
+    const { hasUnreadSupportReply, messages, sessionId } = useChat();
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [readIds, setReadIds] = useState<Set<string>>(new Set());
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const prevEscalationIdsRef = useRef<Set<string>>(new Set());
     const prevContactIdsRef = useRef<Set<string>>(new Set());
+    const hasSeededAdminPollRef = useRef(false);
 
-    // Load read set from localStorage when user changes
-    useEffect(() => {
-        if (user?.uid) {
-            setReadIds(getReadSet(user.uid));
-        } else {
-            setReadIds(new Set());
-            setNotifications([]);
-            prevEscalationIdsRef.current = new Set();
-            prevContactIdsRef.current = new Set();
-        }
-    }, [user?.uid]);
+    const resetAdminNotificationState = useCallback(() => {
+        setNotifications([]);
+        prevEscalationIdsRef.current = new Set();
+        prevContactIdsRef.current = new Set();
+        hasSeededAdminPollRef.current = false;
+    }, []);
 
-    const markAllRead = useCallback(() => {
-        if (!user?.uid) return;
-        const allIds = new Set(notifications.map((n) => n.id));
-        setReadIds(allIds);
-        saveReadSet(user.uid, allIds);
-    }, [notifications, user?.uid]);
-
-    const markRead = useCallback((id: string) => {
-        if (!user?.uid) return;
-        setReadIds((prev) => {
-            const next = new Set(prev);
-            next.add(id);
-            saveReadSet(user.uid!, next);
-            return next;
-        });
-    }, [user?.uid]);
-
-    // ── Regular user: onSnapshot for their own escalatedChats ──────────────
-    useEffect(() => {
-        if (!user?.uid || isAdmin) return;
-
-        let db;
-        try {
-            db = getFirestoreDb();
-        } catch {
+    const hydrateReadState = useCallback((nextUserId: string | null) => {
+        if (nextUserId) {
+            setReadIds(getReadSet(nextUserId));
             return;
         }
 
-        const q = query(
-            collection(db, 'escalatedChats'),
-            where('userId', '==', user.uid),
-            orderBy('escalatedAt', 'desc'),
-            limit(20)
+        setReadIds(new Set());
+        resetAdminNotificationState();
+    }, [resetAdminNotificationState]);
+
+    // Load read set from localStorage when user changes
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncing React state from an external store (localStorage) on user change is the canonical useEffect pattern.
+        hydrateReadState(userId);
+    }, [hydrateReadState, userId]);
+
+    const chatReplyNotification = useMemo(() => {
+        if (isAdmin || !hasUnreadSupportReply) {
+            return null;
+        }
+
+        return buildChatReplyNotification(sessionId, messages);
+    }, [hasUnreadSupportReply, isAdmin, messages, sessionId]);
+
+    const visibleNotifications = useMemo(
+        () => (isAdmin ? notifications : chatReplyNotification ? [chatReplyNotification] : []),
+        [chatReplyNotification, isAdmin, notifications],
+    );
+
+    const markAllRead = useCallback(() => {
+        if (!userId) return;
+
+        const newIds = new Set(
+            visibleNotifications
+                .filter((notification) => notification.type !== 'chat_reply')
+                .map((notification) => notification.id),
         );
-
-        const unsub = onSnapshot(q, (snapshot) => {
-            const notifs: AppNotification[] = snapshot.docs.map((doc) => {
-                const data = doc.data();
-                const isResolved = data.status === 'resolved';
-                return {
-                    id: doc.id,
-                    type: isResolved ? 'escalation_resolved' as const : 'escalation' as const,
-                    title: isResolved ? 'Αίτημα επιλύθηκε' : 'Αίτημα σε εξέλιξη',
-                    body: isResolved
-                        ? 'Ένας εκπρόσωπος ολοκλήρωσε το αίτημά σας.'
-                        : 'Το αίτημά σας λαμβάνει χειρισμό.',
-                    timestamp: data.escalatedAt?.toDate?.() ?? new Date(),
-                    href: '/',
-                    isRead: readIds.has(doc.id),
-                };
-            });
-            setNotifications(notifs);
-        }, (error) => {
-            console.warn('[NotificationContext] onSnapshot error:', error);
+        setReadIds((prev) => {
+            const merged = new Set([...prev, ...newIds]);
+            saveReadSet(userId, merged);
+            return merged;
         });
+    }, [userId, visibleNotifications]);
 
-        return () => unsub();
-        // readIds intentionally excluded — snapshot must not re-run on read
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.uid, isAdmin]);
+    const markRead = useCallback((id: string) => {
+        if (!userId) return;
+        if (id.startsWith('chat:')) return;
 
-    // ── Admin: 30s polling for escalations + contacts ──────────────────────
+        setReadIds((prev) => {
+            const next = new Set(prev);
+            next.add(id);
+            saveReadSet(userId, next);
+            return next;
+        });
+    }, [userId]);
+
+    useEffect(() => {
+        if (!isAdmin) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: clearing derived admin state when the user loses admin role is a synchronization with auth external state.
+            resetAdminNotificationState();
+        }
+    }, [isAdmin, resetAdminNotificationState]);
+
+    // ── Admin: 30s polling for waiting chat replies + contacts ─────────────
     const pollAdmin = useCallback(async () => {
         if (!user || !isAdmin) return;
 
         try {
-            const [escalations, contactsPage] = await Promise.all([
-                fetchEscalations(user),
+            const [sessionsPage, contactsPage] = await Promise.all([
+                fetchChatSessionsPage(user, {
+                    limit: 20,
+                    status: 'open',
+                    needsReply: true,
+                }),
                 fetchContactSubmissionsPage(user, { limit: 20 }),
             ]);
 
             const newNotifs: AppNotification[] = [];
+            const nextEscalationIds = new Set(
+                sessionsPage.items.map((session) => session.sessionId)
+            );
+            const nextContactIds = new Set(contactsPage.items.map((contact) => contact.id));
 
-            for (const esc of escalations) {
-                const notifId = `esc:${esc.sessionId}`;
-                if (
-                    esc.status === 'pending' &&
-                    !prevEscalationIdsRef.current.has(esc.sessionId)
-                ) {
+            if (!hasSeededAdminPollRef.current) {
+                prevEscalationIdsRef.current = nextEscalationIds;
+                prevContactIdsRef.current = nextContactIds;
+                hasSeededAdminPollRef.current = true;
+                return;
+            }
+
+            for (const session of sessionsPage.items) {
+                const notifId = `esc:${session.sessionId}`;
+                if (!prevEscalationIdsRef.current.has(session.sessionId)) {
                     newNotifs.push({
                         id: notifId,
                         type: 'escalation',
-                        title: 'Νέα κλιμάκωση',
-                        body: `${esc.userName || esc.userEmail || 'Χρήστης'} ζητά βοήθεια`,
-                        timestamp: new Date(esc.escalatedAt),
-                        href: `/admin/chats?session=${encodeURIComponent(esc.sessionId)}`,
+                        title: 'Νέα συνομιλία για απάντηση',
+                        body: `${session.userName || session.userEmail || 'Χρήστης'} περιμένει απάντηση`,
+                        timestamp: new Date(session.lastMessage),
+                        href: `/admin/chats?session=${encodeURIComponent(session.sessionId)}`,
                         isRead: false,
                     });
                 }
             }
-            prevEscalationIdsRef.current = new Set(escalations.map((e) => e.sessionId));
+            prevEscalationIdsRef.current = nextEscalationIds;
 
             for (const contact of contactsPage.items) {
                 const notifId = `contact:${contact.id}`;
@@ -190,7 +222,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                     });
                 }
             }
-            prevContactIdsRef.current = new Set(contactsPage.items.map((c) => c.id));
+            prevContactIdsRef.current = nextContactIds;
 
             if (newNotifs.length > 0) {
                 setNotifications((prev) => {
@@ -204,11 +236,16 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         }
     }, [user, isAdmin]);
 
+    const startAdminPolling = useCallback(() => {
+        void pollAdmin();
+        pollIntervalRef.current = setInterval(pollAdmin, 30_000);
+    }, [pollAdmin]);
+
     useEffect(() => {
         if (!user || !isAdmin) return;
 
-        void pollAdmin();
-        pollIntervalRef.current = setInterval(pollAdmin, 30_000);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: starting a subscription (polling interval) in useEffect is the prescribed React pattern for external data subscriptions.
+        startAdminPolling();
 
         return () => {
             if (pollIntervalRef.current) {
@@ -216,21 +253,31 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                 pollIntervalRef.current = null;
             }
         };
-    }, [user, isAdmin, pollAdmin]);
+    }, [user, isAdmin, startAdminPolling]);
 
     // Apply current read state to all notifications
-    const notificationsWithReadState = notifications.map((n) => ({
-        ...n,
-        isRead: readIds.has(n.id),
-    }));
+    const notificationsWithReadState = useMemo(
+        () => visibleNotifications.map((notification) => ({
+            ...notification,
+            isRead:
+                notification.type === 'chat_reply'
+                    ? !hasUnreadSupportReply
+                    : readIds.has(notification.id),
+        })),
+        [hasUnreadSupportReply, readIds, visibleNotifications],
+    );
 
     const unreadCount = notificationsWithReadState.filter((n) => !n.isRead).length;
+    const canMarkAllRead = notificationsWithReadState.some(
+        (notification) => !notification.isRead && notification.type !== 'chat_reply',
+    );
 
     return (
         <NotificationContext.Provider
             value={{
                 notifications: notificationsWithReadState,
                 unreadCount,
+                canMarkAllRead,
                 markAllRead,
                 markRead,
             }}

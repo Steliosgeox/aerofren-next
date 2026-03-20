@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo, useSyncExternalStore } from "react";
 import { catalogCategories } from "@/data/catalog-taxonomy";
 import { UnifiedHeaderMenu } from "./UnifiedHeaderMenu";
@@ -24,6 +24,7 @@ import {
 import { NotificationBell } from './NotificationBell';
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_HREF } from "@/lib/constants/aerofren";
+import { shouldHideHeaderOnRoute } from "@/lib/layout/route-chrome";
 
 const desktopNavItems = SITE_NAV_ITEMS.map(({ name, path, hasDropdown }) => ({
   name,
@@ -114,6 +115,7 @@ const LOGIN_BUTTON_STYLES: React.CSSProperties = {
 function HeaderComponent() {
   const router = useRouter();
   const { user, loading: authLoading, isAdmin, signOut } = useAuth();
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -261,6 +263,12 @@ function HeaderComponent() {
     }
   }, [handleMegaMenuEnter, handleMegaMenuLeave]);
 
+
+  const showMobileDock = !(pathname?.startsWith('/admin'));
+
+  if (shouldHideHeaderOnRoute(pathname)) {
+    return null
+  }
 
   return (
     <>
@@ -528,7 +536,7 @@ function HeaderComponent() {
         </div>
       </header>
 
-      <MobileBottomNav items={mobileDockItems} />
+      {showMobileDock && <MobileBottomNav items={mobileDockItems} />}
     </>
   );
 }

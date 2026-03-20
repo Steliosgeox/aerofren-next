@@ -1,14 +1,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useChat } from '@/contexts/ChatContext';
 
 const ScrollFrameAnimation = dynamic(() => import('@/components/ScrollFrameAnimation'), { ssr: false });
 const Chatbot = dynamic(() => import('@/components/Chatbot').then((mod) => mod.Chatbot), { ssr: false });
 const BackToTop = dynamic(() => import('@/components/BackToTop').then((mod) => mod.BackToTop), { ssr: false });
 
-const CHATBOT_ROUTE_PREFIXES = ['/', '/products', '/contact'];
 const BACK_TO_TOP_ROUTE_PREFIXES = ['/', '/products', '/contact'];
 const CHATBOT_IDLE_TIMEOUT_MS = 1500;
 const ENABLE_SCROLL_FRAME = process.env.NEXT_PUBLIC_ENABLE_SCROLL_FRAME === '1';
@@ -26,16 +26,27 @@ function shouldRender(pathname: string, prefixes: string[]): boolean {
 
 export function RouteEffects() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const { openChat, selectSession } = useChat();
     const [idleReadyPath, setIdleReadyPath] = useState<string | null>(null);
     const activePathname = pathname ?? '';
     const showScrollFrame = ENABLE_SCROLL_FRAME && activePathname === '/';
-    const showChatbot = activePathname
-        ? shouldRender(activePathname, CHATBOT_ROUTE_PREFIXES)
-        : false;
+    const showChatbot = Boolean(activePathname);
     const showBackToTop = activePathname
         ? shouldRender(activePathname, BACK_TO_TOP_ROUTE_PREFIXES)
         : false;
     const delayChatbotMount = activePathname.startsWith('/contact');
+
+    useEffect(() => {
+        if (searchParams.get('chat') === 'open') {
+            openChat();
+        }
+
+        const sessionParam = searchParams.get('session');
+        if (sessionParam) {
+            selectSession(sessionParam, { persist: false });
+        }
+    }, [openChat, searchParams, selectSession]);
 
     useEffect(() => {
         if (!activePathname || !showChatbot || !delayChatbotMount) {

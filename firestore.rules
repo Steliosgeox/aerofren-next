@@ -16,6 +16,7 @@ service cloud.firestore {
       return isAuthenticated() && (
         request.auth.token.admin == true ||
         request.auth.token.email in [
+          'aerofren@gmail.com',
           'info@aerofren.gr',
           'admin@aerofren.gr',
           'gamerspcexperts@gmail.com'
@@ -37,56 +38,19 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid ||
         isAdmin()
       );
-      
-      // Create rules with validation
-      allow create: if 
-        // Session ID validation
-        request.resource.data.sessionId is string &&
-        request.resource.data.sessionId.size() > 0 &&
-        request.resource.data.sessionId.size() <= 100 &&
-        // Role must be user or assistant
-        request.resource.data.role in ['user', 'assistant'] &&
-        // Content validation
-        request.resource.data.content is string &&
-        request.resource.data.content.size() > 0 &&
-        request.resource.data.content.size() <= 5000 &&
-        // Required timestamp fields
-        request.resource.data.timestamp is timestamp &&
-        request.resource.data.expiresAt is timestamp &&
-        // If userId is provided, it must match the authenticated user
-        (!('userId' in request.resource.data) || 
-         request.resource.data.userId == request.auth.uid);
-      
-      // No updates or deletes for regular users (prevents tampering)
-      allow update, delete: if false;
+
+      // Writes are always server-side via admin SDK routes.
+      allow create, update, delete: if false;
     }
 
     // ==========================================
     // CHAT SESSIONS - Admin read, client write (aggregates)
     // ==========================================
     match /chatSessions/{sessionId} {
-      // Only admins can read session aggregates
-      allow read: if isAdmin();
+      // Owners can read their own session aggregates for unread human replies.
+      allow read: if isAdmin() || isOwner(resource.data.userId);
 
-      // Allow create for session aggregates
-      allow create: if
-        request.resource.data.sessionId == sessionId &&
-        request.resource.data.lastMessageAt is timestamp &&
-        request.resource.data.messageCount is number &&
-        (!('userId' in request.resource.data) ||
-          (isAuthenticated() && request.resource.data.userId == request.auth.uid));
-
-      // Allow updates while preserving ownership
-      allow update: if
-        request.resource.data.sessionId == sessionId &&
-        request.resource.data.lastMessageAt is timestamp &&
-        request.resource.data.messageCount is number &&
-        (!('userId' in request.resource.data) ||
-          (isAuthenticated() && request.resource.data.userId == request.auth.uid)) &&
-        (!('userId' in resource.data) ||
-          resource.data.userId == request.resource.data.userId);
-
-      allow delete: if false;
+      allow create, update, delete: if false;
     }
     
     // ==========================================

@@ -2,6 +2,7 @@ export interface ChatPersistenceUser {
     uid?: string | null;
     email?: string | null;
     name?: string | null;
+    photoURL?: string | null;
 }
 
 export interface ChatMessageDraft {
@@ -21,6 +22,7 @@ export interface ChatSessionUpdateDraft {
     userId?: string;
     userEmail?: string;
     userName?: string;
+    userPhotoURL?: string;
 }
 
 export interface ChatPersistencePlan {
@@ -43,6 +45,7 @@ export function createChatPersistencePlan(
     const userId = input.user?.uid ?? undefined;
     const userEmail = input.user?.email ?? undefined;
     const userName = input.user?.name ?? undefined;
+    const userPhotoURL = input.user?.photoURL ?? undefined;
 
     const base = {
         sessionId: input.sessionId,
@@ -72,6 +75,7 @@ export function createChatPersistencePlan(
             ...(userId ? { userId } : {}),
             ...(userEmail ? { userEmail } : {}),
             ...(userName ? { userName } : {}),
+            ...(userPhotoURL ? { userPhotoURL } : {}),
         },
         uniqueUserMarkerId: userId ?? null,
     };
