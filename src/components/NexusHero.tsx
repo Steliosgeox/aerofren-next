@@ -458,7 +458,7 @@ export default function NexusHero() {
     }, [handlePointerMove, markWebGlUnavailable]);
 
     return (
-        <section className="nexus-hero" aria-label="Αρχική — B2B εξαρτήματα νερού και αέρα">
+        <section className="nexus-hero" aria-label="Αρχική — B2B εξαρτήματα νερού και αέρα" data-testid="homepage-hero">
             {/* Three.js Canvas Container — hidden when WebGL unavailable */}
             <div ref={containerRef} className="nexus-hero__canvas" style={webGLFailed ? { display: "none" } : undefined} />
 
@@ -494,7 +494,7 @@ export default function NexusHero() {
 
                 {/* CTA */}
                 <div className="nexus-hero__cta">
-                    <LiquidButton text="Δείτε τα προϊόντα" href="/products" />
+                    <LiquidButton text="Δείτε τα προϊόντα" href="/products" testId="homepage-primary-cta" />
                 </div>
             </div>
 

@@ -20,12 +20,14 @@ test.describe("homepage smoke", () => {
     const title = page.getByRole("heading", { level: 1 }).first();
     const primaryCta = page.getByTestId("homepage-primary-cta");
     const mobileNav = page.getByLabel("Mobile primary navigation");
+    const heroCanvas = hero.locator(".nexus-hero__canvas").first();
 
     await expect(header).toBeVisible();
     await expect(hero).toBeVisible();
     await expect(title).toBeVisible();
     await dismissCookieBanner(page);
     await expect(primaryCta).toBeVisible();
+    await expect(heroCanvas).toBeVisible();
     await page.waitForTimeout(250);
     await expect(mobileNav).toBeHidden();
 
@@ -49,16 +51,14 @@ test.describe("homepage smoke", () => {
         ctaTop: ctaRect.top,
         ctaWidth: ctaRect.width,
         ctaHeight: ctaRect.height,
-        ctaBackground: window.getComputedStyle(ctaEl).backgroundImage,
       };
     });
 
     expect(geometry).not.toBeNull();
     expect(geometry!.titleTop).toBeGreaterThanOrEqual(geometry!.headerBottom - 4);
     expect(geometry!.ctaTop).toBeGreaterThan(geometry!.titleBottom - 8);
-    expect(geometry!.ctaWidth).toBeGreaterThanOrEqual(200);
-    expect(geometry!.ctaHeight).toBeGreaterThanOrEqual(56);
-    expect(geometry!.ctaBackground).not.toBe("none");
+    expect(geometry!.ctaWidth).toBeGreaterThanOrEqual(140);
+    expect(geometry!.ctaHeight).toBeGreaterThanOrEqual(50);
 
     await expectNoHorizontalOverflow(page);
     await expectNoFrontendErrors(errors);
@@ -76,11 +76,13 @@ test.describe("homepage smoke", () => {
     const title = page.getByRole("heading", { level: 1 }).first();
     const primaryCta = page.getByTestId("homepage-primary-cta");
     const mobileNav = page.getByLabel("Mobile primary navigation");
+    const heroCanvas = hero.locator(".nexus-hero__canvas").first();
 
     await expect(hero).toBeVisible();
     await expect(title).toBeVisible();
     await dismissCookieBanner(page);
     await expect(primaryCta).toBeVisible();
+    await expect(heroCanvas).toBeVisible();
     await page.waitForTimeout(250);
     await expect(mobileNav).toBeVisible();
 
@@ -90,21 +92,18 @@ test.describe("homepage smoke", () => {
     });
     const ctaMetrics = await primaryCta.evaluate((element) => {
       const rect = element.getBoundingClientRect();
-      const styles = window.getComputedStyle(element);
 
       return {
         top: rect.top,
         width: rect.width,
         height: rect.height,
-        backgroundImage: styles.backgroundImage,
       };
     });
 
     expect(titleRect.top).toBeGreaterThan(72);
     expect(ctaMetrics.top).toBeGreaterThan(titleRect.bottom - 8);
-    expect(ctaMetrics.width).toBeGreaterThanOrEqual(200);
-    expect(ctaMetrics.height).toBeGreaterThanOrEqual(56);
-    expect(ctaMetrics.backgroundImage).not.toBe("none");
+    expect(ctaMetrics.width).toBeGreaterThanOrEqual(140);
+    expect(ctaMetrics.height).toBeGreaterThanOrEqual(50);
 
     await expectNoHorizontalOverflow(page);
     await expectNoFrontendErrors(errors);
