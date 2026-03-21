@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
-import { RouteEffects } from "@/components/RouteEffects"
+import { DeferredRouteEffects } from "@/components/DeferredRouteEffects"
 import { RouteScrollShell } from "@/components/RouteScrollShell"
 import { ChatProvider } from "@/contexts/ChatContext"
 import { NotificationProvider } from "@/contexts/NotificationContext"
@@ -27,7 +27,7 @@ export default function MainLayout({
         <NotificationProvider>
           {/* Route-scoped fixed effects (z-index handled by components) */}
           <Suspense fallback={null}>
-            <RouteEffects />
+            <DeferredRouteEffects />
           </Suspense>
 
           {/* Header - Fixed for accessibility */}

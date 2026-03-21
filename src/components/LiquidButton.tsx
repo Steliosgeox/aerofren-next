@@ -18,33 +18,44 @@ const LiquidButton: React.FC<LiquidButtonProps> = ({ text, href, onClick }) => {
     idRef.current = `gooey-${liquidButtonIdCounter++}`;
   }
   const filterId = idRef.current;
+  const sharedContent = (
+    <>
+      <span className="button__label">{text}</span>
+      <div className="liquid">
+        <span style={{ "--i": 0 } as React.CSSProperties}><span></span></span>
+        <span style={{ "--i": 1 } as React.CSSProperties}><span></span></span>
+        <span style={{ "--i": 2 } as React.CSSProperties}><span></span></span>
+        <span style={{ "--i": 3 } as React.CSSProperties}><span></span></span>
+        <span style={{ "--i": 4 } as React.CSSProperties}><span></span></span>
+        <span style={{ "--i": 5 } as React.CSSProperties}><span></span></span>
+        <span style={{ "--i": 6 } as React.CSSProperties}><span></span></span>
+        <span className="bg"><span></span></span>
+      </div>
+      <svg aria-hidden="true">
+        <filter id={filterId}>
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10"></feGaussianBlur>
+          <feColorMatrix
+            values="1 0 0 0 0
+              0 1 0 0 0
+              0 0 1 0 0
+              0 0 0 20 -10"
+          ></feColorMatrix>
+        </filter>
+      </svg>
+    </>
+  );
 
-  const buttonContent = (
+  return (
     <div className="liquid-button-wrapper">
-      <button className="button" onClick={onClick} type="button">
-        <p>{text}</p>
-        <div className="liquid">
-          <span style={{ "--i": 0 } as React.CSSProperties}><span></span></span>
-          <span style={{ "--i": 1 } as React.CSSProperties}><span></span></span>
-          <span style={{ "--i": 2 } as React.CSSProperties}><span></span></span>
-          <span style={{ "--i": 3 } as React.CSSProperties}><span></span></span>
-          <span style={{ "--i": 4 } as React.CSSProperties}><span></span></span>
-          <span style={{ "--i": 5 } as React.CSSProperties}><span></span></span>
-          <span style={{ "--i": 6 } as React.CSSProperties}><span></span></span>
-          <span className="bg"><span></span></span>
-        </div>
-        <svg>
-          <filter id={filterId}>
-            <feGaussianBlur in="SourceGraphic" stdDeviation="10"></feGaussianBlur>
-            <feColorMatrix
-              values="1 0 0 0 0
-                0 1 0 0 0
-                0 0 1 0 0
-                0 0 0 20 -10"
-            ></feColorMatrix>
-          </filter>
-        </svg>
-      </button>
+      {href ? (
+        <Link className="button" href={href} onClick={onClick}>
+          {sharedContent}
+        </Link>
+      ) : (
+        <button className="button" onClick={onClick} type="button">
+          {sharedContent}
+        </button>
+      )}
 
       <style jsx>{`
         .liquid-button-wrapper {
@@ -62,6 +73,7 @@ const LiquidButton: React.FC<LiquidButtonProps> = ({ text, href, onClick }) => {
           justify-content: center;
           flex-direction: column;
           cursor: pointer;
+          text-decoration: none;
         }
 
         .button svg {
@@ -69,7 +81,7 @@ const LiquidButton: React.FC<LiquidButtonProps> = ({ text, href, onClick }) => {
           height: 0;
         }
 
-        .button p {
+        .button__label {
           width: 150px;
           height: 60px;
           z-index: 9;
@@ -88,15 +100,15 @@ const LiquidButton: React.FC<LiquidButtonProps> = ({ text, href, onClick }) => {
           user-select: none;
         }
 
-        .button p:hover + .liquid span:not(.bg) {
+        .button:hover .liquid span:not(.bg) {
           animation-play-state: running;
         }
 
-        .button p:hover {
+        .button:hover .button__label {
           transform: scale(1.1);
         }
 
-        .button:active p {
+        .button:active .button__label {
           transform: scale(1);
         }
 
@@ -210,12 +222,6 @@ const LiquidButton: React.FC<LiquidButtonProps> = ({ text, href, onClick }) => {
       `}</style>
     </div>
   );
-
-  if (href) {
-    return <Link href={href}>{buttonContent}</Link>;
-  }
-
-  return buttonContent;
 };
 
 export default LiquidButton;

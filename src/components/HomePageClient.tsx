@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import AeroTransitionSection from "@/components/AeroTransitionSection";
+import NexusHero from "@/components/NexusHero";
+import HorizontalGallery from "@/components/HorizontalGallery";
+import ScrollAnimation from "@/components/ScrollAnimation";
 import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
 import { useViewportHeightCssVar } from "@/lib/viewport";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ import {
 
 function HomeHeroFallback() {
   return (
-    <section className="home-hero-fallback" aria-labelledby="home-hero-title">
+    <section className="home-hero-fallback" aria-labelledby="home-hero-title" data-testid="homepage-hero">
       <div className="home-hero-fallback__inner">
         <p className="home-hero-fallback__eyebrow">{BUSINESS_NAME} • B2B WATER & AIR SYSTEMS</p>
         <h1 id="home-hero-title" className="home-hero-fallback__title">
@@ -35,29 +37,152 @@ function HomeHeroFallback() {
         </ul>
         <div className="home-hero-fallback__cta">
           <Button asChild variant="glass-accent" size="hero">
-            <Link href="/products">Δείτε τα προϊόντα</Link>
+            <Link href="/products" data-testid="homepage-primary-cta">Δείτε τα προϊόντα</Link>
           </Button>
           <Button asChild variant="glass-secondary" size="hero">
             <Link href="/contact">Ζητήστε προσφορά</Link>
           </Button>
         </div>
       </div>
+      <style jsx>{`
+        .home-hero-fallback {
+          position: relative;
+          min-height: 100svh;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: clamp(178px, 20vw, 244px) 24px clamp(84px, 10vw, 124px);
+          background:
+            radial-gradient(circle at 50% 15%, color-mix(in srgb, var(--theme-accent) 18%, transparent), transparent 34%),
+            linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-solid) 92%, #03101d) 0%, var(--theme-bg-solid) 100%);
+        }
+
+        .home-hero-fallback__inner {
+          position: relative;
+          width: min(860px, 100%);
+          margin: 0 auto;
+          padding: clamp(28px, 4vw, 44px) clamp(20px, 4vw, 52px) clamp(34px, 5vw, 48px);
+          text-align: center;
+          isolation: isolate;
+        }
+
+        .home-hero-fallback__inner::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          border-radius: 34px;
+          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 92%, transparent);
+          background:
+            linear-gradient(
+              180deg,
+              color-mix(in srgb, var(--theme-bg-solid) 82%, transparent),
+              color-mix(in srgb, var(--theme-bg-solid) 38%, transparent)
+            );
+          box-shadow:
+            0 24px 80px rgba(0, 0, 0, 0.24),
+            inset 0 1px 0 color-mix(in srgb, var(--theme-text) 10%, transparent);
+          backdrop-filter: blur(16px) saturate(125%);
+          -webkit-backdrop-filter: blur(16px) saturate(125%);
+        }
+
+        .home-hero-fallback__inner > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        .home-hero-fallback__eyebrow {
+          display: inline-block;
+          margin-bottom: 18px;
+          font-size: clamp(0.75rem, 0.9vw + 0.5rem, 0.95rem);
+          font-weight: 700;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: color-mix(in srgb, var(--theme-accent) 80%, white 20%);
+        }
+
+        .home-hero-fallback__title {
+          width: min(12ch, 100%);
+          margin: 0 auto;
+          font-size: clamp(2.2rem, 4.9vw, 4rem);
+          line-height: 1.02;
+          letter-spacing: -0.045em;
+          color: var(--theme-text);
+          text-wrap: balance;
+          text-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+        }
+
+        .home-hero-fallback__description {
+          width: min(56ch, 100%);
+          margin: 24px auto 0;
+          font-size: clamp(1rem, 1.4vw, 1.16rem);
+          line-height: 1.65;
+          color: color-mix(in srgb, var(--theme-text) 82%, transparent);
+        }
+
+        .home-hero-fallback__highlights {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 12px;
+          margin-top: 28px;
+          padding: 0;
+          list-style: none;
+        }
+
+        .home-hero-fallback__highlights li {
+          padding: 10px 16px;
+          border-radius: 999px;
+          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 88%, transparent);
+          background: color-mix(in srgb, var(--theme-glass-bg) 80%, transparent);
+          color: var(--theme-text);
+          font-size: 0.88rem;
+          font-weight: 600;
+        }
+
+        .home-hero-fallback__cta {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 14px;
+          margin-top: 32px;
+        }
+
+        @media (max-width: 640px) {
+          .home-hero-fallback {
+            padding: 172px 20px 72px;
+          }
+
+          .home-hero-fallback__inner {
+            padding: 24px 16px 28px;
+          }
+
+          .home-hero-fallback__inner::before {
+            border-radius: 26px;
+          }
+
+          .home-hero-fallback__eyebrow {
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+          }
+
+          .home-hero-fallback__title {
+            width: min(11ch, 100%);
+            font-size: clamp(1.9rem, 8.2vw, 2.8rem);
+          }
+
+          .home-hero-fallback__description {
+            font-size: 0.94rem;
+          }
+
+          .home-hero-fallback__cta {
+            flex-direction: column;
+          }
+        }
+      `}</style>
     </section>
   );
 }
-
-const NexusHero = dynamic(() => import("@/components/NexusHero"), {
-  ssr: false,
-  loading: () => <HomeHeroFallback />,
-});
-const HorizontalGallery = dynamic(() => import("@/components/HorizontalGallery"), {
-  ssr: false,
-  loading: () => <div className="min-h-[40vh] w-full bg-[var(--theme-bg-solid)]" />,
-});
-const ScrollAnimation = dynamic(() => import("@/components/ScrollAnimation"), {
-  ssr: false,
-  loading: () => <div className="min-h-[30vh] w-full bg-[var(--theme-bg-solid)]" />,
-});
 
 const STATS_DATA = [
   { value: String(FOUNDING_YEAR), label: "Έτος Ίδρυσης", speed: 0.8 },
@@ -71,6 +196,7 @@ export default function HomePageClient() {
   const contactRef = useRef<HTMLElement>(null);
   const [statsInView, setStatsInView] = useState(false);
   const [contactInView, setContactInView] = useState(false);
+  const [showInteractiveHero, setShowInteractiveHero] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [lowEndDevice] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -81,6 +207,24 @@ export default function HomePageClient() {
   });
 
   useViewportHeightCssVar();
+
+  useEffect(() => {
+    const desktopMedia = window.matchMedia("(min-width: 1024px)");
+    const reducedMotionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const syncHeroMode = () => {
+      setShowInteractiveHero(desktopMedia.matches && !reducedMotionMedia.matches && !lowEndDevice);
+    };
+
+    syncHeroMode();
+    desktopMedia.addEventListener("change", syncHeroMode);
+    reducedMotionMedia.addEventListener("change", syncHeroMode);
+
+    return () => {
+      desktopMedia.removeEventListener("change", syncHeroMode);
+      reducedMotionMedia.removeEventListener("change", syncHeroMode);
+    };
+  }, [lowEndDevice]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -267,7 +411,7 @@ export default function HomePageClient() {
       {/* ============================================
           HERO SECTION - Three.js Nexus Metaballs
           ============================================ */}
-      <NexusHero />
+      {showInteractiveHero ? <NexusHero /> : <HomeHeroFallback />}
 
       {/* ============================================
           AERO TRANSITION - Sprite-driven scroll bridge
@@ -280,7 +424,7 @@ export default function HomePageClient() {
       <section ref={statsRef} className="stats" aria-label="Αριθμοί που μιλούν">
 
         {/* Ambient Glowing Background */}
-        <div className="stats__ambient-bg">
+        <div className="stats__ambient-bg" aria-hidden="true">
           <div className="stats__ambient-text">ΑΡΙΘΜΟΙ</div>
           <div className="stats__ambient-text">ΠΟΥ ΜΙΛΟΥΝ</div>
         </div>
@@ -296,10 +440,10 @@ export default function HomePageClient() {
               {/* Aesthetic Glowing Orb */}
               <div className="stats__glow"></div>
 
-              <div className="stats__node-content">
-                <div className="stats__node-value-wrap">
+              <div className="stats__node-content" role="group" aria-label={`${stat.label}: ${stat.value}`}>
+                <div className="stats__node-value-wrap" aria-hidden="true">
                   {/* Hollow Base Text */}
-                  <span className="stats__node-value-hollow" aria-hidden="true">
+                  <span className="stats__node-value-hollow">
                     {stat.value}
                   </span>
                   {/* Liquid Gradient Fill */}
@@ -353,78 +497,6 @@ export default function HomePageClient() {
         .homePage {
           position: relative;
           overflow-x: clip;
-        }
-
-        .home-hero-fallback {
-          position: relative;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 140px 24px 88px;
-          background:
-            radial-gradient(circle at top, color-mix(in srgb, var(--theme-accent) 16%, transparent), transparent 38%),
-            linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-solid) 92%, #03101d) 0%, var(--theme-bg-solid) 100%);
-        }
-
-        .home-hero-fallback__inner {
-          width: min(960px, 100%);
-          text-align: center;
-        }
-
-        .home-hero-fallback__eyebrow {
-          display: inline-block;
-          margin-bottom: 20px;
-          font-size: 0.9rem;
-          font-weight: 700;
-          letter-spacing: 0.24em;
-          text-transform: uppercase;
-          color: var(--theme-accent);
-        }
-
-        .home-hero-fallback__title {
-          margin: 0;
-          font-size: clamp(2.6rem, 7vw, 5.1rem);
-          line-height: 1.02;
-          letter-spacing: -0.04em;
-          color: var(--theme-text);
-          text-wrap: balance;
-        }
-
-        .home-hero-fallback__description {
-          width: min(760px, 100%);
-          margin: 24px auto 0;
-          font-size: clamp(1rem, 2vw, 1.2rem);
-          line-height: 1.7;
-          color: var(--theme-text-muted);
-        }
-
-        .home-hero-fallback__highlights {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 12px;
-          margin-top: 28px;
-          padding: 0;
-          list-style: none;
-        }
-
-        .home-hero-fallback__highlights li {
-          padding: 10px 16px;
-          border-radius: 999px;
-          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 88%, transparent);
-          background: color-mix(in srgb, var(--theme-glass-bg) 80%, transparent);
-          color: var(--theme-text);
-          font-size: 0.88rem;
-          font-weight: 600;
-        }
-
-        .home-hero-fallback__cta {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 16px;
-          margin-top: 32px;
         }
 
         /* ==== STATS (Zero Gravity Parallax) ==== */
@@ -679,19 +751,6 @@ export default function HomePageClient() {
         }
 
         @media (max-width: 640px) {
-          .home-hero-fallback {
-            padding: 128px 20px 72px;
-          }
-
-          .home-hero-fallback__eyebrow {
-            font-size: 0.75rem;
-            letter-spacing: 0.18em;
-          }
-
-          .home-hero-fallback__cta {
-            flex-direction: column;
-          }
-
           .stats {
             min-height: 250vh;
           }

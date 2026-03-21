@@ -43,9 +43,9 @@ function LogoImage() {
 
   // Logo configuration per theme
   const logoConfig = {
-    dark: { src: "/images/LOGOdark.webp", width: 510, height: 144, className: "h-[9rem] -mt-2 ml-2" },
-    dim: { src: "/images/LOGOdim.webp", width: 510, height: 144, className: "h-[9rem] -mt-2 ml-2" },
-    light: { src: "/images/LOGOlight.webp", width: 620, height: 176, className: "h-[11rem] mt-2 -ml-2" },
+    dark: { src: "/images/LOGOdark.webp", width: 510, height: 144, className: "h-[4.75rem] sm:h-[6.6rem] xl:h-[9rem] -mt-1 sm:-mt-2 ml-0 sm:ml-2" },
+    dim: { src: "/images/LOGOdim.webp", width: 510, height: 144, className: "h-[4.75rem] sm:h-[6.6rem] xl:h-[9rem] -mt-1 sm:-mt-2 ml-0 sm:ml-2" },
+    light: { src: "/images/LOGOlight.webp", width: 620, height: 176, className: "h-[5.1rem] sm:h-[7.75rem] xl:h-[11rem] mt-0 sm:mt-2 -ml-0 sm:-ml-2" },
   };
 
   // Keep SSR and first client render deterministic to avoid hydration mismatch.
@@ -116,6 +116,7 @@ function HeaderComponent() {
   const router = useRouter();
   const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const pathname = usePathname();
+  const [hasMounted, setHasMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -125,6 +126,10 @@ function HeaderComponent() {
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Unified click-outside listener for both menus
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -264,7 +269,7 @@ function HeaderComponent() {
   }, [handleMegaMenuEnter, handleMegaMenuLeave]);
 
 
-  const showMobileDock = !(pathname?.startsWith('/admin'));
+  const showMobileDock = hasMounted && !(pathname?.startsWith('/admin'));
 
   if (shouldHideHeaderOnRoute(pathname)) {
     return null
@@ -300,6 +305,8 @@ function HeaderComponent() {
       <header
         ref={headerRef}
         className={`glass-header ${isScrolled ? "glass-header--scrolled" : ""}`}
+        data-nosnippet
+        data-testid="site-header"
         style={{
           height: isScrolled ? "90px" : "100px",
         }}
