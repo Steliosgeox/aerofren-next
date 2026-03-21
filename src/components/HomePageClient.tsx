@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AeroTransitionSection from "@/components/AeroTransitionSection";
-import NexusHero from "@/components/NexusHero";
 import HorizontalGallery from "@/components/HorizontalGallery";
 import ScrollAnimation from "@/components/ScrollAnimation";
+import LiquidButton from "@/components/LiquidButton";
 import { gsap, useGSAP, EASE, SplitText } from "@/lib/gsap";
 import { useViewportHeightCssVar } from "@/lib/viewport";
 import { Button } from "@/components/ui/button";
@@ -21,117 +21,211 @@ import {
 function HomeHeroFallback() {
   return (
     <section className="home-hero-fallback" aria-labelledby="home-hero-title" data-testid="homepage-hero">
-      <div className="home-hero-fallback__inner">
-        <p className="home-hero-fallback__eyebrow">{BUSINESS_NAME} • B2B WATER & AIR SYSTEMS</p>
-        <h1 id="home-hero-title" className="home-hero-fallback__title">
-          B2B προμηθευτής για εξαρτήματα νερού, φίλτρα και πνευματικά συστήματα
-        </h1>
-        <p className="home-hero-fallback__description">
-          Από το 1980 υποστηρίζουμε βιομηχανικές εγκαταστάσεις, τεχνικά έργα και επαγγελματικά δίκτυα με
-          {" "}{PRODUCT_COUNT} προϊόντα, τεχνική καθοδήγηση και άμεση διαθεσιμότητα.
-        </p>
-        <ul className="home-hero-fallback__highlights" aria-label="Βασικά πλεονεκτήματα" role="list">
-          <li>{FOUNDING_LABEL_EL}</li>
-          <li>{PRODUCT_COUNT} προϊόντα</li>
-          <li>Τεχνική υποστήριξη</li>
-        </ul>
-        <div className="home-hero-fallback__cta">
-          <Button asChild variant="glass-accent" size="hero">
-            <Link href="/products" data-testid="homepage-primary-cta">Δείτε τα προϊόντα</Link>
-          </Button>
-          <Button asChild variant="glass-secondary" size="hero">
-            <Link href="/contact">Ζητήστε προσφορά</Link>
-          </Button>
-        </div>
+      <div className="home-hero-fallback__backdrop" aria-hidden="true">
+        <span className="home-hero-fallback__orb home-hero-fallback__orb--one" />
+        <span className="home-hero-fallback__orb home-hero-fallback__orb--two" />
+        <span className="home-hero-fallback__orb home-hero-fallback__orb--three" />
       </div>
+
+      <div className="home-hero-fallback__grid">
+        <div className="home-hero-fallback__copy">
+          <p className="home-hero-fallback__eyebrow">{BUSINESS_NAME} • B2B WATER & AIR SYSTEMS</p>
+          <h1 id="home-hero-title" className="home-hero-fallback__title">
+            B2B προμηθευτής για
+            <span className="home-hero-fallback__title-accent">εξαρτήματα νερού, φίλτρα και πνευματικά συστήματα</span>
+          </h1>
+          <p className="home-hero-fallback__description">
+            Από το 1980 υποστηρίζουμε βιομηχανικές εγκαταστάσεις, τεχνικά έργα και επαγγελματικά δίκτυα με{" "}
+            {PRODUCT_COUNT} προϊόντα, άμεση διαθεσιμότητα και ουσιαστική τεχνική καθοδήγηση.
+          </p>
+
+          <div className="home-hero-fallback__cta">
+            <LiquidButton text="Δείτε τα προϊόντα" href="/products" testId="homepage-primary-cta" />
+            <Button asChild variant="glass-secondary" size="hero">
+              <Link href="/contact">Ζητήστε προσφορά</Link>
+            </Button>
+          </div>
+
+          <ul className="home-hero-fallback__highlights" aria-label="Βασικά πλεονεκτήματα" role="list">
+            <li>{FOUNDING_LABEL_EL}</li>
+            <li>{PRODUCT_COUNT} προϊόντα</li>
+            <li>Χονδρική διαθεσιμότητα</li>
+            <li>Τεχνική υποστήριξη</li>
+          </ul>
+        </div>
+
+        <aside className="home-hero-fallback__panel" aria-label="Εμπορικές δυνατότητες">
+          <div className="home-hero-fallback__panel-card">
+            <span className="home-hero-fallback__panel-kicker">Χονδρική προμήθεια</span>
+            <strong className="home-hero-fallback__panel-value">{PRODUCT_COUNT}</strong>
+            <p className="home-hero-fallback__panel-copy">
+              Stock για δίκτυα αέρα, φίλτρα, ρακόρ και πνευματικά εξαρτήματα με εμπορική συνέχεια.
+            </p>
+          </div>
+
+          <div className="home-hero-fallback__details">
+            <div className="home-hero-fallback__detail">
+              <span>Έδρα</span>
+              <strong>Μοσχάτο Αττικής</strong>
+            </div>
+            <div className="home-hero-fallback__detail">
+              <span>Τηλέφωνο</span>
+              <a href={BUSINESS_PHONE_HREF}>{BUSINESS_PHONE_DISPLAY}</a>
+            </div>
+            <div className="home-hero-fallback__detail">
+              <span>Πείρα</span>
+              <strong>{FOUNDING_LABEL_EL}</strong>
+            </div>
+          </div>
+        </aside>
+      </div>
+
       <style jsx>{`
         .home-hero-fallback {
           position: relative;
           min-height: 100svh;
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          padding: clamp(178px, 20vw, 244px) 24px clamp(84px, 10vw, 124px);
+          padding: clamp(144px, 16vw, 204px) 24px clamp(80px, 9vw, 120px);
+          overflow: clip;
           background:
-            radial-gradient(circle at 50% 15%, color-mix(in srgb, var(--theme-accent) 18%, transparent), transparent 34%),
-            linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-solid) 92%, #03101d) 0%, var(--theme-bg-solid) 100%);
+            radial-gradient(circle at 16% 18%, rgba(15, 79, 154, 0.22), transparent 22%),
+            radial-gradient(circle at 84% 20%, rgba(41, 196, 218, 0.16), transparent 24%),
+            linear-gradient(180deg, color-mix(in srgb, var(--theme-bg-solid) 88%, #051221) 0%, var(--theme-bg-solid) 100%);
         }
 
-        .home-hero-fallback__inner {
-          position: relative;
-          width: min(860px, 100%);
-          margin: 0 auto;
-          padding: clamp(28px, 4vw, 44px) clamp(20px, 4vw, 52px) clamp(34px, 5vw, 48px);
-          text-align: center;
-          isolation: isolate;
-        }
-
-        .home-hero-fallback__inner::before {
-          content: "";
+        .home-hero-fallback__backdrop {
           position: absolute;
           inset: 0;
-          z-index: -1;
-          border-radius: 34px;
-          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 92%, transparent);
-          background:
-            linear-gradient(
-              180deg,
-              color-mix(in srgb, var(--theme-bg-solid) 82%, transparent),
-              color-mix(in srgb, var(--theme-bg-solid) 38%, transparent)
-            );
-          box-shadow:
-            0 24px 80px rgba(0, 0, 0, 0.24),
-            inset 0 1px 0 color-mix(in srgb, var(--theme-text) 10%, transparent);
-          backdrop-filter: blur(16px) saturate(125%);
-          -webkit-backdrop-filter: blur(16px) saturate(125%);
+          pointer-events: none;
         }
 
-        .home-hero-fallback__inner > * {
+        .home-hero-fallback__backdrop::before {
+          content: "";
+          position: absolute;
+          inset: 12% 4% auto;
+          height: min(72vh, 760px);
+          border-radius: 36px;
+          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 80%, transparent);
+          background:
+            linear-gradient(180deg, color-mix(in srgb, var(--theme-glass-bg) 60%, transparent), transparent 64%),
+            radial-gradient(circle at 10% 14%, rgba(255, 255, 255, 0.08), transparent 30%);
+          box-shadow:
+            0 30px 90px rgba(2, 8, 20, 0.34),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(16px) saturate(130%);
+          -webkit-backdrop-filter: blur(16px) saturate(130%);
+        }
+
+        .home-hero-fallback__backdrop::after {
+          content: "";
+          position: absolute;
+          inset: 8% 0 0;
+          background:
+            linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.05) 26%, transparent 52%),
+            radial-gradient(circle at 50% 35%, rgba(70, 170, 255, 0.18), transparent 44%);
+          opacity: 0.7;
+        }
+
+        .home-hero-fallback__orb {
+          position: relative;
+          position: absolute;
+          border-radius: 999px;
+          background: radial-gradient(circle at 30% 28%, rgba(40, 155, 255, 0.96), rgba(5, 12, 34, 0.95) 64%);
+          box-shadow: 0 26px 60px rgba(5, 12, 28, 0.42);
+        }
+
+        .home-hero-fallback__orb--one {
+          width: clamp(140px, 22vw, 280px);
+          height: clamp(140px, 22vw, 280px);
+          top: 10%;
+          left: -4%;
+        }
+
+        .home-hero-fallback__orb--two {
+          width: clamp(72px, 9vw, 132px);
+          height: clamp(72px, 9vw, 132px);
+          top: 34%;
+          right: 16%;
+        }
+
+        .home-hero-fallback__orb--three {
+          width: clamp(120px, 14vw, 210px);
+          height: clamp(120px, 14vw, 210px);
+          right: -4%;
+          bottom: 8%;
+        }
+
+        .home-hero-fallback__grid {
           position: relative;
           z-index: 1;
+          width: min(1180px, 100%);
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.66fr);
+          gap: clamp(24px, 3.5vw, 48px);
+          align-items: center;
+        }
+
+        .home-hero-fallback__copy {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
         }
 
         .home-hero-fallback__eyebrow {
           display: inline-block;
-          margin-bottom: 18px;
-          font-size: clamp(0.75rem, 0.9vw + 0.5rem, 0.95rem);
+          margin-bottom: 22px;
+          font-size: clamp(0.74rem, 0.9vw + 0.48rem, 0.94rem);
           font-weight: 700;
-          letter-spacing: 0.2em;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
           color: color-mix(in srgb, var(--theme-accent) 80%, white 20%);
         }
 
         .home-hero-fallback__title {
-          width: min(12ch, 100%);
-          margin: 0 auto;
-          font-size: clamp(2.2rem, 4.9vw, 4rem);
-          line-height: 1.02;
-          letter-spacing: -0.045em;
+          width: min(13.2ch, 100%);
+          margin: 0;
+          font-size: clamp(2.55rem, 4.8vw, 4.35rem);
+          line-height: 0.94;
+          letter-spacing: -0.05em;
           color: var(--theme-text);
           text-wrap: balance;
-          text-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+          text-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+        }
+
+        .home-hero-fallback__title-accent {
+          display: block;
+          margin-top: 0.16em;
+          color: color-mix(in srgb, var(--theme-accent) 82%, white 18%);
         }
 
         .home-hero-fallback__description {
-          width: min(56ch, 100%);
-          margin: 24px auto 0;
-          font-size: clamp(1rem, 1.4vw, 1.16rem);
+          width: min(52ch, 100%);
+          margin: 24px 0 0;
+          font-size: clamp(0.98rem, 1.08vw, 1.08rem);
           line-height: 1.65;
           color: color-mix(in srgb, var(--theme-text) 82%, transparent);
+        }
+
+        .home-hero-fallback__cta {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 16px;
+          margin-top: 30px;
         }
 
         .home-hero-fallback__highlights {
           display: flex;
           flex-wrap: wrap;
-          justify-content: center;
+          justify-content: flex-start;
           gap: 12px;
-          margin-top: 28px;
+          margin-top: 24px;
           padding: 0;
           list-style: none;
         }
 
         .home-hero-fallback__highlights li {
-          padding: 10px 16px;
+          padding: 11px 16px;
           border-radius: 999px;
           border: 1px solid color-mix(in srgb, var(--theme-glass-border) 88%, transparent);
           background: color-mix(in srgb, var(--theme-glass-bg) 80%, transparent);
@@ -140,43 +234,151 @@ function HomeHeroFallback() {
           font-weight: 600;
         }
 
-        .home-hero-fallback__cta {
+        .home-hero-fallback__panel {
+          display: grid;
+          gap: 16px;
+          padding: clamp(22px, 3vw, 30px);
+          border-radius: 30px;
+          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 90%, transparent);
+          background:
+            linear-gradient(180deg, color-mix(in srgb, var(--theme-glass-bg) 90%, transparent), rgba(3, 9, 24, 0.52)),
+            radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.1), transparent 28%);
+          box-shadow:
+            0 22px 58px rgba(2, 8, 20, 0.26),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(18px) saturate(125%);
+          -webkit-backdrop-filter: blur(18px) saturate(125%);
+        }
+
+        .home-hero-fallback__panel-card {
+          padding: 18px 18px 20px;
+          border-radius: 22px;
+          background: linear-gradient(180deg, rgba(7, 26, 54, 0.72), rgba(3, 12, 30, 0.9));
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .home-hero-fallback__panel-kicker {
+          display: block;
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: color-mix(in srgb, var(--theme-accent) 76%, white 24%);
+        }
+
+        .home-hero-fallback__panel-value {
+          display: block;
+          margin-top: 14px;
+          font-size: clamp(2.2rem, 4vw, 3.6rem);
+          line-height: 0.95;
+          letter-spacing: -0.05em;
+          color: var(--theme-text);
+        }
+
+        .home-hero-fallback__panel-copy {
+          margin: 14px 0 0;
+          font-size: 0.98rem;
+          line-height: 1.65;
+          color: color-mix(in srgb, var(--theme-text) 78%, transparent);
+        }
+
+        .home-hero-fallback__details {
+          display: grid;
+          gap: 12px;
+        }
+
+        .home-hero-fallback__detail {
           display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 14px;
-          margin-top: 32px;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 14px 16px;
+          border-radius: 18px;
+          border: 1px solid color-mix(in srgb, var(--theme-glass-border) 78%, transparent);
+          background: rgba(5, 12, 28, 0.48);
+        }
+
+        .home-hero-fallback__detail span {
+          font-size: 0.74rem;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: color-mix(in srgb, var(--theme-text) 52%, transparent);
+        }
+
+        .home-hero-fallback__detail strong,
+        .home-hero-fallback__detail a {
+          font-size: 0.98rem;
+          font-weight: 600;
+          color: var(--theme-text);
+          text-decoration: none;
+          text-align: right;
+        }
+
+        .home-hero-fallback__detail a:hover {
+          color: color-mix(in srgb, var(--theme-accent) 82%, white 18%);
+        }
+
+        @media (max-width: 980px) {
+          .home-hero-fallback {
+            padding-top: 148px;
+          }
+
+          .home-hero-fallback__grid {
+            grid-template-columns: 1fr;
+          }
+
+          .home-hero-fallback__copy {
+            align-items: center;
+            text-align: center;
+          }
+
+          .home-hero-fallback__description {
+            margin-left: auto;
+            margin-right: auto;
+          }
+
+          .home-hero-fallback__highlights,
+          .home-hero-fallback__cta {
+            justify-content: center;
+          }
+
+          .home-hero-fallback__panel {
+            width: min(620px, 100%);
+            margin: 0 auto;
+          }
         }
 
         @media (max-width: 640px) {
           .home-hero-fallback {
-            padding: 172px 20px 72px;
-          }
-
-          .home-hero-fallback__inner {
-            padding: 24px 16px 28px;
-          }
-
-          .home-hero-fallback__inner::before {
-            border-radius: 26px;
-          }
-
-          .home-hero-fallback__eyebrow {
-            font-size: 0.68rem;
-            letter-spacing: 0.14em;
+            padding: 148px 20px 72px;
           }
 
           .home-hero-fallback__title {
-            width: min(11ch, 100%);
-            font-size: clamp(1.9rem, 8.2vw, 2.8rem);
+            width: min(12ch, 100%);
+            font-size: clamp(2.05rem, 8vw, 2.95rem);
           }
 
           .home-hero-fallback__description {
-            font-size: 0.94rem;
+            font-size: 0.96rem;
           }
 
           .home-hero-fallback__cta {
             flex-direction: column;
+            align-items: stretch;
+          }
+
+          .home-hero-fallback__cta :global(.liquid-button) {
+            width: 100%;
+            min-width: 0;
+          }
+
+          .home-hero-fallback__detail {
+            flex-direction: column;
+          }
+
+          .home-hero-fallback__detail strong,
+          .home-hero-fallback__detail a {
+            text-align: left;
           }
         }
       `}</style>
@@ -196,7 +398,6 @@ export default function HomePageClient() {
   const contactRef = useRef<HTMLElement>(null);
   const [statsInView, setStatsInView] = useState(false);
   const [contactInView, setContactInView] = useState(false);
-  const [showInteractiveHero, setShowInteractiveHero] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [lowEndDevice] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -207,24 +408,6 @@ export default function HomePageClient() {
   });
 
   useViewportHeightCssVar();
-
-  useEffect(() => {
-    const desktopMedia = window.matchMedia("(min-width: 1024px)");
-    const reducedMotionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const syncHeroMode = () => {
-      setShowInteractiveHero(desktopMedia.matches && !reducedMotionMedia.matches && !lowEndDevice);
-    };
-
-    syncHeroMode();
-    desktopMedia.addEventListener("change", syncHeroMode);
-    reducedMotionMedia.addEventListener("change", syncHeroMode);
-
-    return () => {
-      desktopMedia.removeEventListener("change", syncHeroMode);
-      reducedMotionMedia.removeEventListener("change", syncHeroMode);
-    };
-  }, [lowEndDevice]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -409,9 +592,9 @@ export default function HomePageClient() {
   return (
     <div className="homePage">
       {/* ============================================
-          HERO SECTION - Three.js Nexus Metaballs
+          HERO SECTION - Stable static hero
           ============================================ */}
-      {showInteractiveHero ? <NexusHero /> : <HomeHeroFallback />}
+      <HomeHeroFallback />
 
       {/* ============================================
           AERO TRANSITION - Sprite-driven scroll bridge

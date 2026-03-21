@@ -18,7 +18,7 @@ test.describe("homepage smoke", () => {
     const header = page.getByTestId("site-header");
     const hero = page.getByTestId("homepage-hero");
     const title = page.getByRole("heading", { level: 1 }).first();
-    const primaryCta = hero.getByRole("link", { name: "Δείτε τα προϊόντα" }).first();
+    const primaryCta = page.getByTestId("homepage-primary-cta");
     const mobileNav = page.getByLabel("Mobile primary navigation");
 
     await expect(header).toBeVisible();
@@ -32,7 +32,7 @@ test.describe("homepage smoke", () => {
     const geometry = await page.evaluate(() => {
       const headerEl = document.querySelector('[data-testid="site-header"]');
       const titleEl = document.querySelector("h1");
-      const ctaEl = document.querySelector('[data-testid="homepage-hero"] a[href="/products"]');
+      const ctaEl = document.querySelector('[data-testid="homepage-primary-cta"]');
 
       if (!headerEl || !titleEl || !ctaEl) {
         return null;
@@ -47,12 +47,18 @@ test.describe("homepage smoke", () => {
         titleTop: titleRect.top,
         titleBottom: titleRect.bottom,
         ctaTop: ctaRect.top,
+        ctaWidth: ctaRect.width,
+        ctaHeight: ctaRect.height,
+        ctaBackground: window.getComputedStyle(ctaEl).backgroundImage,
       };
     });
 
     expect(geometry).not.toBeNull();
     expect(geometry!.titleTop).toBeGreaterThanOrEqual(geometry!.headerBottom - 4);
     expect(geometry!.ctaTop).toBeGreaterThan(geometry!.titleBottom - 8);
+    expect(geometry!.ctaWidth).toBeGreaterThanOrEqual(200);
+    expect(geometry!.ctaHeight).toBeGreaterThanOrEqual(56);
+    expect(geometry!.ctaBackground).not.toBe("none");
 
     await expectNoHorizontalOverflow(page);
     await expectNoFrontendErrors(errors);
@@ -68,7 +74,7 @@ test.describe("homepage smoke", () => {
 
     const hero = page.getByTestId("homepage-hero");
     const title = page.getByRole("heading", { level: 1 }).first();
-    const primaryCta = hero.getByRole("link", { name: "Δείτε τα προϊόντα" }).first();
+    const primaryCta = page.getByTestId("homepage-primary-cta");
     const mobileNav = page.getByLabel("Mobile primary navigation");
 
     await expect(hero).toBeVisible();
@@ -82,10 +88,23 @@ test.describe("homepage smoke", () => {
       const rect = element.getBoundingClientRect();
       return { top: rect.top, bottom: rect.bottom };
     });
-    const ctaTop = await primaryCta.evaluate((element) => element.getBoundingClientRect().top);
+    const ctaMetrics = await primaryCta.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const styles = window.getComputedStyle(element);
+
+      return {
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+        backgroundImage: styles.backgroundImage,
+      };
+    });
 
     expect(titleRect.top).toBeGreaterThan(72);
-    expect(ctaTop).toBeGreaterThan(titleRect.bottom - 8);
+    expect(ctaMetrics.top).toBeGreaterThan(titleRect.bottom - 8);
+    expect(ctaMetrics.width).toBeGreaterThanOrEqual(200);
+    expect(ctaMetrics.height).toBeGreaterThanOrEqual(56);
+    expect(ctaMetrics.backgroundImage).not.toBe("none");
 
     await expectNoHorizontalOverflow(page);
     await expectNoFrontendErrors(errors);
