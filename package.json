@@ -17,6 +17,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "bash scripts/setup-playwright-libs.sh && LD_LIBRARY_PATH=\"$PWD/.playwright-libs/root/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}\" playwright test",
+    "test:e2e:headed": "bash scripts/setup-playwright-libs.sh && LD_LIBRARY_PATH=\"$PWD/.playwright-libs/root/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}\" playwright test --headed",
     "analyze": "cross-env ANALYZE=true next build",
     "backfill:chat-sessions": "node scripts/backfill-chat-sessions.cjs",
     "check:chat-session-drift": "node scripts/check-chat-session-drift.cjs"
@@ -50,6 +52,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.1.2",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

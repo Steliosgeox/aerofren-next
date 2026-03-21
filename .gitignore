@@ -32,6 +32,9 @@ public/about-us/Transition_Up.mp4
 
 # testing
 /coverage
+/playwright-report
+/test-results
+/.playwright-libs
 
 # next.js
 /.next/
