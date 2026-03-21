@@ -35,14 +35,16 @@ test.describe("homepage smoke", () => {
       const headerEl = document.querySelector('[data-testid="site-header"]');
       const titleEl = document.querySelector("h1");
       const ctaEl = document.querySelector('[data-testid="homepage-primary-cta"]');
+      const liquidEl = ctaEl?.querySelector(".liquid");
 
-      if (!headerEl || !titleEl || !ctaEl) {
+      if (!headerEl || !titleEl || !ctaEl || !liquidEl) {
         return null;
       }
 
       const headerRect = headerEl.getBoundingClientRect();
       const titleRect = titleEl.getBoundingClientRect();
       const ctaRect = ctaEl.getBoundingClientRect();
+      const liquidRect = liquidEl.getBoundingClientRect();
 
       return {
         headerBottom: headerRect.bottom,
@@ -51,6 +53,10 @@ test.describe("homepage smoke", () => {
         ctaTop: ctaRect.top,
         ctaWidth: ctaRect.width,
         ctaHeight: ctaRect.height,
+        titleFontSize: parseFloat(window.getComputedStyle(titleEl).fontSize),
+        liquidWidth: liquidRect.width,
+        liquidHeight: liquidRect.height,
+        liquidFilter: window.getComputedStyle(liquidEl).filter,
       };
     });
 
@@ -59,6 +65,10 @@ test.describe("homepage smoke", () => {
     expect(geometry!.ctaTop).toBeGreaterThan(geometry!.titleBottom - 8);
     expect(geometry!.ctaWidth).toBeGreaterThanOrEqual(140);
     expect(geometry!.ctaHeight).toBeGreaterThanOrEqual(50);
+    expect(geometry!.titleFontSize).toBeLessThanOrEqual(72);
+    expect(geometry!.liquidWidth).toBeGreaterThanOrEqual(150);
+    expect(geometry!.liquidHeight).toBeGreaterThanOrEqual(150);
+    expect(geometry!.liquidFilter).not.toBe("none");
 
     await expectNoHorizontalOverflow(page);
     await expectNoFrontendErrors(errors);
@@ -86,24 +96,43 @@ test.describe("homepage smoke", () => {
     await page.waitForTimeout(250);
     await expect(mobileNav).toBeVisible();
 
-    const titleRect = await title.evaluate((element) => {
-      const rect = element.getBoundingClientRect();
-      return { top: rect.top, bottom: rect.bottom };
-    });
-    const ctaMetrics = await primaryCta.evaluate((element) => {
-      const rect = element.getBoundingClientRect();
+    const metrics = await page.evaluate(() => {
+      const headerEl = document.querySelector('[data-testid="site-header"]');
+      const titleEl = document.querySelector("h1");
+      const ctaEl = document.querySelector('[data-testid="homepage-primary-cta"]');
+      const liquidEl = ctaEl?.querySelector(".liquid");
+
+      if (!headerEl || !titleEl || !ctaEl || !liquidEl) {
+        return null;
+      }
+
+      const headerRect = headerEl.getBoundingClientRect();
+      const titleRect = titleEl.getBoundingClientRect();
+      const ctaRect = ctaEl.getBoundingClientRect();
+      const liquidRect = liquidEl.getBoundingClientRect();
 
       return {
-        top: rect.top,
-        width: rect.width,
-        height: rect.height,
+        headerBottom: headerRect.bottom,
+        titleTop: titleRect.top,
+        titleBottom: titleRect.bottom,
+        titleFontSize: parseFloat(window.getComputedStyle(titleEl).fontSize),
+        ctaTop: ctaRect.top,
+        ctaWidth: ctaRect.width,
+        ctaHeight: ctaRect.height,
+        liquidWidth: liquidRect.width,
+        liquidHeight: liquidRect.height,
+        liquidFilter: window.getComputedStyle(liquidEl).filter,
       };
     });
-
-    expect(titleRect.top).toBeGreaterThan(72);
-    expect(ctaMetrics.top).toBeGreaterThan(titleRect.bottom - 8);
-    expect(ctaMetrics.width).toBeGreaterThanOrEqual(140);
-    expect(ctaMetrics.height).toBeGreaterThanOrEqual(50);
+    expect(metrics).not.toBeNull();
+    expect(metrics!.titleTop).toBeGreaterThanOrEqual(metrics!.headerBottom - 4);
+    expect(metrics!.titleFontSize).toBeLessThanOrEqual(44);
+    expect(metrics!.ctaTop).toBeGreaterThan(metrics!.titleBottom - 8);
+    expect(metrics!.ctaWidth).toBeGreaterThanOrEqual(140);
+    expect(metrics!.ctaHeight).toBeGreaterThanOrEqual(50);
+    expect(metrics!.liquidWidth).toBeGreaterThanOrEqual(140);
+    expect(metrics!.liquidHeight).toBeGreaterThanOrEqual(140);
+    expect(metrics!.liquidFilter).not.toBe("none");
 
     await expectNoHorizontalOverflow(page);
     await expectNoFrontendErrors(errors);

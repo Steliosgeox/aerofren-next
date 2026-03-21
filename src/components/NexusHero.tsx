@@ -477,8 +477,10 @@ export default function NexusHero() {
 
                 {/* Main Headline */}
                 <h1 className="nexus-hero__headline">
-                    B2B προμηθευτής για εξαρτήματα<br />
-                    <span className="nexus-hero__headline--accent">νερού, φίλτρα και πνευματικά συστήματα</span>
+                    <span className="nexus-hero__headline-line">B2B προμηθευτής για</span>
+                    <span className="nexus-hero__headline-line">εξαρτήματα</span>
+                    <span className="nexus-hero__headline-line nexus-hero__headline--accent">νερού, φίλτρα και</span>
+                    <span className="nexus-hero__headline-line nexus-hero__headline--accent">πνευματικά συστήματα</span>
                 </h1>
 
                 {/* Description */}
@@ -562,12 +564,22 @@ export default function NexusHero() {
                     position: relative;
                     z-index: 10;
                     text-align: center;
-                    max-width: 900px;
+                    max-width: 820px;
                     padding: 0 24px;
                     opacity: 0;
                     transform: translateY(30px);
                     transition: opacity 1s ease, transform 1s ease;
                     transition-delay: 0.5s;
+                }
+
+                .nexus-hero__content::before {
+                    content: "";
+                    position: absolute;
+                    inset: -36px -48px -44px;
+                    z-index: -1;
+                    pointer-events: none;
+                    background: radial-gradient(circle at 50% 35%, rgba(3, 15, 34, 0.58) 0%, rgba(3, 15, 34, 0.28) 52%, transparent 80%);
+                    filter: blur(8px);
                 }
 
                 .nexus-hero__content--visible {
@@ -577,14 +589,15 @@ export default function NexusHero() {
 
                 .nexus-hero__eyebrow {
                     display: inline-block;
-                    font-size: clamp(16px, 2.5vw, 20px);
+                    font-size: clamp(15px, 1.7vw, 19px);
                     font-weight: 800;
-                    letter-spacing: 0.3em;
+                    letter-spacing: 0.24em;
                     color: var(--theme-accent, #5cb8ff);
                     text-transform: uppercase;
-                    margin-bottom: 24px;
+                    margin-bottom: 22px;
                     position: relative;
                     padding-bottom: 12px;
+                    text-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
                 }
 
                 .nexus-hero__eyebrow::after {
@@ -600,37 +613,46 @@ export default function NexusHero() {
 
                 .nexus-hero__headline {
                     font-family: var(--font-sans);
-                    font-size: clamp(2.5rem, 7vw, 5rem);
+                    font-size: clamp(2.2rem, 5.1vw, 4.3rem);
                     font-weight: 800;
-                    line-height: 1.05;
-                    letter-spacing: -0.03em;
+                    line-height: 0.96;
+                    letter-spacing: -0.05em;
                     color: var(--theme-text, #ffffff);
-                    margin: 0 0 24px 0;
-                    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+                    margin: 0 auto 20px;
+                    max-width: 12.8ch;
+                    text-wrap: balance;
+                    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
+                }
+
+                .nexus-hero__headline-line {
+                    display: block;
                 }
 
                 .nexus-hero__headline--accent {
-                    background: linear-gradient(135deg, var(--theme-accent, #5cb8ff), var(--theme-accent-hover, #00bae2));
+                    background: linear-gradient(135deg, #48e5ff 0%, var(--theme-accent, #5cb8ff) 45%, var(--theme-accent-hover, #00bae2) 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                     background-clip: text;
+                    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3));
                 }
 
                 .nexus-hero__description {
-                    font-size: clamp(1rem, 2vw, 1.25rem);
-                    color: var(--theme-text-muted, rgba(255, 255, 255, 0.7));
+                    font-size: clamp(0.98rem, 1.3vw, 1.12rem);
+                    color: rgba(238, 246, 255, 0.82);
                     line-height: 1.6;
-                    max-width: 600px;
-                    margin: 0 auto 16px;
+                    max-width: 52ch;
+                    margin: 0 auto 14px;
+                    text-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
                 }
 
                 .nexus-hero__tagline {
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: var(--theme-accent, #5cb8ff);
-                    letter-spacing: 0.05em;
-                    margin: 0 0 32px;
+                    font-size: clamp(0.82rem, 0.95vw, 0.98rem);
+                    font-weight: 700;
+                    color: color-mix(in srgb, var(--theme-accent, #5cb8ff) 92%, white 8%);
+                    letter-spacing: 0.04em;
+                    margin: 0 0 20px;
                     opacity: 0.9;
+                    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
                 }
 
                 .nexus-hero__cta {
@@ -639,6 +661,7 @@ export default function NexusHero() {
                     overflow: visible;
                     position: relative;
                     z-index: 11;
+                    margin-top: 8px;
                 }
 
                 /* Bottom Info */
@@ -781,24 +804,30 @@ export default function NexusHero() {
 
                 /* Responsive - Tablet */
                 @media (max-width: 768px) {
+                    .nexus-hero {
+                        align-items: flex-start;
+                    }
+
                     .nexus-hero__content {
-                        padding: 0 20px;
+                        padding: 136px 20px 140px;
                         padding-bottom: 140px; /* Space for bottom elements */
+                        max-width: 540px;
                     }
 
                     .nexus-hero__headline {
-                        font-size: clamp(1.75rem, 7vw, 2.5rem);
+                        font-size: clamp(1.85rem, 6.6vw, 3rem);
                         margin-bottom: 16px;
+                        max-width: 11.6ch;
                     }
 
                     .nexus-hero__description {
-                        font-size: clamp(0.875rem, 3.5vw, 1rem);
+                        font-size: clamp(0.92rem, 3.2vw, 1rem);
                         margin-bottom: 12px;
                     }
 
                     .nexus-hero__tagline {
                         font-size: 12px;
-                        margin-bottom: 24px;
+                        margin-bottom: 18px;
                     }
 
                     .nexus-hero__info {
@@ -818,22 +847,23 @@ export default function NexusHero() {
                 /* Responsive - Small phones */
                 @media (max-width: 480px) {
                     .nexus-hero__content {
-                        padding: 0 16px;
+                        padding: 132px 16px 100px;
                         padding-bottom: 100px;
                     }
 
                     .nexus-hero__headline {
-                        font-size: clamp(1.5rem, 8vw, 2rem);
-                        line-height: 1.1;
+                        font-size: clamp(1.65rem, 7.8vw, 2.2rem);
+                        line-height: 0.98;
+                        max-width: 10.8ch;
                     }
 
                     .nexus-hero__description {
-                        font-size: 0.875rem;
+                        font-size: 0.92rem;
                     }
 
                     .nexus-hero__tagline {
                         font-size: 11px;
-                        margin-bottom: 20px;
+                        margin-bottom: 16px;
                     }
 
                     .nexus-hero__scroll {

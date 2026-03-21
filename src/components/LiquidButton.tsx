@@ -3,8 +3,6 @@
 import React from "react";
 import Link from "next/link";
 
-let liquidButtonIdCounter = 0;
-
 interface LiquidButtonProps {
   text: string;
   href?: string;
@@ -13,11 +11,7 @@ interface LiquidButtonProps {
 }
 
 export default function LiquidButton({ text, href, onClick, testId }: LiquidButtonProps) {
-  const idRef = React.useRef<string | null>(null);
-  if (idRef.current === null) {
-    idRef.current = `gooey-${liquidButtonIdCounter++}`;
-  }
-  const filterId = idRef.current;
+  const filterId = `gooey-${React.useId().replace(/:/g, "")}`;
 
   const content = (
     <>
@@ -44,27 +38,68 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
         </filter>
       </svg>
       <style jsx>{`
-        .button {
+        .liquid-button-shell {
+          position: relative;
+          display: inline-flex;
+          overflow: visible;
+        }
+
+        .liquid-button-shell :global(.button) {
           background-color: transparent;
           border: none;
           position: relative;
-          display: flex;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
-          flex-direction: column;
           cursor: pointer;
           text-decoration: none;
           padding: 0;
+          min-width: 176px;
+          min-height: 72px;
+          isolation: isolate;
+          overflow: visible;
         }
 
-        .button svg {
+        .liquid-button-shell :global(.button)::before {
+          content: "";
+          position: absolute;
+          left: 8px;
+          right: 8px;
+          top: 8px;
+          height: 56px;
+          border-radius: 999px;
+          background: linear-gradient(180deg, rgba(43, 124, 200, 0.96), rgba(35, 210, 219, 0.92));
+          box-shadow:
+            0 18px 34px rgba(3, 14, 34, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.34),
+            inset 0 -10px 16px rgba(4, 16, 40, 0.18);
+          z-index: 1;
+          transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+        }
+
+        .liquid-button-shell :global(.button):hover::before {
+          transform: translateY(-1px);
+          box-shadow:
+            0 24px 40px rgba(3, 14, 34, 0.34),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            inset 0 -12px 18px rgba(4, 16, 40, 0.22);
+        }
+
+        .liquid-button-shell :global(.button):focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.72);
+          outline-offset: 6px;
+          border-radius: 999px;
+        }
+
+        svg {
           width: 0;
           height: 0;
+          position: absolute;
         }
 
         .button__label {
-          width: 150px;
-          min-height: 60px;
+          width: 176px;
+          min-height: 72px;
           z-index: 9;
           font-size: 20px;
           color: white;
@@ -76,32 +111,38 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           font-weight: 600;
           transition: all 0.3s ease;
           text-shadow: 0 0 10px rgb(34, 143, 147);
-          letter-spacing: 1px;
+          letter-spacing: 0.5px;
           user-select: none;
           line-height: 1.15;
+          position: relative;
+          padding: 0 20px;
         }
 
-        .button:hover .liquid > span:not(.bg) {
+        .liquid-button-shell :global(.button):hover .liquid > span:not(.bg) {
           animation-play-state: running;
         }
 
-        .button:hover .button__label {
+        .liquid-button-shell :global(.button):hover .button__label {
           transform: scale(1.1);
         }
 
-        .button:active .button__label {
+        .liquid-button-shell :global(.button):active .button__label {
           transform: scale(1);
         }
 
-        .button .liquid {
+        .liquid {
           filter: url(#${filterId});
-          width: 150px;
-          height: 200px;
+          width: 176px;
+          height: 204px;
           position: absolute;
-          inset: 0;
+          left: 50%;
+          top: -8px;
+          transform: translateX(-50%);
+          z-index: 3;
+          pointer-events: none;
         }
 
-        .button .liquid > span {
+        .liquid > span {
           position: absolute;
           top: 1px;
           left: -35px;
@@ -113,7 +154,7 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           animation-play-state: paused;
         }
 
-        .button .liquid > span > span {
+        .liquid > span > span {
           animation: move 6s ease-in-out infinite;
           animation-delay: calc(0.2s * var(--i));
           background: rgb(77, 159, 170);
@@ -124,7 +165,7 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           border-radius: 50%;
         }
 
-        .button .liquid span > span::before {
+        .liquid span > span::before {
           content: "";
           position: absolute;
           left: calc(50% - 20px);
@@ -136,38 +177,38 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           box-shadow: 0 0 30px hsl(0, 0%, 69%);
         }
 
-        .button .liquid span.bg {
+        .liquid span.bg {
           animation: none;
         }
 
-        .button .liquid span.bg > span::before {
-          width: 150px;
-          height: 50px;
-          left: calc(50% - 40px);
-          border-radius: 20px;
+        .liquid span.bg > span::before {
+          width: 164px;
+          height: 56px;
+          left: calc(50% - 82px);
+          border-radius: 999px;
         }
 
-        .button .liquid span:nth-child(2) {
+        .liquid span:nth-child(2) {
           left: -20px;
         }
 
-        .button .liquid span:nth-child(1) {
+        .liquid span:nth-child(1) {
           left: -40px;
         }
 
-        .button .liquid span:nth-child(3) {
+        .liquid span:nth-child(3) {
           left: -50px;
         }
 
-        .button .liquid span:nth-child(4) {
+        .liquid span:nth-child(4) {
           left: 20px;
         }
 
-        .button .liquid span:nth-child(7) {
+        .liquid span:nth-child(7) {
           left: 40px;
         }
 
-        .button .liquid span:nth-child(6) {
+        .liquid span:nth-child(6) {
           left: 50px;
         }
 
@@ -206,8 +247,49 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
         }
 
         @media (pointer: coarse), (pointer: none) {
-          .button .liquid > span > span {
-            background: transparent;
+          .liquid > span {
+            animation-play-state: running;
+            animation-duration: 3.3s;
+          }
+
+          .liquid > span > span {
+            animation-duration: 7.5s;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .liquid-button-shell :global(.button) {
+            min-width: 164px;
+            min-height: 68px;
+          }
+
+          .liquid-button-shell :global(.button)::before {
+            top: 8px;
+            height: 52px;
+          }
+
+          .button__label {
+            width: 164px;
+            min-height: 68px;
+            font-size: 18px;
+          }
+
+          .liquid {
+            width: 164px;
+            height: 192px;
+          }
+
+          .liquid span.bg > span::before {
+            width: 152px;
+            left: calc(50% - 76px);
+            height: 52px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .liquid > span,
+          .liquid > span > span {
+            animation: none;
           }
         }
       `}</style>
@@ -216,15 +298,19 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
 
   if (href) {
     return (
-      <Link href={href} onClick={onClick} data-testid={testId} className="button" aria-label={text}>
-        {content}
-      </Link>
+      <span className="liquid-button-shell">
+        <Link href={href} onClick={onClick} data-testid={testId} className="button" aria-label={text}>
+          {content}
+        </Link>
+      </span>
     );
   }
 
   return (
-    <button type="button" onClick={onClick} data-testid={testId} className="button" aria-label={text}>
-      {content}
-    </button>
+    <span className="liquid-button-shell">
+      <button type="button" onClick={onClick} data-testid={testId} className="button" aria-label={text}>
+        {content}
+      </button>
+    </span>
   );
 }
