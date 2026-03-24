@@ -342,6 +342,7 @@ export function Footer({ currentYear }: FooterProps) {
       className="relative bg-[var(--theme-bg-solid)] text-[var(--theme-text)] overflow-hidden isolate selection:bg-[color-mix(in_srgb,var(--theme-accent)_30%,transparent)]"
       role="contentinfo"
       aria-label="Υποσέλιδο"
+      data-nosnippet
     >
       <div data-nosnippet>
         <SimpleGradientBg />

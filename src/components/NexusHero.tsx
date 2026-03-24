@@ -589,15 +589,17 @@ export default function NexusHero() {
 
                 .nexus-hero__eyebrow {
                     display: inline-block;
-                    font-size: clamp(15px, 1.7vw, 19px);
+                    max-width: min(92vw, 44ch);
+                    font-size: clamp(15px, 0.42vw + 0.72rem, 24px);
                     font-weight: 800;
-                    letter-spacing: 0.24em;
-                    color: var(--theme-accent, #5cb8ff);
+                    letter-spacing: clamp(0.18em, 0.16em + 0.08vw, 0.28em);
+                    color: color-mix(in srgb, var(--theme-accent, #5cb8ff) 88%, white 12%);
                     text-transform: uppercase;
                     margin-bottom: 22px;
                     position: relative;
-                    padding-bottom: 12px;
-                    text-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+                    padding: 0 0.25em 14px;
+                    text-wrap: balance;
+                    text-shadow: 0 8px 22px rgba(0, 0, 0, 0.34);
                 }
 
                 .nexus-hero__eyebrow::after {
@@ -606,7 +608,7 @@ export default function NexusHero() {
                     bottom: 0;
                     left: 50%;
                     transform: translateX(-50%);
-                    width: 60px;
+                    width: clamp(60px, 4vw, 88px);
                     height: 2px;
                     background: linear-gradient(90deg, transparent, var(--theme-accent, #5cb8ff), transparent);
                 }
@@ -802,6 +804,17 @@ export default function NexusHero() {
                     background: linear-gradient(to bottom, #9f7aea, transparent);
                 }
 
+                @media (min-width: 2200px) {
+                    .nexus-hero__content {
+                        max-width: 940px;
+                    }
+
+                    .nexus-hero__eyebrow {
+                        margin-bottom: 28px;
+                        padding-bottom: 18px;
+                    }
+                }
+
                 /* Responsive - Tablet */
                 @media (max-width: 768px) {
                     .nexus-hero {
@@ -839,7 +852,9 @@ export default function NexusHero() {
                     }
 
                     .nexus-hero__eyebrow {
-                        font-size: clamp(14px, 3vw, 16px);
+                        max-width: 20ch;
+                        font-size: clamp(13px, 2.8vw, 15px);
+                        letter-spacing: 0.16em;
                         margin-bottom: 16px;
                     }
                 }

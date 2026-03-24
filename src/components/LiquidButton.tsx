@@ -37,14 +37,25 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           ></feColorMatrix>
         </filter>
       </svg>
-      <style jsx>{`
+    </>
+  );
+
+  const styles = (
+    <style jsx global>{`
         .liquid-button-shell {
+          --liquid-button-width: 212px;
+          --liquid-button-height: 74px;
+          --liquid-button-pill-width: 192px;
+          --liquid-button-pill-height: 58px;
+          --liquid-button-pill-top: 8px;
+          --liquid-button-liquid-height: 214px;
+          --liquid-button-label-size: 1.18rem;
           position: relative;
           display: inline-flex;
           overflow: visible;
         }
 
-        .liquid-button-shell :global(.button) {
+        .liquid-button-shell .liquid-button-root {
           background-color: transparent;
           border: none;
           position: relative;
@@ -54,19 +65,20 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           cursor: pointer;
           text-decoration: none;
           padding: 0;
-          min-width: 176px;
-          min-height: 72px;
+          inline-size: var(--liquid-button-width);
+          min-block-size: var(--liquid-button-height);
           isolation: isolate;
           overflow: visible;
         }
 
-        .liquid-button-shell :global(.button)::before {
+        .liquid-button-shell .liquid-button-root::before {
           content: "";
           position: absolute;
-          left: 8px;
-          right: 8px;
-          top: 8px;
-          height: 56px;
+          left: 50%;
+          top: var(--liquid-button-pill-top);
+          width: var(--liquid-button-pill-width);
+          height: var(--liquid-button-pill-height);
+          transform: translateX(-50%);
           border-radius: 999px;
           background: linear-gradient(180deg, rgba(43, 124, 200, 0.96), rgba(35, 210, 219, 0.92));
           box-shadow:
@@ -77,15 +89,15 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
         }
 
-        .liquid-button-shell :global(.button):hover::before {
-          transform: translateY(-1px);
+        .liquid-button-shell .liquid-button-root:hover::before {
+          transform: translateX(-50%) translateY(-1px);
           box-shadow:
             0 24px 40px rgba(3, 14, 34, 0.34),
             inset 0 1px 0 rgba(255, 255, 255, 0.4),
             inset 0 -12px 18px rgba(4, 16, 40, 0.22);
         }
 
-        .liquid-button-shell :global(.button):focus-visible {
+        .liquid-button-shell .liquid-button-root:focus-visible {
           outline: 2px solid rgba(255, 255, 255, 0.72);
           outline-offset: 6px;
           border-radius: 999px;
@@ -98,45 +110,47 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
         }
 
         .button__label {
-          width: 176px;
-          min-height: 72px;
+          position: absolute;
+          top: var(--liquid-button-pill-top);
+          left: 0;
+          width: 100%;
+          min-height: var(--liquid-button-pill-height);
           z-index: 9;
-          font-size: 20px;
+          font-size: var(--liquid-button-label-size);
           color: white;
           text-align: center;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: grid;
+          place-items: center;
           font-weight: 600;
           transition: all 0.3s ease;
           text-shadow: 0 0 10px rgb(34, 143, 147);
-          letter-spacing: 0.5px;
+          letter-spacing: 0.02em;
           user-select: none;
-          line-height: 1.15;
-          position: relative;
-          padding: 0 20px;
+          line-height: 1.05;
+          padding: 0 28px;
+          text-wrap: balance;
+          pointer-events: none;
         }
 
-        .liquid-button-shell :global(.button):hover .liquid > span:not(.bg) {
+        .liquid-button-shell .liquid-button-root:hover .liquid > span:not(.bg) {
           animation-play-state: running;
         }
 
-        .liquid-button-shell :global(.button):hover .button__label {
-          transform: scale(1.1);
+        .liquid-button-shell .liquid-button-root:hover .button__label {
+          transform: scale(1.04);
         }
 
-        .liquid-button-shell :global(.button):active .button__label {
+        .liquid-button-shell .liquid-button-root:active .button__label {
           transform: scale(1);
         }
 
         .liquid {
           filter: url(#${filterId});
-          width: 176px;
-          height: 204px;
+          width: var(--liquid-button-width);
+          height: var(--liquid-button-liquid-height);
           position: absolute;
           left: 50%;
-          top: -8px;
+          top: calc(var(--liquid-button-pill-top) - 14px);
           transform: translateX(-50%);
           z-index: 3;
           pointer-events: none;
@@ -182,9 +196,11 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
         }
 
         .liquid span.bg > span::before {
-          width: 164px;
-          height: 56px;
-          left: calc(50% - 82px);
+          width: var(--liquid-button-pill-width);
+          height: var(--liquid-button-pill-height);
+          left: 50%;
+          top: var(--liquid-button-pill-top);
+          transform: translateX(-50%);
           border-radius: 999px;
         }
 
@@ -258,31 +274,18 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
         }
 
         @media (max-width: 640px) {
-          .liquid-button-shell :global(.button) {
-            min-width: 164px;
-            min-height: 68px;
-          }
-
-          .liquid-button-shell :global(.button)::before {
-            top: 8px;
-            height: 52px;
+          .liquid-button-shell {
+            --liquid-button-width: 188px;
+            --liquid-button-height: 70px;
+            --liquid-button-pill-width: 170px;
+            --liquid-button-pill-height: 54px;
+            --liquid-button-pill-top: 8px;
+            --liquid-button-liquid-height: 198px;
+            --liquid-button-label-size: 1.04rem;
           }
 
           .button__label {
-            width: 164px;
-            min-height: 68px;
-            font-size: 18px;
-          }
-
-          .liquid {
-            width: 164px;
-            height: 192px;
-          }
-
-          .liquid span.bg > span::before {
-            width: 152px;
-            left: calc(50% - 76px);
-            height: 52px;
+            padding-inline: 24px;
           }
         }
 
@@ -293,24 +296,29 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           }
         }
       `}</style>
-    </>
   );
 
   if (href) {
     return (
-      <span className="liquid-button-shell">
-        <Link href={href} onClick={onClick} data-testid={testId} className="button" aria-label={text}>
-          {content}
-        </Link>
-      </span>
+      <>
+        <span className="liquid-button-shell">
+          <Link href={href} onClick={onClick} data-testid={testId} className="liquid-button-root" aria-label={text}>
+            {content}
+          </Link>
+        </span>
+        {styles}
+      </>
     );
   }
 
   return (
-    <span className="liquid-button-shell">
-      <button type="button" onClick={onClick} data-testid={testId} className="button" aria-label={text}>
-        {content}
-      </button>
-    </span>
+    <>
+      <span className="liquid-button-shell">
+        <button type="button" onClick={onClick} data-testid={testId} className="liquid-button-root" aria-label={text}>
+          {content}
+        </button>
+      </span>
+      {styles}
+    </>
   );
 }

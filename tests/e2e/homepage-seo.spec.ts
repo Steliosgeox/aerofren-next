@@ -21,6 +21,11 @@ test("homepage server html stays crawlable and exposes primary metadata", async 
   }
   expect(html).toContain("<title>AEROFREN | B2B Προμηθευτής για Εξαρτήματα Νερού, Φίλτρα &amp; Πνευματικά</title>");
   expect(html).toContain('name="description" content="AEROFREN: B2B προμηθευτής για εξαρτήματα νερού, φίλτρα, ρακόρ και πνευματικά. Από το 1980, 10.000+ προϊόντα. Μοσχάτο, Αθήνα."');
+  expect(html).toContain('name="googlebot"');
+  expect(html).toContain('max-snippet:-1');
+  expect(html).toContain('max-image-preview:large');
+  expect(html).toContain('max-video-preview:-1');
   expect(html).toContain('rel="canonical" href="https://aerofren.gr"');
-  expect(html).toContain("data-nosnippet");
+  expect(html).toContain("<footer");
+  expect(html).toContain('data-nosnippet="true"');
 });

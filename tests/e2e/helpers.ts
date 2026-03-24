@@ -51,7 +51,7 @@ export async function dismissCookieBanner(page: Page) {
   const acceptAllButton = page.getByRole("button", { name: "Αποδοχή όλων" });
 
   const bannerAppeared = await acceptAllButton
-    .waitFor({ state: "visible", timeout: 1_500 })
+    .waitFor({ state: "visible", timeout: 4_000 })
     .then(() => true)
     .catch(() => false);
 

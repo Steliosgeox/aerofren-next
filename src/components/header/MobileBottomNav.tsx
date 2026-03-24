@@ -35,7 +35,12 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
 
   return (
     <>
-      <nav className="mobile-bottom-nav" aria-label="Mobile primary navigation">
+      <nav
+        className="mobile-bottom-nav"
+        aria-label="Mobile primary navigation"
+        data-nosnippet
+        data-testid="mobile-bottom-nav"
+      >
         <div className="mobile-bottom-nav__shell" style={gridStyle}>
           <div className="mobile-bottom-nav__glow" aria-hidden="true" />
 
@@ -58,16 +63,15 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
         </div>
       </nav>
 
-      <style jsx>{`
+      <style jsx global>{`
         .mobile-bottom-nav {
           position: fixed;
-          left: 0;
-          right: 0;
+          left: 50%;
           bottom: calc(14px + env(safe-area-inset-bottom, 0px));
           z-index: 70;
           width: min(428px, calc(100vw - 18px));
           width: min(428px, calc(100dvw - 18px));
-          margin-inline: auto;
+          transform: translateX(-50%);
           pointer-events: none;
           transition: opacity 180ms ease;
         }
@@ -118,16 +122,18 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
         .mobile-bottom-nav__item {
           position: relative;
           z-index: 0;
-          display: flex;
+          display: grid;
+          grid-template-rows: 19px auto;
           min-height: 60px;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
+          min-width: 0;
+          justify-items: center;
+          align-content: center;
+          gap: 4px;
           border-radius: 22px;
           padding: 8px 4px 9px;
           color: rgba(224, 238, 255, 0.76);
           text-decoration: none;
+          text-align: center;
           transition:
             transform 180ms ease,
             color 180ms ease;
@@ -194,9 +200,13 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
           width: 19px;
           height: 19px;
           flex-shrink: 0;
+          justify-self: center;
+          align-self: end;
         }
 
         .mobile-bottom-nav__label {
+          display: block;
+          width: 100%;
           max-width: 100%;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -204,7 +214,8 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
           font-size: 0.64rem;
           font-weight: 700;
           letter-spacing: 0.01em;
-          line-height: 1;
+          line-height: 1.1;
+          text-align: center;
         }
 
         @supports ((backdrop-filter: blur(18px)) or (-webkit-backdrop-filter: blur(18px))) {
