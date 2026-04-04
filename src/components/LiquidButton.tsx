@@ -103,7 +103,7 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           border-radius: 999px;
         }
 
-        svg {
+        .liquid-button-shell svg {
           width: 0;
           height: 0;
           position: absolute;
