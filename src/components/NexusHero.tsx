@@ -804,6 +804,15 @@ export default function NexusHero() {
                     background: linear-gradient(to bottom, #9f7aea, transparent);
                 }
 
+                /* Tall viewport fix: prevent hero content from floating 500px+ below header on 4K/1440p */
+                @media (min-width: 1024px) and (min-height: 1200px) {
+                    .nexus-hero {
+                        align-items: flex-start;
+                        padding-top: clamp(160px, 11vh, 280px);
+                        padding-bottom: clamp(120px, 8vh, 200px);
+                    }
+                }
+
                 @media (min-width: 2200px) {
                     .nexus-hero__content {
                         max-width: 940px;

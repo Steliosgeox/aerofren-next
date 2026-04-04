@@ -74,6 +74,9 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
           transform: translateX(-50%);
           pointer-events: none;
           transition: opacity 180ms ease;
+          will-change: transform;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
 
         .mobile-bottom-nav__shell {
@@ -134,6 +137,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
           color: rgba(224, 238, 255, 0.76);
           text-decoration: none;
           text-align: center;
+          touch-action: manipulation;
           transition:
             transform 180ms ease,
             color 180ms ease;
