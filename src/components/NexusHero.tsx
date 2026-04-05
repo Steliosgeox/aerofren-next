@@ -582,6 +582,46 @@ export default function NexusHero() {
                     filter: blur(8px);
                 }
 
+                /* Desktop: left-aligned layout — premium, intentional, not AI-centered */
+                @media (min-width: 769px) {
+                    .nexus-hero {
+                        justify-content: flex-start;
+                    }
+
+                    .nexus-hero__content {
+                        text-align: left;
+                        max-width: clamp(560px, 52vw, 760px);
+                        padding: max(128px, 13vh) clamp(24px, 3vw, 48px) 0 clamp(48px, 5vw, 88px);
+                        margin: 0;
+                    }
+
+                    .nexus-hero__content::before {
+                        background: radial-gradient(circle at 30% 35%, rgba(3, 15, 34, 0.62) 0%, rgba(3, 15, 34, 0.28) 52%, transparent 80%);
+                    }
+
+                    .nexus-hero__eyebrow::after {
+                        left: 0;
+                        transform: none;
+                    }
+
+                    .nexus-hero__headline {
+                        margin-left: 0;
+                        margin-right: 0;
+                        max-width: unset;
+                        font-size: clamp(2.2rem, 4.2vw, 4.3rem);
+                    }
+
+                    .nexus-hero__description {
+                        margin-left: 0;
+                        margin-right: 0;
+                        max-width: 48ch;
+                    }
+
+                    .nexus-hero__cta {
+                        justify-content: flex-start;
+                    }
+                }
+
                 .nexus-hero__content--visible {
                     opacity: 1;
                     transform: translateY(0);
@@ -804,12 +844,11 @@ export default function NexusHero() {
                     background: linear-gradient(to bottom, #9f7aea, transparent);
                 }
 
-                /* Tall viewport fix: prevent hero content from floating 500px+ below header on 4K/1440p */
+                /* Tall viewport: content padding-top already handles clearance via max(128px, 13vh).
+                   On extreme 4K heights, cap it so content stays in upper third. */
                 @media (min-width: 1024px) and (min-height: 1200px) {
-                    .nexus-hero {
-                        align-items: flex-start;
-                        padding-top: clamp(160px, 11vh, 280px);
-                        padding-bottom: clamp(120px, 8vh, 200px);
+                    .nexus-hero__content {
+                        padding-top: clamp(128px, 11vh, 220px);
                     }
                 }
 
