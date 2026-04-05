@@ -319,11 +319,7 @@ export default function ScrollFrameAnimation() {
            and dynamic address-bar collapse never reveal a gap. */
         .scroll-frame-container {
           position: fixed;
-          top: -100px;
-          left: 0;
-          right: 0;
-          height: calc(100vh + 200px);
-          height: calc(100dvh + 200px);
+          inset: -100px 0;
           z-index: 0;
           pointer-events: none;
           overflow: hidden;

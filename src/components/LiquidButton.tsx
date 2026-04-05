@@ -71,30 +71,12 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
           overflow: visible;
         }
 
-        .liquid-button-shell .liquid-button-root::before {
-          content: "";
-          position: absolute;
-          left: 50%;
-          top: var(--liquid-button-pill-top);
-          width: var(--liquid-button-pill-width);
-          height: var(--liquid-button-pill-height);
-          transform: translateX(-50%);
-          border-radius: 999px;
-          background: linear-gradient(180deg, rgba(43, 124, 200, 0.96), rgba(35, 210, 219, 0.92));
-          box-shadow:
-            0 18px 34px rgba(3, 14, 34, 0.28),
-            inset 0 1px 0 rgba(255, 255, 255, 0.34),
-            inset 0 -10px 16px rgba(4, 16, 40, 0.18);
-          z-index: 1;
-          transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
-        }
+        /* ::before pill removed — the gooey filter's internal .bg span
+           already renders the pill shape through the blur+threshold filter.
+           The old ::before was the "phantom static button" showing behind it. */
 
-        .liquid-button-shell .liquid-button-root:hover::before {
-          transform: translateX(-50%) translateY(-1px);
-          box-shadow:
-            0 24px 40px rgba(3, 14, 34, 0.34),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4),
-            inset 0 -12px 18px rgba(4, 16, 40, 0.22);
+        .liquid-button-shell .liquid-button-root::before {
+          content: none;
         }
 
         .liquid-button-shell .liquid-button-root:focus-visible {
