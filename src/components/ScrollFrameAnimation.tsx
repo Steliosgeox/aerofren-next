@@ -314,23 +314,20 @@ export default function ScrollFrameAnimation() {
             </div>
 
             <style jsx global>{`
-        /* Container - GPU optimized */
+        /* Container - GPU optimized
+           Extend beyond viewport on all sides so iOS rubber-band overscroll
+           and dynamic address-bar collapse never reveal a gap. */
         .scroll-frame-container {
           position: fixed;
-          /* Extend 120px above viewport so iOS rubber-band overscroll never
-             reveals the body background behind the fixed element */
-          top: -120px;
+          top: -100px;
           left: 0;
           right: 0;
-          bottom: 0;
-          height: calc(100vh + 120px);
-          height: calc(100dvh + 120px);
-          width: 100vw;
-          width: 100dvw;
+          height: calc(100vh + 200px);
+          height: calc(100dvh + 200px);
           z-index: 0;
           pointer-events: none;
           overflow: hidden;
-          contain: layout style; /* can't use strict with non-zero top */
+          contain: layout style;
         }
 
         /* Static Background - single layer */
