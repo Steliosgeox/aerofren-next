@@ -193,6 +193,7 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
 
         .liquid span.bg {
           animation: none;
+          left: 0;
         }
 
         .liquid span.bg > span::before {
