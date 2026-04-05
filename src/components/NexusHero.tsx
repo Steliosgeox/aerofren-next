@@ -477,10 +477,9 @@ export default function NexusHero() {
 
                 {/* Main Headline */}
                 <h1 className="nexus-hero__headline">
-                    <span className="nexus-hero__headline-line">B2B προμηθευτής για</span>
-                    <span className="nexus-hero__headline-line">εξαρτήματα</span>
-                    <span className="nexus-hero__headline-line nexus-hero__headline--accent">νερού, φίλτρα και</span>
-                    <span className="nexus-hero__headline-line nexus-hero__headline--accent">πνευματικά συστήματα</span>
+                    <span className="nexus-hero__headline-line">B2B προμηθευτής</span>
+                    <span className="nexus-hero__headline-line">για εξαρτήματα νερού,</span>
+                    <span className="nexus-hero__headline-line nexus-hero__headline--accent">φίλτρα και πνευματικά συστήματα</span>
                 </h1>
 
                 {/* Description */}
@@ -582,43 +581,15 @@ export default function NexusHero() {
                     filter: blur(8px);
                 }
 
-                /* Desktop: left-aligned layout — premium, intentional, not AI-centered */
+                /* Desktop: anchor from top so eyebrow always clears the fixed header */
                 @media (min-width: 769px) {
                     .nexus-hero {
-                        justify-content: flex-start;
+                        align-items: flex-start;
                     }
 
                     .nexus-hero__content {
-                        text-align: left;
-                        max-width: clamp(560px, 52vw, 760px);
-                        padding: max(128px, 13vh) clamp(24px, 3vw, 48px) 0 clamp(48px, 5vw, 88px);
-                        margin: 0;
-                    }
-
-                    .nexus-hero__content::before {
-                        background: radial-gradient(circle at 30% 35%, rgba(3, 15, 34, 0.62) 0%, rgba(3, 15, 34, 0.28) 52%, transparent 80%);
-                    }
-
-                    .nexus-hero__eyebrow::after {
-                        left: 0;
-                        transform: none;
-                    }
-
-                    .nexus-hero__headline {
-                        margin-left: 0;
-                        margin-right: 0;
-                        max-width: unset;
-                        font-size: clamp(2.2rem, 4.2vw, 4.3rem);
-                    }
-
-                    .nexus-hero__description {
-                        margin-left: 0;
-                        margin-right: 0;
-                        max-width: 48ch;
-                    }
-
-                    .nexus-hero__cta {
-                        justify-content: flex-start;
+                        padding-top: max(120px, 14vh);
+                        max-width: 880px;
                     }
                 }
 
@@ -655,14 +626,12 @@ export default function NexusHero() {
 
                 .nexus-hero__headline {
                     font-family: var(--font-sans);
-                    font-size: clamp(2.2rem, 5.1vw, 4.3rem);
+                    font-size: clamp(2.2rem, 4.6vw, 4.3rem);
                     font-weight: 800;
                     line-height: 0.96;
                     letter-spacing: -0.05em;
                     color: var(--theme-text, #ffffff);
                     margin: 0 auto 20px;
-                    max-width: 12.8ch;
-                    text-wrap: balance;
                     text-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
                 }
 
@@ -844,11 +813,10 @@ export default function NexusHero() {
                     background: linear-gradient(to bottom, #9f7aea, transparent);
                 }
 
-                /* Tall viewport: content padding-top already handles clearance via max(128px, 13vh).
-                   On extreme 4K heights, cap it so content stays in upper third. */
+                /* Tall viewport (4K/1440p): tighten the top so content stays in upper third */
                 @media (min-width: 1024px) and (min-height: 1200px) {
                     .nexus-hero__content {
-                        padding-top: clamp(128px, 11vh, 220px);
+                        padding-top: clamp(120px, 9vh, 200px);
                     }
                 }
 
