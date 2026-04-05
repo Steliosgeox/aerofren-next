@@ -264,13 +264,11 @@ export default function LiquidButton({ text, href, onClick, testId }: LiquidButt
         }
 
         @media (pointer: coarse), (pointer: none) {
-          .liquid > span {
-            animation-play-state: running;
-            animation-duration: 3.3s;
-          }
-
-          .liquid > span > span {
-            animation-duration: 7.5s;
+          /* iOS/Android: SVG gooey filter doesn't work on non-SVG elements in mobile
+             WebKit — blobs render as raw circles. Hide the entire liquid layer;
+             the ::before gradient pill on .liquid-button-root is the visual button. */
+          .liquid {
+            display: none;
           }
         }
 

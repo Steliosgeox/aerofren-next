@@ -317,20 +317,20 @@ export default function ScrollFrameAnimation() {
         /* Container - GPU optimized */
         .scroll-frame-container {
           position: fixed;
-          top: 0;
+          /* Extend 120px above viewport so iOS rubber-band overscroll never
+             reveals the body background behind the fixed element */
+          top: -120px;
           left: 0;
           right: 0;
           bottom: 0;
-          /* iOS Safari: override with dvh so container covers full visual viewport
-             including area behind the dynamic address bar */
-          height: 100vh;
-          height: 100dvh;
+          height: calc(100vh + 120px);
+          height: calc(100dvh + 120px);
           width: 100vw;
           width: 100dvw;
           z-index: 0;
           pointer-events: none;
           overflow: hidden;
-          contain: strict; /* GPU: Isolate compositing */
+          contain: layout style; /* can't use strict with non-zero top */
         }
 
         /* Static Background - single layer */
