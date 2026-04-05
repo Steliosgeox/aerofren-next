@@ -571,16 +571,6 @@ export default function NexusHero() {
                     transition-delay: 0.5s;
                 }
 
-                .nexus-hero__content::before {
-                    content: "";
-                    position: absolute;
-                    inset: -36px -48px -44px;
-                    z-index: -1;
-                    pointer-events: none;
-                    background: radial-gradient(circle at 50% 35%, rgba(3, 15, 34, 0.58) 0%, rgba(3, 15, 34, 0.28) 52%, transparent 80%);
-                    filter: blur(8px);
-                }
-
                 /* Desktop: anchor from top so eyebrow always clears the fixed header */
                 @media (min-width: 769px) {
                     .nexus-hero {

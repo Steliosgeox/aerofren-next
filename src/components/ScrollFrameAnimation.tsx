@@ -317,7 +317,16 @@ export default function ScrollFrameAnimation() {
         /* Container - GPU optimized */
         .scroll-frame-container {
           position: fixed;
-          inset: 0;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          /* iOS Safari: override with dvh so container covers full visual viewport
+             including area behind the dynamic address bar */
+          height: 100vh;
+          height: 100dvh;
+          width: 100vw;
+          width: 100dvw;
           z-index: 0;
           pointer-events: none;
           overflow: hidden;
@@ -335,7 +344,7 @@ export default function ScrollFrameAnimation() {
           inset: 0;
           background-image: url('/images/BackgroundDark.webp');
           background-size: cover;
-          background-position: center;
+          background-position: center top;
           background-repeat: no-repeat;
         }
 
