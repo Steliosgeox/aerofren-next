@@ -64,7 +64,7 @@ export default function ChatwootInboxPanel({ workspace, onOpenNav }: ChatwootInb
     } = workspace;
 
     return (
-        <div className="w-[300px] max-lg:w-full max-lg:flex-1 flex-shrink-0 max-lg:flex-shrink h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
+        <div className="w-[300px] max-lg:w-full flex-shrink-0 max-lg:flex-shrink-[1] h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col overflow-hidden">
             {/* Top header row — title + icon actions */}
             <div className="h-14 flex-shrink-0 px-4 flex items-center justify-between border-b border-[var(--cw-border)]">
                 <div className="flex items-center gap-2 min-w-0">
@@ -72,10 +72,10 @@ export default function ChatwootInboxPanel({ workspace, onOpenNav }: ChatwootInb
                         <button
                             type="button"
                             onClick={onOpenNav}
-                            className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-[var(--cw-text-2)] hover:bg-white/[0.06] flex-shrink-0 -ml-1"
+                            className="lg:hidden w-10 h-10 rounded-lg flex items-center justify-center text-[var(--cw-text-2)] hover:bg-white/[0.06] flex-shrink-0 -ml-2"
                             aria-label="Μενού"
                         >
-                            <Menu size={16} />
+                            <Menu size={18} />
                         </button>
                     )}
                     <span className="text-[15px] font-semibold text-[var(--cw-text-1)]">

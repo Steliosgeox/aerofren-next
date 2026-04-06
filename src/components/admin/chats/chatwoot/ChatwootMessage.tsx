@@ -171,7 +171,7 @@ export default function ChatwootMessage({ entry, prevEntry }: ChatwootMessagePro
             </div>
 
             {/* Bubble column */}
-            <div className={`flex flex-col max-w-[65%] ${cfg.isRight ? 'items-end' : 'items-start'}`}>
+            <div className={`flex flex-col max-w-[85%] lg:max-w-[65%] ${cfg.isRight ? 'items-end' : 'items-start'}`}>
                 {/* Sender name — only on first in group */}
                 {!isSameAsPrev && (
                     <span className="text-[10px] font-medium text-[var(--cw-text-3)] mb-0.5 px-1">

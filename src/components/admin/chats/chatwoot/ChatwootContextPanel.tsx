@@ -208,9 +208,9 @@ export function ChatwootContextPanel({ workspace, onClose }: ChatwootContextPane
                         type="button"
                         onClick={onClose}
                         title="Κλείσιμο"
-                        className="w-6 h-6 flex items-center justify-center rounded text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors"
+                        className="w-8 h-8 max-lg:w-10 max-lg:h-10 flex items-center justify-center rounded-lg text-[var(--cw-text-3)] hover:text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors"
                     >
-                        <X size={14} />
+                        <X size={16} />
                     </button>
                 )}
             </div>

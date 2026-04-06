@@ -18,6 +18,26 @@
   --cw-msg-admin:  #1e4da0;
 }
 
+/* ── Mobile safe area handling ──────────────────────────────────────────────
+   The workspace (flex container) gets safe-area padding so in-flow children
+   are pushed below notch / above home bar. Fixed-position overlays (nav
+   sidebar, context panel) break out of this padding and need their own
+   safe-area insets via the .cw-panel-safe utility class.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .chatwoot-workspace {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Fixed overlay panels — need their own safe area since they're
+     position: fixed and break out of parent padding. */
+  .cw-panel-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
 /* Card selection animation */
 @keyframes card-select {
   0%   { opacity: 0.8; }
@@ -38,14 +58,6 @@
    .child-item:last-child::after  — L-shaped corner on last item
    Color: bg-n-slate-4 → rgba(255,255,255,0.12)
    ─────────────────────────────────────────────────────────────────────── */
-/* Mobile safe area insets for iPhone notch/Dynamic Island/home bar */
-@media (max-width: 1023px) {
-  .chatwoot-workspace {
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-}
-
 .sidebar-group-children .child-item::before {
   content: '';
   position: absolute;

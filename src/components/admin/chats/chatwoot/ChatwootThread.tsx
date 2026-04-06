@@ -165,15 +165,15 @@ export default function ChatwootThread({
         <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--cw-bg-main)] min-w-0">
             {/* Thread header — Chatwoot ConversationHeader h-14 */}
             <div className="flex items-center gap-2 px-3 h-14 flex-shrink-0 border-b border-[var(--cw-border)] bg-[var(--cw-bg-main)]">
-                {/* Mobile back button */}
+                {/* Mobile back button — 44px touch target */}
                 {onBack && (
                     <button
                         type="button"
                         onClick={onBack}
-                        className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors flex-shrink-0 -ml-1"
+                        className="lg:hidden w-11 h-11 rounded-lg flex items-center justify-center text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors flex-shrink-0 -ml-2"
                         aria-label="Πίσω"
                     >
-                        <ChevronLeft size={18} />
+                        <ChevronLeft size={20} />
                     </button>
                 )}
                 {/* Avatar — 32px circle */}
