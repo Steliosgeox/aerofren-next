@@ -323,7 +323,7 @@ export default function ScrollFrameAnimation() {
           z-index: 0;
           pointer-events: none;
           overflow: hidden;
-          contain: layout style;
+          contain: style;
         }
 
         /* Static Background - single layer */

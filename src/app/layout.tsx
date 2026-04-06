@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
 import Script from "next/script"
 import localFont from "next/font/local"
@@ -50,6 +50,10 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   display: "swap",
 })
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, SortDesc, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { Loader2, SortDesc, SlidersHorizontal, RotateCcw, Menu } from 'lucide-react';
 import ChatwootConversationItem from './ChatwootConversationItem';
 import type { AdminChatSessionRow } from './ChatwootConversationItem';
 
@@ -35,6 +35,7 @@ type WorkspaceProps = Pick<
 
 interface ChatwootInboxPanelProps {
     workspace: WorkspaceProps;
+    onOpenNav?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -49,7 +50,7 @@ const TABS: { key: TabKey; label: string }[] = [
     { key: 'all', label: 'Όλα' },
 ];
 
-export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProps) {
+export default function ChatwootInboxPanel({ workspace, onOpenNav }: ChatwootInboxPanelProps) {
     const {
         sessionRows,
         assignmentFilter,
@@ -63,10 +64,20 @@ export default function ChatwootInboxPanel({ workspace }: ChatwootInboxPanelProp
     } = workspace;
 
     return (
-        <div className="w-[300px] flex-shrink-0 h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
+        <div className="w-[300px] max-lg:w-full max-lg:flex-1 flex-shrink-0 max-lg:flex-shrink h-full bg-[var(--cw-bg-sidebar)] border-r border-[var(--cw-border)] flex flex-col">
             {/* Top header row — title + icon actions */}
             <div className="h-14 flex-shrink-0 px-4 flex items-center justify-between border-b border-[var(--cw-border)]">
                 <div className="flex items-center gap-2 min-w-0">
+                    {onOpenNav && (
+                        <button
+                            type="button"
+                            onClick={onOpenNav}
+                            className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-[var(--cw-text-2)] hover:bg-white/[0.06] flex-shrink-0 -ml-1"
+                            aria-label="Μενού"
+                        >
+                            <Menu size={16} />
+                        </button>
+                    )}
                     <span className="text-[15px] font-semibold text-[var(--cw-text-1)]">
                         Συνομιλίες
                     </span>

@@ -12,8 +12,11 @@ export function ChatwootWorkspace() {
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const threadScrollerRef = useRef<HTMLDivElement>(null);
   const [showPanel, setShowPanel] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const workspace = useAdminChatWorkspace({ composerRef, threadScrollerRef });
+
+  const hasSession = !!workspace.selectedSessionId;
 
   return (
     <div
@@ -40,24 +43,79 @@ export function ChatwootWorkspace() {
         </div>
       )}
 
-      {/* Nav sidebar — 200px */}
-      <ChatwootNavSidebar workspace={workspace} />
+      {/* ── Mobile nav overlay backdrop ────────────────────────────── */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[101] lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
 
-      {/* Inbox panel — 300px */}
-      <ChatwootInboxPanel workspace={workspace} />
+      {/* ── Nav sidebar ────────────────────────────────────────────── */}
+      {/* Desktop: inline 220px column. Mobile: slide-in overlay from left */}
+      <aside
+        className={[
+          'flex-shrink-0 h-full z-[102]',
+          'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:transform max-lg:transition-transform max-lg:duration-300 max-lg:ease-in-out',
+          mobileNavOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full',
+        ].join(' ')}
+      >
+        <ChatwootNavSidebar
+          workspace={workspace}
+          onNavigate={() => setMobileNavOpen(false)}
+        />
+      </aside>
 
-      {/* Thread — flex-1 */}
-      <ChatwootThread
-        workspace={workspace}
-        composerRef={composerRef}
-        threadScrollerRef={threadScrollerRef}
-        showContextPanel={showPanel}
-        onToggleContextPanel={() => setShowPanel((p) => !p)}
-      />
+      {/* ── Inbox panel ────────────────────────────────────────────── */}
+      {/* Desktop: 300px column. Mobile: full-width, hidden when session selected */}
+      <div
+        className={[
+          'max-lg:flex-1 max-lg:w-full',
+          hasSession ? 'max-lg:hidden' : '',
+        ].filter(Boolean).join(' ')}
+      >
+        <ChatwootInboxPanel
+          workspace={workspace}
+          onOpenNav={() => setMobileNavOpen(true)}
+        />
+      </div>
 
-      {/* Context panel — 320px, collapsible */}
+      {/* ── Thread ─────────────────────────────────────────────────── */}
+      {/* Desktop: flex-1. Mobile: full-width, hidden when no session */}
+      <div
+        className={[
+          'flex-1 min-w-0',
+          !hasSession ? 'max-lg:hidden' : '',
+        ].filter(Boolean).join(' ')}
+      >
+        <ChatwootThread
+          workspace={workspace}
+          composerRef={composerRef}
+          threadScrollerRef={threadScrollerRef}
+          showContextPanel={showPanel}
+          onToggleContextPanel={() => setShowPanel((p) => !p)}
+          onBack={workspace.clearSelection}
+          onOpenNav={() => setMobileNavOpen(true)}
+        />
+      </div>
+
+      {/* ── Context panel ──────────────────────────────────────────── */}
       {showPanel && (
-        <ChatwootContextPanel workspace={workspace} onClose={() => setShowPanel(false)} />
+        <>
+          {/* Desktop: inline 320px column */}
+          <div className="max-lg:hidden">
+            <ChatwootContextPanel workspace={workspace} onClose={() => setShowPanel(false)} />
+          </div>
+
+          {/* Mobile: slide-in overlay from right */}
+          <div
+            className="lg:hidden fixed inset-0 bg-black/50 z-[101]"
+            onClick={() => setShowPanel(false)}
+          />
+          <div className="lg:hidden fixed inset-y-0 right-0 z-[102] w-[min(320px,85vw)] transform transition-transform duration-300 ease-in-out">
+            <ChatwootContextPanel workspace={workspace} onClose={() => setShowPanel(false)} />
+          </div>
+        </>
       )}
     </div>
   );

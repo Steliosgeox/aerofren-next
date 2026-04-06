@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Loader2, MessageSquare, AlertTriangle, ChevronDown, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { Loader2, MessageSquare, AlertTriangle, ChevronDown, ChevronLeft, Menu, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { ChatwootComposer } from './ChatwootComposer';
 import ChatwootMessage from './ChatwootMessage';
 
@@ -81,6 +81,8 @@ interface ChatwootThreadProps {
     threadScrollerRef: React.RefObject<HTMLDivElement | null>;
     showContextPanel?: boolean;
     onToggleContextPanel?: () => void;
+    onBack?: () => void;
+    onOpenNav?: () => void;
 }
 
 function getInitials(label: string): string {
@@ -132,10 +134,22 @@ export default function ChatwootThread({
     threadScrollerRef,
     showContextPanel = true,
     onToggleContextPanel,
+    onBack,
+    onOpenNav,
 }: ChatwootThreadProps) {
     if (!workspace.selectedSessionId) {
         return (
-            <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--cw-bg-main)] min-w-0 items-center justify-center gap-2">
+            <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--cw-bg-main)] min-w-0 items-center justify-center gap-2 relative">
+                {onOpenNav && (
+                    <button
+                        type="button"
+                        onClick={onOpenNav}
+                        className="lg:hidden absolute top-4 left-4 w-10 h-10 rounded-xl flex items-center justify-center text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors"
+                        aria-label="Μενού"
+                    >
+                        <Menu size={18} />
+                    </button>
+                )}
                 <MessageSquare size={32} className="text-[var(--cw-text-3)]" />
                 <p className="text-[13px] text-[var(--cw-text-3)]">Επιλέξτε μια συνομιλία</p>
             </div>
@@ -151,6 +165,17 @@ export default function ChatwootThread({
         <div className="flex-1 flex flex-col h-full overflow-hidden bg-[var(--cw-bg-main)] min-w-0">
             {/* Thread header — Chatwoot ConversationHeader h-14 */}
             <div className="flex items-center gap-2 px-3 h-14 flex-shrink-0 border-b border-[var(--cw-border)] bg-[var(--cw-bg-main)]">
+                {/* Mobile back button */}
+                {onBack && (
+                    <button
+                        type="button"
+                        onClick={onBack}
+                        className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-[var(--cw-text-2)] hover:bg-white/[0.06] transition-colors flex-shrink-0 -ml-1"
+                        aria-label="Πίσω"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                )}
                 {/* Avatar — 32px circle */}
                 {photoURL ? (
                     <img

@@ -81,7 +81,7 @@ export function ChatwootComposer({ workspace, composerRef }: ChatwootComposerPro
             </div>
 
             {/* Bottom bar */}
-            <div className="flex items-center justify-end px-2.5 pb-2.5 pt-1">
+            <div className="flex items-center justify-end px-2.5 pb-2.5 max-lg:pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] pt-1">
                 <button
                     type="button"
                     disabled={!workspace.canReply || workspace.isSendingReply}

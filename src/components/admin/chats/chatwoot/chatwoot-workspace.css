@@ -38,6 +38,14 @@
    .child-item:last-child::after  — L-shaped corner on last item
    Color: bg-n-slate-4 → rgba(255,255,255,0.12)
    ─────────────────────────────────────────────────────────────────────── */
+/* Mobile safe area insets for iPhone notch/Dynamic Island/home bar */
+@media (max-width: 1023px) {
+  .chatwoot-workspace {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
 .sidebar-group-children .child-item::before {
   content: '';
   position: absolute;

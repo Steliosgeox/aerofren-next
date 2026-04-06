@@ -48,6 +48,7 @@ interface WorkspaceNavProps {
 
 interface ChatwootNavSidebarProps {
     workspace: WorkspaceNavProps;
+    onNavigate?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -150,7 +151,7 @@ function LeafItem({ label, active, onClick, onDelete }: LeafItemProps) {
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProps) {
+export default function ChatwootNavSidebar({ workspace, onNavigate }: ChatwootNavSidebarProps) {
     const {
         statusTab, queueInsights, searchQuery, setSearchQuery, handleTabChange,
         teams, teamFilter, setTeamFilter,
@@ -249,7 +250,7 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                     <li>
                         <button
                             type="button"
-                            onClick={() => handleTabChange('waiting_on_admin')}
+                            onClick={() => { handleTabChange('waiting_on_admin'); onNavigate?.(); }}
                             className={[
                                 'flex items-center gap-2 px-1.5 py-1 rounded-r-md h-8 min-w-0 w-full text-left transition-colors',
                                 statusTab === 'waiting_on_admin' && !teamFilter && !activeFolder
@@ -283,7 +284,7 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                                         key={item.value}
                                         label={item.label}
                                         active={statusTab === item.value && !teamFilter && !activeFolder}
-                                        onClick={() => { setTeamFilter(null); setActiveFolder(null); handleTabChange(item.value); }}
+                                        onClick={() => { setTeamFilter(null); setActiveFolder(null); handleTabChange(item.value); onNavigate?.(); }}
                                     />
                                 ))}
                             </ul>
@@ -316,6 +317,7 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                                         onClick={() => {
                                             setActiveFolder(activeFolder?.id === folder.id ? null : folder);
                                             setTeamFilter(null);
+                                            onNavigate?.();
                                         }}
                                         onDelete={() => void handleDeleteFolder(folder.id)}
                                     />
@@ -382,6 +384,7 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                                         onClick={() => {
                                             setTeamFilter(teamFilter === team.id ? null : team.id);
                                             setActiveFolder(null);
+                                            onNavigate?.();
                                         }}
                                     />
                                 ))}
@@ -402,7 +405,7 @@ export default function ChatwootNavSidebar({ workspace }: ChatwootNavSidebarProp
                                 <LeafItem
                                     label="Aerofren Chat"
                                     active={statusTab === 'all' && !teamFilter && !activeFolder}
-                                    onClick={() => { setTeamFilter(null); setActiveFolder(null); handleTabChange('all'); }}
+                                    onClick={() => { setTeamFilter(null); setActiveFolder(null); handleTabChange('all'); onNavigate?.(); }}
                                 />
                                 <li className="py-px pl-2 ml-3 relative child-item">
                                     <button
