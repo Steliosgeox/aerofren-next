@@ -146,9 +146,7 @@ export function GlassNavigation({
               htmlFor={`glass-nav-${id}-${index}`}
               className={item.hasDropdown ? "dropdown-indicator" : ""}
               onClick={() => onItemClick?.(item)}
-              onMouseEnter={() =>
-                item.hasDropdown && onDropdownHover?.(item, true)
-              }
+              onMouseEnter={() => onDropdownHover?.(item, true)}
               {...(item.hasDropdown ? { 'aria-haspopup': 'true', 'aria-expanded': dropdownOpen } : {})}
             >
               <Link

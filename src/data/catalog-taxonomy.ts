@@ -314,7 +314,7 @@ export const catalogCategories: CatalogCategory[] = [
   {
     slug: "push-in-fittings",
     nameEl: pushInName,
-    image: "/images/categories/push-in-fittings.jpg",
+    image: "/images/new-categories/ΕΞΑΡΤΗΜΑΤΑ_ΣΩΛΗΝΩΝ.webp",
     summaryEl: "Λύσεις ταχυσύνδεσης για πνευματικά δίκτυα που ζητούν ταχύτητα, καθαρή εφαρμογή και αξιόπιστη καθημερινή λειτουργία.",
     introEl: "Η κατηγορία ρακόρ ταχυσύνδεσης βοηθά επαγγελματίες να οργανώσουν γραμμές αέρα με πιο γρήγορη τοποθέτηση, σωστή χάραξη και έλεγχο της εγκατάστασης.",
     benefitsEl: [
@@ -335,7 +335,7 @@ export const catalogCategories: CatalogCategory[] = [
   {
     slug: "thread-fittings",
     nameEl: threadName,
-    image: "/images/categories/thread-fittings.jpg",
+    image: "/images/new-categories/ΜΠΡΟΥΤΖΙΝΑ_ΤΑΦ.webp",
     summaryEl: "Σπειρωτές λύσεις σύνδεσης για δίκτυα αέρα και νερού με έμφαση στη στεγανότητα, τη στιβαρότητα και τη σωστή διακλάδωση.",
     introEl: "Η κατηγορία αυτή απευθύνεται σε εγκαταστάσεις όπου η σοβαρή μηχανική σύνδεση και η πρακτική αξιοπιστία έχουν μεγαλύτερη αξία από μια πρόχειρη λύση.",
     benefitsEl: [
@@ -356,7 +356,7 @@ export const catalogCategories: CatalogCategory[] = [
   {
     slug: "hoses-pipes",
     nameEl: hosesName,
-    image: "/images/categories/hoses-pipes.jpg",
+    image: "/images/new-categories/ΣΩΛΗΝΕΣ_ΙΝΟΧ_ΘΕΡΜΟΥ_ΑΕΡΑ.webp",
     summaryEl: "Σωλήνες και διαδρομές μεταφοράς μέσων για εγκαταστάσεις που απαιτούν αντοχή, σταθερή ροή και σωστή συμπεριφορά στο πεδίο.",
     introEl: "Η σωστή επιλογή σωλήνα επηρεάζει άμεσα την απόδοση, τη διάρκεια ζωής και την ευκολία διαχείρισης ενός επαγγελματικού δικτύου.",
     benefitsEl: [
@@ -377,7 +377,7 @@ export const catalogCategories: CatalogCategory[] = [
   {
     slug: "ball-valves",
     nameEl: ballValvesName,
-    image: "/images/categories/ball-valves.jpg",
+    image: "/images/new-categories/BALL_VALVA_ΑΕΡΟΣ&ΥΓΡΩΝ.webp",
     summaryEl: "Σφαιρικές βάνες για έλεγχο και απομόνωση ροής σε επαγγελματικά δίκτυα αέρα και υγρών.",
     introEl: "Οι σφαιρικές βάνες είναι κρίσιμο στοιχείο όπου χρειάζεται ξεκάθαρος χειρισμός, αξιόπιστη στεγανότητα και λειτουργικός έλεγχος του δικτύου.",
     benefitsEl: [
@@ -398,7 +398,7 @@ export const catalogCategories: CatalogCategory[] = [
   {
     slug: "air-tools",
     nameEl: airToolsName,
-    image: "/images/categories/air-tools.jpg",
+    image: "/images/new-categories/ΕΞΑΡΤΗΜΑΤΑ_ΑΕΡΟΣ.webp",
     summaryEl: "Εργαλεία αέρα και κοπής που στηρίζουν την ακρίβεια, την προετοιμασία και την καθαρή εκτέλεση τεχνικών εργασιών.",
     introEl: "Η σωστή εγκατάσταση ξεκινά από σωστό εργαλείο. Η κατηγορία αυτή στηρίζει επαγγελματίες που θέλουν καλύτερο αποτέλεσμα και λιγότερα λάθη στο πεδίο.",
     benefitsEl: [
@@ -419,7 +419,7 @@ export const catalogCategories: CatalogCategory[] = [
   {
     slug: "water-filtration",
     nameEl: filtrationName,
-    image: "/images/categories/water-filtration.jpg",
+    image: "/images/new-categories/ΕΠΕΞΕΡΓΑΣΙΑ_ΝΕΡΟΥ.webp",
     summaryEl: "Λύσεις φίλτρανσης και επεξεργασίας νερού για προστασία εξοπλισμού και καλύτερη συμπεριφορά του δικτύου.",
     introEl: "Η σωστή διαχείριση του νερού έχει άμεσο αντίκτυπο στην αξιοπιστία της εγκατάστασης και στην προστασία του εξοπλισμού σας.",
     benefitsEl: [
@@ -440,7 +440,7 @@ export const catalogCategories: CatalogCategory[] = [
   {
     slug: "installation-accessories",
     nameEl: accessoriesName,
-    image: "/images/categories/installation-accessories.jpg",
+    image: "/images/new-categories/ΠΟΛΛΑΠΛΑ_ΣΤΗΡΙΓΜΑΤΑ.webp",
     summaryEl: "Αξεσουάρ εγκατάστασης που ενισχύουν την οργάνωση, την προστασία και το τελικό φινίρισμα επαγγελματικών δικτύων.",
     introEl: "Η ποιότητα μιας εγκατάστασης φαίνεται και στις λεπτομέρειες. Η κατηγορία αυτή καλύπτει λύσεις που οργανώνουν και προστατεύουν το δίκτυο στην πράξη.",
     benefitsEl: [

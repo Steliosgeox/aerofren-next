@@ -241,13 +241,20 @@ function HeaderComponent() {
 
     return [...baseItems, authItem];
   }, [user, isAdmin]);
-  const handleMegaMenuEnter = useCallback(() => {
+  // Cancels the pending close timeout — does NOT open the menu.
+  // Used on the container so moving the cursor from the nav pill into
+  // the dropdown panel never triggers an accidental open or close.
+  const cancelMegaMenuClose = useCallback(() => {
     if (megaMenuTimeoutRef.current) {
       clearTimeout(megaMenuTimeoutRef.current);
       megaMenuTimeoutRef.current = null;
     }
-    setMegaMenuOpen(true);
   }, []);
+
+  const openMegaMenu = useCallback(() => {
+    cancelMegaMenuClose();
+    setMegaMenuOpen(true);
+  }, [cancelMegaMenuClose]);
 
   const handleMegaMenuLeave = useCallback(() => {
     megaMenuTimeoutRef.current = setTimeout(() => {
@@ -255,18 +262,19 @@ function HeaderComponent() {
     }, 200);
   }, []);
 
+  // Dropdown items (Προϊόντα) open the menu; every other nav item starts
+  // closing it so the mega-menu never stays open on unrelated links.
   const handleNavDropdownHover = useCallback((
     item: { hasDropdown?: boolean },
     isHovering: boolean
   ) => {
+    if (!isHovering) return; // mouseLeave is handled by container onMouseLeave
     if (item.hasDropdown) {
-      if (isHovering) {
-        handleMegaMenuEnter();
-      } else {
-        handleMegaMenuLeave();
-      }
+      openMegaMenu();
+    } else {
+      handleMegaMenuLeave();
     }
-  }, [handleMegaMenuEnter, handleMegaMenuLeave]);
+  }, [openMegaMenu, handleMegaMenuLeave]);
 
 
   const showMobileDock = hasMounted && !(pathname?.startsWith('/admin'));
@@ -330,7 +338,7 @@ function HeaderComponent() {
               <div
                 ref={megaMenuRef}
                 className="relative"
-                onMouseEnter={handleMegaMenuEnter}
+                onMouseEnter={cancelMegaMenuClose}
                 onMouseLeave={handleMegaMenuLeave}
               >
                 <nav className="flex items-center" aria-label="Primary navigation">
@@ -373,12 +381,9 @@ function HeaderComponent() {
                         </TrackedLink>
                       </div>
 
-                      <div className="mb-5 grid gap-1">
-                        <p className="text-xs uppercase tracking-[0.28em]" style={{ color: "var(--theme-text-muted)" }}>
-                          Canonical Landing Pages
-                        </p>
+                      <div className="mb-5">
                         <p className="text-sm leading-6" style={{ color: "var(--theme-text-muted)" }}>
-                          Περιηγηθείτε στις βασικές indexable κατηγορίες του καταλόγου και μεταβείτε στις επιμέρους landing pages για πιο στοχευμένο περιεχόμενο.
+                          Περιηγηθείτε στις κατηγορίες του καταλόγου μας και βρείτε τη σωστή λύση για κάθε εφαρμογή.
                         </p>
                       </div>
 
