@@ -8,6 +8,7 @@ import {
     TrendingUp,
     Bot,
     Inbox,
+    LayoutGrid,
     Users,
     Settings,
     LogOut,
@@ -38,6 +39,7 @@ export function AdminSidebar() {
         { label: 'Σύνοψη', icon: <TrendingUp className="w-5 h-5" />, href: '/admin' },
         { label: 'Συνομιλίες AI', icon: <Bot className="w-5 h-5" />, href: '/admin/chats' },
         { label: 'Αιτήματα', icon: <Inbox className="w-5 h-5" />, href: '/admin/requests', badge: unreadCount > 0 ? unreadCount : undefined },
+        { label: 'Κατηγορίες', icon: <LayoutGrid className="w-5 h-5" />, href: '/admin/categories' },
         { label: 'Χρήστες', icon: <Users className="w-5 h-5" />, href: '/admin/users' },
         { label: 'Ρυθμίσεις', icon: <Settings className="w-5 h-5" />, href: '/admin/settings' },
     ], [unreadCount]);

@@ -95,6 +95,25 @@ export interface CatalogCategory {
   subcategories: CatalogSubcategory[];
 }
 
+// Admin-managed category (persisted in Firestore adminCategories collection)
+export interface AdminCategory {
+  id: string;
+  slug: string;
+  order: number;
+  nameEl: string;
+  image: string;
+  tagEl: string;
+  summaryEl: string;
+  highlightsEl: [string, string, string];
+  visible: boolean;
+  ctaLabel: string;
+  assignedProductIds: string[];
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
 // Helper type for category icons
 export type CategoryIconName =
   | 'plug'
