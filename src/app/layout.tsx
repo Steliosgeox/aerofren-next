@@ -114,7 +114,18 @@ export const metadata: Metadata = {
     description: "Ο κορυφαίος B2B προμηθευτής εξαρτημάτων νερού και αέρα στην Ελλάδα.",
     images: ["/images/hero-fittings.jpg"],
   },
+  icons: {
+    icon: [
+      { url: "/icon.png" },
+      { url: "/icon.png", media: "(prefers-color-scheme: dark)" },
+    ],
+    shortcut: ["/icon.png"],
+    apple: [
+      { url: "/apple-icon.png" },
+    ],
+  },
 }
+
 
 export default async function RootLayout({
   children,
